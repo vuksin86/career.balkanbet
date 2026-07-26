@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Balkan Bet | Careers (Pixel-Perfect Mockup)</title>
+
+<!-- ==========================================================================
+     FONTS — NeoSansW1G, self-hosted (4 static weights, see @font-face below)
+========================================================================== -->
+
+<!-- ==========================================================================
+     TAILWIND CSS — via CDN (Play CDN), config extended with brand tokens
+========================================================================== -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="brand-setup.js"></script>
+
+<!-- ==========================================================================
+     LENIS — smooth scroll library (https://lenis.darkroom.engineering/)
+========================================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+
+<!-- Shared brand stylesheet — same file on all three pages. -->
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="font-sans text-brand-dark antialiased overflow-x-hidden">
+
+<!-- ============================================================================
+     GLOBAL ANIMATED BACKGROUND — fixed behind the entire page (see CSS above).
+     Must be the first element in <body> so it sits lowest in paint order;
+     every section after it is positioned with z-index 10+ to stack on top.
+============================================================================ -->
+<div class="animated-bg" aria-hidden="true">
+  <span class="animated-bg__blob animated-bg__blob--1"></span>
+  <span class="animated-bg__blob animated-bg__blob--2"></span>
+  <span class="animated-bg__blob animated-bg__blob--3"></span>
+</div>
+
+<!-- ============================================================================
+     HEADER — floating pill nav, fixed across the whole page
+     NOTE for dev handoff: all hrefs below are placeholders ("#"). Swap them
+     for real paths once the rest of the site exists, e.g.:
+       Poslovi u lokalima     -> poslovi-u-lokalima.html
+       Posao u centrali       -> posao-u-centrali.html
+       O nama                 -> o-nama.html
+       Život u Balkan Betu    -> zivot-u-balkan-betu.html
+       Kontakt                -> kontakt.html
+============================================================================ -->
+<header class="fixed top-6 inset-x-0 z-50 flex justify-center px-4">
+  <div class="w-full max-w-[1300px] flex items-center justify-between gap-5
+              bg-brand-dark/40 backdrop-blur-md border border-white/25
+              rounded-full pl-[30px] pr-[30px] py-3">
+
+    <!-- Logo (2x original size, then reduced 20% -> h-16 * 0.8 = h-[51.2px]) -->
+    <a href="#" class="flex items-center shrink-0" aria-label="Balkan Bet home">
+      <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[51.2px] w-auto">
+    </a>
+
+    <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case -->
+    <nav class="hidden md:flex items-center gap-5 text-base font-medium uppercase text-white whitespace-nowrap">
+      <a href="poslovi-u-lokalima.html" class="hover:text-brand-yellow transition-colors">Poslovi u lokalima</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Posao u centrali</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">O nama</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Život u Balkan Betu</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Kontakt</a>
+    </nav>
+
+    <!-- CTA — flat brand yellow + white text, same fill as the "Prijavi se"
+         buttons on the job cards. Sentence case on purpose: this is the one
+         CTA on the page that is NOT set uppercase. -->
+    <a href="poslovi-u-lokalima.html" class="bg-brand-yellow shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
+      Pronađi posao
+    </a>
+  </div>
+</header>
+
+<!-- ============================================================================
+     HERO — multi-phase pinned choreography (see script block for the
+     scroll-progress math driving every transform/opacity/z-index below).
+     Three independent layers share the pinned stage:
+       #hero-heading-wrap  — the big headline, static z-index (10)
+       #hero-media-box     — the media rectangle; z-index flips between
+                              5 (behind text) and 20 (in front of text)
+       #hero-search-block  — search bar + stats; always on top (z-index 25)
+============================================================================ -->
+<section id="hero-spacer" class="relative z-10">
+  <div id="hero-stage" class="sticky top-0 w-full overflow-hidden">
+
+    <!-- Headline layer -->
+    <div id="hero-heading-wrap" class="flex items-center justify-center text-center px-6">
+      <h1 id="hero-heading"
+          class="uppercase font-extrabold text-white"
+          style="font-size: 100px; line-height: 90px; letter-spacing: -6px;">
+        Uskoči u igru.<br>Budi deo Balkan<br>Bet tima.
+      </h1>
+    </div>
+
+    <!-- Scroll hint: the logo's ball, bouncing in place. Stands in for the
+         usual "scroll down" chevron. The outer div carries the scroll-driven
+         exit (set in updateHero, tied to the same headT as the headline so
+         the two leave together); the inner span owns the looping bounce, so
+         the CSS animation and the JS transform never fight over one element. -->
+    <div id="hero-scroll-ball" aria-hidden="true">
+      <span class="hero-scroll-ball__shadow"></span>
+      <!-- The ball is lifted verbatim out of BalkanBetLogo.svg: same circle
+           path, same radialGradient stops AND the same gradientTransform, in
+           a viewBox matching the logo's own user space (0 0 158.03 158.03).
+           That transform is the reason a CSS radial-gradient can't stand in
+           here — it rotates 72deg and scales the gradient off-centre, so any
+           `radial-gradient(circle at x% y%)` is only ever an approximation. -->
+      <svg class="hero-scroll-ball__dot" viewBox="0 0 158.03 158.03" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="heroBallGradient" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                          gradientTransform="translate(58.2688 36.7026) rotate(71.9728) scale(117.678 116.136)">
+            <stop stop-color="#FFF75C"/>
+            <stop offset="0.32" stop-color="#FBC707"/>
+            <stop offset="0.531908" stop-color="#FBC707"/>
+            <stop offset="0.85" stop-color="#F89C0E"/>
+            <stop offset="1" stop-color="#FAB20B"/>
+          </radialGradient>
+        </defs>
+        <path d="M0 79.0146C0 122.652 35.376 158.027 79.0107 158.027C122.651 158.027 158.025 122.652 158.025 79.0146C158.025 35.376 122.651 0 79.0107 0C35.376 0 0 35.376 0 79.0146Z"
+              fill="url(#heroBallGradient)"/>
+      </svg>
+    </div>
+
+    <!-- Media layer: single rectangle that rises, crosses the text, then grows to near-fullscreen -->
+    <div id="hero-media-box">
+      <video src="assets/video/BalkanBet.mp4" class="w-full h-full object-cover"
+             autoplay muted loop playsinline></video>
+      <!-- Dark (#231F20) wash over the lower third of the footage. Lives INSIDE
+           the media box so it inherits the box's overflow clip and rounded
+           corners, and travels with it through the whole scroll sequence.
+           Its job is to give the search bar (which now sits down here) a
+           readable surface instead of arbitrary video frames. -->
+      <span class="hero-media-fade" aria-hidden="true"></span>
+    </div>
+
+    <!-- Search + shortcuts layer: enters after the media has grown, exits with it.
+         Decorative only — the selects carry real options so the control feels
+         alive to click through, but nothing is wired to a backend. -->
+    <div id="hero-search-block">
+      <div class="hero-search">
+        <!-- Three custom dropdowns (not <select>s — see the CSS note). Tab 1
+             drives the other two; the HERO SEARCH script block builds every
+             option list and owns open/close. -->
+        <div class="hero-search__tab" data-tab="mode">
+          <button type="button" class="hero-search__trigger" aria-haspopup="listbox" aria-expanded="false">
+            <span class="hero-search__body">
+              <span class="hero-search__label">Vrsta posla</span>
+              <span class="hero-search__value" data-value>Poslovi u lokalima</span>
+            </span>
+            <svg class="hero-search__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="hero-search__menu" role="listbox" hidden></div>
+        </div>
+
+        <div class="hero-search__tab" data-tab="location">
+          <button type="button" class="hero-search__trigger" aria-haspopup="listbox" aria-expanded="false">
+            <span class="hero-search__body">
+              <span class="hero-search__label">Lokacija</span>
+              <span class="hero-search__value" data-value>Sve lokacije</span>
+            </span>
+            <svg class="hero-search__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="hero-search__menu" role="listbox" hidden></div>
+        </div>
+
+        <div class="hero-search__tab" data-tab="position">
+          <button type="button" class="hero-search__trigger" aria-haspopup="listbox" aria-expanded="false">
+            <span class="hero-search__body">
+              <span class="hero-search__label">Pozicija</span>
+              <span class="hero-search__value" data-value>Sve pozicije</span>
+            </span>
+            <svg class="hero-search__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <div class="hero-search__menu" role="listbox" hidden></div>
+        </div>
+
+        <button type="button" class="hero-search__submit">Pretraži</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     NAJNOVIJE POZICIJE — FIRST section after the hero: it is what the exiting
+     video uncovers, so it carries the #openings margin-top rule (see the
+     "HERO → FIRST SECTION OVERLAP" comment in the CSS). Deliberately has NO
+     background fill and no panel rounding — the orange aurora runs straight
+     through it, and the title/CTA are white against it, with only the job
+     cards reading as white boxes.
+
+     4 job cards, one-by-one left-to-right cascade reveal (see the OPENINGS
+     script block for the IntersectionObserver + per-card transition-delay,
+     and .opening-card in the CSS above for the travel/opacity tuning that
+     produces the diagonal cascade).
+============================================================================ -->
+<!-- Padding is asymmetric ON PURPOSE — both gaps still READ as 140px
+     (the old 200px, tightened by the requested 30%):
+
+     top = 89px. The 140px is measured from the video's bottom edge to the
+       TOP OF THE TITLE'S LETTERS, which is not where the H2's box starts.
+       Two things sit in between and both have to be subtracted:
+         30px — the media box's own bottom inset (see "HERO → FIRST SECTION
+                OVERLAP"; that gap is a px constant, not a vh fraction)
+         21px — the H2's own leading: 84px line-height on a 56px font leaves
+                7px of half-leading, and the font's ascender clears its cap
+                height by another 14px. Measured off the font metrics, not
+                guessed — if the title's font-size or line-height changes,
+                re-measure and re-derive, because 140 - 30 - 21 = 89 only
+                holds for THIS type setting.
+       Note the header still carries .reveal, so for the ~0.7s of its
+       translateY(24px) fade-in the gap reads up to 164px before settling.
+
+     bottom = the full 140px, measured from the last thing in the section
+       (now the "Pogledaj sve pozicije" link, which sits under the card row)
+       to the white panel's edge — two hard edges, nothing to compensate for. -->
+<section id="openings" class="relative z-10 pt-[89px] pb-[140px]">
+  <div class="max-w-[1440px] mx-auto px-8 md:px-16">
+
+    <!-- Header: title only, centered. mb/mt below the row are the old
+         64px/56px tightened by the requested 20%. -->
+    <div class="reveal text-center mb-[51px]">
+      <h2 class="uppercase font-extrabold tracking-tight text-white"
+          style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
+        Najnovije pozicije
+      </h2>
+    </div>
+
+    <!-- Job cards (rendered by JS, see OPENINGS array) -->
+    <div id="openings-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+
+    <!-- Text CTA (white-underlined) — sits UNDER the row, not under the title -->
+    <div class="reveal text-center mt-[45px]">
+      <a href="poslovi-u-lokalima.html" class="inline-block font-medium uppercase text-white text-base border-b-2 border-white pb-0.5 hover:text-brand-dark hover:border-brand-dark transition-colors cursor-pointer">
+        Pogledaj sve pozicije
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     ŽIVOT U BALKAN BET-U — white panel, four parts:
+       1. a plain section title
+       2. the scroll-scrubbed subtitle (#impact-heading): words start pale
+          grey and fill in solid dark as the section scrolls through its
+          reveal window, and only once that has fully finished does the
+          closing sentence sweep in its yellow marker
+       3. the multimedia mosaic (rendered by JS, see the ZIVOT_TILES array):
+          photos, a looping clip, three counting number blocks, an employee
+          quote slider, and the clickable ones that flip to a yellow CTA
+          face on hover
+       4. "Balkan Bet benefiti" — five icon discs (see the BENEFITS array)
+     Closes with the "O nama" CTA.
+============================================================================ -->
+<section id="impact" class="relative z-20 section-panel rounded-[32px] bg-white py-24">
+  <div class="max-w-[1200px] mx-auto px-8 md:px-16 text-center">
+    <!-- Same type scale as the "Najnovije pozicije" heading — the two section
+         titles are meant to read as one level, so keep these clamps in sync. -->
+    <h2 class="reveal uppercase font-extrabold tracking-tight text-brand-dark"
+        style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
+      Život u Balkan Bet-u
+    </h2>
+
+    <!-- Subtitle — filled in word by word on scroll; markup comes from JS -->
+    <p id="impact-heading" class="font-bold leading-snug mt-7"
+       style="font-size: clamp(1.15rem, 2.1vw, 1.9rem);"></p>
+  </div>
+
+  <!-- Mosaic. items-start keeps the three columns independent heights
+       instead of stretching them to the tallest one.
+       mt-16 here and on the CTA below: the old 80px, tightened by 20%. -->
+  <div class="max-w-[1440px] mx-auto px-8 md:px-16 mt-16">
+    <div id="zivot-mosaic" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+      <div id="zivot-col-0" class="flex flex-col gap-6"></div>
+      <div id="zivot-col-1" class="flex flex-col gap-6 lg:mt-10"></div>
+      <div id="zivot-col-2" class="flex flex-col gap-6"></div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       BALKAN BET BENEFITI — closes the white panel, under the mosaic. Five of
+       the CLIENT'S OWN icon discs (cut out of assets/bb-zivot/benefiti.png),
+       rendered by JS from the BENEFITS array. No numbering — the 01–05 index
+       that used to sit above each label was dropped on request.
+  ========================================================================== -->
+  <div class="max-w-[1200px] mx-auto px-8 md:px-16 mt-20 text-center">
+    <h3 class="reveal uppercase font-extrabold tracking-tight text-brand-dark"
+        style="font-size: clamp(1.5rem, 3.2vw, 2.5rem);">
+      Balkan Bet benefiti
+    </h3>
+
+    <!-- 5 across on desktop; wraps to 2 on phones (a 5-col grid would leave a
+         lone orphan on tablet, so the middle step is 3). -->
+    <div id="benefits-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-12 mt-14"></div>
+  </div>
+
+  <!-- Dark pill, sentence case on purpose — same explicit exception as the
+       header CTA and the "Prijavi se" card buttons. Was a .cta-gradient
+       uppercase "O nama"; do not put that back. -->
+  <div class="text-center">
+    <a href="#" class="reveal inline-block mt-16 bg-brand-dark text-white rounded-full px-8 py-3.5 text-base font-bold hover:bg-brand-yellow hover:text-brand-dark transition-colors cursor-pointer">
+      Saznaj više o nama
+    </a>
+  </div>
+</section>
+
+<!-- ============================================================================
+     PROCES ZAPOŠLJAVANJA — the client's hand-lettered artwork, rebuilt as live
+     type and written on by scroll. No section background: the four steps are
+     drawn in brand-dark straight onto the animated aurora, exactly as in the
+     reference. Replaced an icon-disc + dot-nav slider (5 steps) — the artwork
+     says four, and the subtitle counts them, so keep the two in sync.
+
+     LAYOUT — #proces-stage is a fixed-ratio container-query box; the --x/--y
+     on each piece are percentages lifted off the artwork (origin at the step
+     band's top-left, 1380 x 290 of its units). All type sizes live in `cqw` in
+     styles.css, so the whole composition scales as one drawing. Steps sit on a
+     zigzag: 01 mid, 02 high, 03 low, 04 high.
+
+     ORDER MATTERS — updateProcess() writes the pieces in DOCUMENT order, so
+     the markup below is authored in writing order (numeral, first label line,
+     second label line, then the arrow that leads to the next step). Reordering
+     these nodes reorders the animation.
+============================================================================ -->
+<!-- Padding is ASYMMETRIC to come out visually SYMMETRIC at 96px (the site's
+     py-24 section rhythm), measured edge-of-neighbour to edge-of-INK:
+       top    96 + 42 = 138  — .panel-overlap has already eaten 48px, and the
+                              first line is now the SUBTITLE, whose box starts
+                              ~6px above its cap line (it was the h2 at 10px
+                              before the two were swapped)
+       bottom 96 - 47 =  49  — what follows is not a background edge but the
+                              footer, which brings its own -48px overlap and
+                              80px of pt-20, plus ~15px of unused stage height
+                              under the lowest step
+     Both numbers are only valid for these type sizes and this stage ratio; if
+     either changes, re-measure the two gaps rather than copying these. -->
+<section id="proces" class="relative z-20 panel-overlap section-panel pt-[138px] pb-[49px]">
+  <!-- Subtitle ABOVE the heading (it reads as a kicker) — the reference artwork
+       had them the other way round, this order was asked for afterwards. -->
+  <div class="max-w-[1200px] mx-auto px-8 md:px-16 text-center">
+    <!-- leading-tight / leading-[1.05] are doing the tightening, not the margin.
+         Both lines inherit line-height 1.5, which parks ~9px under the kicker's
+         baseline and ~10px over the heading's cap line; trimming the margin
+         alone barely moved the pair closer. -->
+    <p class="reveal text-white font-bold leading-tight" style="font-size: clamp(1.05rem, 1.9vw, 1.6rem);">
+      4 koraka do karijere u Balkan Bet-u
+    </p>
+    <h2 class="reveal text-white uppercase font-extrabold tracking-tight leading-[1.05] mt-3"
+        style="font-size: clamp(2rem, 4.5vw, 3.5rem);">
+      Proces zapošljavanja
+    </h2>
+  </div>
+
+  <div class="max-w-[1200px] mx-auto px-8 md:px-16 mt-6 md:mt-8">
+    <div id="proces-stage">
+
+      <!-- 01 -->
+      <div class="proc-step" style="--x:2.2%; --y:31.3%">
+        <span class="proc-step__num proc-ink">01</span>
+        <span class="proc-step__label"><span class="proc-ink">Pronađi</span><span class="proc-ink">poziciju</span></span>
+      </div>
+      <svg class="proc-arrow proc-ink" viewBox="0 0 96 72" style="--x:26.4%; --y:43.1%" aria-hidden="true">
+        <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
+      </svg>
+
+      <!-- 02 -->
+      <div class="proc-step" style="--x:28.6%; --y:4.7%">
+        <span class="proc-step__num proc-ink">02</span>
+        <span class="proc-step__label"><span class="proc-ink">Prijavi se</span><span class="proc-ink">online</span></span>
+      </div>
+      <svg class="proc-arrow proc-arrow--down proc-ink" viewBox="0 0 96 72" style="--x:51.4%; --y:23.4%" aria-hidden="true">
+        <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
+      </svg>
+
+      <!-- 03 -->
+      <div class="proc-step" style="--x:49.3%; --y:54.7%">
+        <span class="proc-step__num proc-ink">03</span>
+        <span class="proc-step__label"><span class="proc-ink">Razgovor</span><span class="proc-ink">sa timom</span></span>
+      </div>
+      <svg class="proc-arrow proc-ink" viewBox="0 0 96 72" style="--x:76.1%; --y:48.4%" aria-hidden="true">
+        <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
+      </svg>
+
+      <!-- 04 -->
+      <div class="proc-step" style="--x:71.7%; --y:6.3%">
+        <span class="proc-step__num proc-ink">04</span>
+        <span class="proc-step__label"><span class="proc-ink">Ponuda</span><span class="proc-ink">za posao</span></span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================================================
+     FOOTER CTA — closing call-to-action + site navigation + socials
+============================================================================ -->
+<footer class="relative z-20 panel-overlap section-panel rounded-[32px] pt-20 pb-10">
+  <div class="max-w-[1440px] mx-auto px-8 md:px-16">
+
+    <!-- Two media CTAs opening the footer — lokali / centrala. Both slots used
+         to be one photo + one "Postani deo našeg tima?" text box; they are now
+         a matched pair of links (see .footer-cta in styles.css for the yellow
+         swing-up hover). The visuals deliberately reuse what already stands for
+         each track in the ŽIVOT mosaic: the lokal photo and the centrala clip
+         (same src, so the video costs no extra download). -->
+    <div class="reveal grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <a href="poslovi-u-lokalima.html" class="footer-cta">
+        <img class="footer-cta__media" src="assets/bb-zivot/storage-profili.png" alt="Balkan Bet lokal">
+        <div class="footer-cta__scrim"></div>
+        <div class="footer-cta__face"></div>
+        <div class="footer-cta__body">
+          <h2 class="footer-cta__title">Poslovi u lokalima</h2>
+          <p class="footer-cta__sub">Pogledaj otvorene pozicije u Balkan Betu.</p>
+          <!-- The extra span is not decoration: .footer-cta__pillwrap animates
+               grid-template-rows 0fr -> 1fr and the span is the row that has to
+               clip while collapsed. -->
+          <div class="footer-cta__pillwrap"><span>
+            <span class="footer-cta__pill">Pogledaj pozicije</span>
+          </span></div>
+        </div>
+      </a>
+
+      <a href="#" class="footer-cta">
+        <video class="footer-cta__media" src="assets/bb-zivot/8141231-uhd_2160_3840_25fps.mp4"
+               autoplay muted loop playsinline preload="metadata"></video>
+        <div class="footer-cta__scrim"></div>
+        <div class="footer-cta__face"></div>
+        <div class="footer-cta__body">
+          <h2 class="footer-cta__title">Posao u centrali</h2>
+          <p class="footer-cta__sub">Postani deo našeg tima</p>
+          <div class="footer-cta__pillwrap"><span>
+            <span class="footer-cta__pill">Pogledaj pozicije</span>
+          </span></div>
+        </div>
+      </a>
+    </div>
+
+    <div class="reveal grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Column: corporate site -->
+      <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
+        <h3 class="text-white font-bold uppercase tracking-wide mb-4">Pun pogodak</h3>
+        <p class="text-white/85">
+          Poseti naš sajt i saznaj više o Balkan Betu — o ponudi, lokalima širom Srbije i svemu što radimo.
+        </p>
+        <!-- border-b-2 + solid white: same underline weight as the
+             "Pogledaj sve pozicije" link in #openings, so the two text CTAs
+             read as one style. -->
+        <a href="#" class="inline-flex items-center gap-2 mt-10 text-white font-bold uppercase tracking-wide border-b-2 border-white pb-1 hover:text-brand-dark hover:border-brand-dark transition-colors cursor-pointer">
+          <svg width="10" height="12" viewBox="0 0 10 12" fill="none"><path d="M1 1L9 6L1 11V1Z" fill="currentColor"/></svg>
+          balkanbet.rs
+        </a>
+      </div>
+
+      <!-- Column: site navigation -->
+      <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
+        <h3 class="text-white font-bold uppercase tracking-wide mb-6">Navigacija</h3>
+        <nav class="flex flex-col gap-4 text-white/90 font-bold">
+          <a href="poslovi-u-lokalima.html" class="hover:text-brand-dark transition-colors w-fit">Poslovi u lokalima</a>
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Posao u centrali</a>
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">O nama</a>
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Život u Balkan Betu</a>
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Kontakt</a>
+        </nav>
+      </div>
+
+      <!-- Column: social -->
+      <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
+        <h3 class="text-white font-bold uppercase tracking-wide mb-6">Prati nas</h3>
+        <div class="flex items-center gap-4">
+          <a href="#" aria-label="LinkedIn" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer font-bold text-sm">in</a>
+          <a href="#" aria-label="Instagram" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="1.2" fill="currentColor"/></svg>
+          </a>
+          <a href="#" aria-label="Facebook" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer font-bold">f</a>
+          <a href="#" aria-label="YouTube" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" stroke-width="2"/><path d="M10 9L15 12L10 15V9Z" fill="currentColor"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Three slots, so "Nazad na vrh" is centred against the FOOTER, not
+         against whatever the two side texts happen to measure — hence a
+         3-column grid rather than justify-between. -->
+    <div class="reveal grid grid-cols-1 sm:grid-cols-3 items-center gap-4 mt-10 pt-8 border-t border-white/20 text-white/80 text-sm text-center sm:text-left">
+      <p class="sm:justify-self-start">&copy;2026 Balkan Bet. Sva prava zadržana.</p>
+      <a href="#top" class="sm:justify-self-center hover:text-white transition-colors">Nazad na vrh</a>
+      <span class="sm:justify-self-end inline-flex items-center gap-2">
+        Dizajn i razvoj
+        <!-- smartweb-logo.svg is already all-white (fill="#fff"), so it needs no
+             filter here. Height is in em so it tracks this row's font size. -->
+        <img src="assets/logo/smartweb-logo.svg" alt="Smartweb" class="h-[1.15em] w-auto">
+      </span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================================
+     SCRIPTS
+============================================================================ -->
+<script>
+  /* ==========================================================================
+     LENIS — smooth scroll init
+     Lenis owns scroll: its own rAF loop advances the smoothed value every
+     frame regardless of wheel-event timing, and `lenis.on('scroll', ...)`
+     is the ONLY source of truth read anywhere below — nothing in this file
+     re-derives scroll position from window.scrollY or getBoundingClientRect
+     mid-scroll (that mix of sources, plus the forced-layout cost of calling
+     getBoundingClientRect on every scroll tick, was what caused the
+     wheel-scroll lag/jank in the previous version).
+  ========================================================================== */
+  const lenis = new Lenis({
+    duration: 1.15,
+    smoothWheel: true,
+  });
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+
+  /* ==========================================================================
+     HERO — multi-phase scroll-scrubbed choreography
+
+     Phase boundaries (as fractions of total scroll progress 0→1):
+       0.00–0.08  P0  heading only
+       0.08–0.30  P1  media rises from below through the heading
+                      (z-index flips once, at Z_FLIP); across this whole
+                      span the heading also scales down slightly (1 → 0.85),
+                      and from Z_FLIP onward it additionally translates up
+                      and fades out, finishing by P1_END — well before the
+                      media reaches its max size in P2
+       0.30–0.52  P2  media grows to near-fullscreen + search/stats enter
+       0.52–0.58  P3  snap hold (nothing animates — a deliberate pause)
+       0.58–1.00  P4  media + search block move up together and exit
+  ========================================================================== */
+  const heroSpacer = document.getElementById('hero-spacer');
+  const heroMediaBox = document.getElementById('hero-media-box');
+  const heroScrollBall = document.getElementById('hero-scroll-ball');
+  const heroHeading = document.getElementById('hero-heading');
+  const heroSearchBlock = document.getElementById('hero-search-block');
+
+  const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  // How far the media/search unit travels upward during P4, as a multiple of
+  // viewport height. P4's scroll budget in #hero-spacer is kept EQUAL to this
+  // (130vh) so the exit runs at exactly 1:1 with the page scroll — see the
+  // "HERO → IMPACT OVERLAP" comment in the CSS for why that equality is what
+  // keeps the gap behind the video from opening up.
+  const HERO_EXIT_TRAVEL = 1.3;
+
+  // How far BELOW its resting place the media starts, as a multiple of
+  // viewport height. This is what decides how soon it breaks the fold: the
+  // box is vh*0.42 tall and centred, so its top edge starts at
+  // (0.29 + HERO_ENTER_TRAVEL) * vh and has to come up past 1.0 * vh to be
+  // seen at all. At the old 1.3 that meant a long invisible run-up before
+  // anything appeared on screen; 1.0 puts it in view within the first wheel
+  // notch while keeping the travel long enough to still read as a rise.
+  const HERO_ENTER_TRAVEL = 1.0;
+
+  const HERO_PHASE = {
+    // Fractions of the 273vh scrollable range, derived from the per-phase vh
+    // budgets listed above #hero-spacer in the CSS:
+    //   P0 1vh | entrance 132vh | P3 10vh | P4 130vh
+    // Only P0 changed here (10vh -> 1vh, to kill the dead run-up); the
+    // entrance, snap-hold and exit budgets are all untouched, so their pacing
+    // is identical to before — the fractions below only shift because the
+    // total they are measured against shrank by those 9vh.
+    // The internal split of the entrance (zFlip at 25.1%, p1End at 55.4% of
+    // it) is carried over unchanged so the video still crosses the heading
+    // at the same relative moment.
+    p0End: 0.0037,  // heading-only ends / media starts rising
+    zFlip: 0.1250,  // discrete z-index swap point (media behind → in front of text)
+    p1End: 0.2717,  // media has arrived at center (still rectangular)
+    p2End: 0.4872,  // media at max size + heading gone + search fully entered
+    p3End: 0.5238,  // end of snap-hold
+    p4End: 1.00,    // media + search fully exited
+  };
+
+  // Ease-out: fast at the start, decelerating smoothly to a stop — used for
+  // the media/search entrance (P1) and grow-to-fullscreen (P2) phases so
+  // they arrive at the P3 snap-hold with ~0 velocity instead of a linear cut.
+  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+  // The hero's offset/height only change on resize (never mid-scroll), so
+  // they're measured once and cached — updateHero() itself does zero DOM
+  // reads, only arithmetic on the cached numbers + the scroll value Lenis
+  // hands us, which keeps it cheap enough to run every single scroll tick.
+  let heroOffsetTop = 0;
+  let heroScrollable = 1;
+  // Viewport-y of the nav pill's vertical midpoint — where the media's top
+  // edge lands at max size. Read from the header itself (rather than
+  // hardcoding top-6 + its padding) so restyling the nav can't silently
+  // desync the two. The header is `position: fixed`, so its rect doesn't
+  // move with scroll and measuring it once per resize is enough.
+  let heroNavMid = 0;
+  const siteHeader = document.querySelector('header');
+
+  function measureHero() {
+    heroOffsetTop = heroSpacer.offsetTop;
+    heroScrollable = heroSpacer.offsetHeight - window.innerHeight;
+    const navRect = siteHeader.getBoundingClientRect();
+    heroNavMid = navRect.top + navRect.height / 2;
+  }
+
+  function updateHero(scrollY) {
+    const p = clamp((scrollY - heroOffsetTop) / heroScrollable, 0, 1);
+    // clientWidth (not innerWidth) so this matches the width the box's `left: 50%`
+    // centers against — innerWidth includes the scrollbar gutter, clientWidth doesn't,
+    // and using the wrong one here throws the 30px inset off-center by the scrollbar's width.
+    const vw = document.documentElement.clientWidth;
+    const vh = window.innerHeight;
+
+    // ---- Phase 1+2: media rises to center AND grows to near-fullscreen as
+    // ONE continuous decelerating motion. A single easing curve spans the
+    // whole p0End→p2End range and only reaches zero velocity at its very
+    // end (p2End, the snap-hold); enterT/revealT are then just a linear
+    // split of that single eased value. Easing each phase separately (as
+    // before) made P1 coast to a stop on its own, then P2 had to restart
+    // from scratch — read as a stutter right where the media arrives at
+    // center, just before it starts widening. This removes that seam.
+    const growRaw = clamp((p - HERO_PHASE.p0End) / (HERO_PHASE.p2End - HERO_PHASE.p0End), 0, 1);
+    const growEased = easeOutCubic(growRaw);
+    const p1Frac = (HERO_PHASE.p1End - HERO_PHASE.p0End) / (HERO_PHASE.p2End - HERO_PHASE.p0End);
+
+    const enterT = clamp(growEased / p1Frac, 0, 1);
+    const enterY = lerp(vh * HERO_ENTER_TRAVEL, 0, enterT);
+
+    // Sizes are computed in px (not vw/vh) so the max phase can land on exact
+    // pixel insets regardless of viewport size.
+    const revealT = clamp((growEased - p1Frac) / (1 - p1Frac), 0, 1);
+    // Max size at the P3 snap-hold: 30px of orange left showing down both
+    // sides and along the bottom, while the TOP edge runs further up, to the
+    // vertical middle of the floating nav pill (heroNavMid), so the media
+    // tucks in behind the nav instead of stopping short of it.
+    const HERO_MAX_INSET = 30;
+    const maxBoxW = vw - HERO_MAX_INSET * 2;
+    const maxBoxH = (vh - HERO_MAX_INSET) - heroNavMid;
+    const boxW = lerp(vw * 0.56, maxBoxW, revealT);
+    const boxH = lerp(vh * 0.42, maxBoxH, revealT);
+    // Because the top and bottom insets differ, the box is no longer
+    // symmetric about the viewport's middle, so `top: 50%` + translate(-50%)
+    // alone would sit it too high. This nudges its centre down by exactly
+    // half the inset difference, which puts the two edges where they belong:
+    //   top    = vh/2 + offset - boxH/2 = heroNavMid
+    //   bottom = vh/2 + offset + boxH/2 = vh - HERO_MAX_INSET
+    const boxCentreOffset = lerp(0, (heroNavMid - HERO_MAX_INSET) / 2, revealT);
+    // Constant — the media keeps the same rounded corners the whole way
+    // through; it never goes full-bleed, so there is nothing to square off.
+    const boxRadius = 32;
+
+    // ---- Phase 4: media + search block travel up together and exit
+    const exitT = clamp((p - HERO_PHASE.p3End) / (HERO_PHASE.p4End - HERO_PHASE.p3End), 0, 1);
+    const exitY = lerp(0, -vh * HERO_EXIT_TRAVEL, exitT);
+
+    // Media box: position, size, and the discrete (non-transitioned) z-index flip
+    heroMediaBox.style.width = `${boxW}px`;
+    heroMediaBox.style.height = `${boxH}px`;
+    heroMediaBox.style.borderRadius = `${boxRadius}px`;
+    heroMediaBox.style.transform = `translate(-50%, -50%) translateY(${enterY + exitY + boxCentreOffset}px)`;
+    heroMediaBox.style.zIndex = p < HERO_PHASE.zFlip ? 5 : 20;
+
+    // Heading: shrinks, fades, and translates up together, all fully done
+    // by zFlip — the instant the media goes opaque-in-front of it. That
+    // ordering matters: the z-index swap is a hard cut (an opaque box
+    // suddenly covering whatever's beneath it), not a cross-fade, so if the
+    // heading were still visible when it hit, it'd just get clipped away
+    // rather than looking like it shrank/faded/left. Finishing the exit
+    // beforehand means there's nothing left to abruptly cover.
+    const headT = clamp((p - HERO_PHASE.p0End) / (HERO_PHASE.zFlip - HERO_PHASE.p0End), 0, 1);
+    const headScale = lerp(1, 0.85, headT);
+    heroHeading.style.opacity = 1 - headT;
+    heroHeading.style.transform = `translateY(${lerp(0, -vh * 0.18, headT)}px) scale(${headScale})`;
+
+    // Scroll-hint ball rides out on exactly the headline's headT — same fade,
+    // same upward travel — so the two clear the screen as one piece. It can
+    // afford the full duration because it paints under the media box (see
+    // #hero-scroll-ball's z-index), so the rising video simply covers it.
+    // translateX has to be restated: it lives in the CSS transform this
+    // declaration overwrites.
+    heroScrollBall.style.opacity = 1 - headT;
+    heroScrollBall.style.transform = `translateX(-50%) translateY(${lerp(0, -vh * 0.18, headT)}px)`;
+
+    // Search block: enters in phase 2 (same timing as heading exit), exits in phase 4
+    const searchEnterY = lerp(vh * 0.5, 0, revealT);
+    heroSearchBlock.style.opacity = revealT;
+    // translateX only — the block is bottom-anchored in CSS now, so a
+    // vertical -50% here would lift it back to the middle of the video.
+    heroSearchBlock.style.transform = `translateX(-50%) translateY(${searchEnterY + exitY}px)`;
+  }
+
+  measureHero();
+  lenis.on('scroll', ({ scroll }) => updateHero(scroll));
+  window.addEventListener('resize', () => {
+    measureHero();
+    updateHero(lenis.scroll);
+  });
+  updateHero(lenis.scroll);
+
+  /* ==========================================================================
+     HERO SEARCH — three custom dropdowns; the job-type tab drives the rest
+
+     Custom rather than <select> because native option popups ignore padding
+     and line-height (see the CSS note), which the design calls for.
+
+     Shop roles exist in every municipality in the country; head-office roles
+     only exist in the two head offices. So switching the first tab rebuilds
+     BOTH of the others — leaving a shop-floor position list, or a 144-entry
+     town list, under "posao u centrali" would contradict the choice just
+     made. Both reset to their "Sve ..." default on switch, since the
+     previously picked value usually doesn't exist in the new list.
+  ========================================================================== */
+  // Every municipality/city of the Republic of Serbia (Kosovo and Metohija
+  // excluded), sorted for the dropdown.
+  const HERO_MUNICIPALITIES = [
+    'Ada', 'Aleksandrovac', 'Aleksinac', 'Alibunar', 'Apatin', 'Aranđelovac', 'Arilje',
+    'Babušnica', 'Bač', 'Bačka Palanka', 'Bačka Topola', 'Bački Petrovac', 'Bajina Bašta',
+    'Batočina', 'Bečej', 'Bela Crkva', 'Bela Palanka', 'Beočin', 'Beograd', 'Blace',
+    'Bogatić', 'Bojnik', 'Boljevac', 'Bor', 'Bosilegrad', 'Brus', 'Bujanovac',
+    'Čačak', 'Čajetina', 'Ćićevac', 'Čoka', 'Crna Trava', 'Ćuprija',
+    'Despotovac', 'Dimitrovgrad', 'Doljevac',
+    'Gadžin Han', 'Golubac', 'Gornji Milanovac',
+    'Inđija', 'Irig', 'Ivanjica', 'Jagodina',
+    'Kanjiža', 'Kikinda', 'Kladovo', 'Knić', 'Knjaževac', 'Koceljeva', 'Kosjerić',
+    'Kovačica', 'Kovin', 'Kragujevac', 'Kraljevo', 'Krupanj', 'Kruševac', 'Kučevo',
+    'Kula', 'Kuršumlija',
+    'Lajkovac', 'Lapovo', 'Lebane', 'Leskovac', 'Ljig', 'Ljubovija', 'Loznica', 'Lučani',
+    'Majdanpek', 'Mali Iđoš', 'Mali Zvornik', 'Malo Crniće', 'Medveđa', 'Merošina', 'Mionica',
+    'Negotin', 'Niš', 'Nova Crnja', 'Nova Varoš', 'Novi Bečej', 'Novi Kneževac',
+    'Novi Pazar', 'Novi Sad',
+    'Odžaci', 'Opovo', 'Osečina',
+    'Pančevo', 'Paraćin', 'Pećinci', 'Petrovac na Mlavi', 'Pirot', 'Plandište', 'Požarevac',
+    'Požega', 'Preševo', 'Priboj', 'Prijepolje', 'Prokuplje',
+    'Rača', 'Raška', 'Ražanj', 'Rekovac', 'Ruma',
+    'Šabac', 'Sečanj', 'Senta', 'Šid', 'Sjenica', 'Smederevo', 'Smederevska Palanka',
+    'Sokobanja', 'Sombor', 'Srbobran', 'Sremska Mitrovica', 'Sremski Karlovci',
+    'Stara Pazova', 'Subotica', 'Surdulica', 'Svilajnac', 'Svrljig',
+    'Temerin', 'Titel', 'Topola', 'Trgovište', 'Trstenik', 'Tutin',
+    'Ub', 'Užice', 'Valjevo', 'Varvarin', 'Velika Plana', 'Vladičin Han', 'Vladimirci',
+    'Vlasotince', 'Vranje', 'Vrbas', 'Vrnjačka Banja', 'Vršac',
+    'Žabalj', 'Žabari', 'Žagubica', 'Zaječar', 'Žitište', 'Žitorađa', 'Zrenjanin',
+  ];
+
+  const HERO_SEARCH_OPTIONS = {
+    'Poslovi u lokalima': {
+      locations: ['Sve lokacije', ...HERO_MUNICIPALITIES],
+      positions: ['Sve pozicije', 'Šef poslovnice', 'Blagajnik/ca u kladionici',
+                  'Operater u kladionici', 'Regionalni menadžer poslovnica'],
+    },
+    'Posao u centrali': {
+      locations: ['Sve lokacije', 'Beograd', 'Novi Sad'],
+      positions: ['Sve pozicije', 'Marketing', 'IT i razvoj', 'Finansije i računovodstvo',
+                  'Ljudski resursi', 'Pravni poslovi', 'Podrška korisnicima'],
+    },
+  };
+
+  const heroTabs = {};
+  document.querySelectorAll('.hero-search__tab').forEach((tab) => {
+    heroTabs[tab.dataset.tab] = {
+      root: tab,
+      trigger: tab.querySelector('.hero-search__trigger'),
+      value: tab.querySelector('[data-value]'),
+      menu: tab.querySelector('.hero-search__menu'),
+    };
+  });
+
+  function closeHeroMenus(except) {
+    Object.values(heroTabs).forEach((t) => {
+      if (t === except) return;
+      t.menu.hidden = true;
+      t.root.classList.remove('is-open');
+      t.trigger.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  // Rebuilds a tab's option list and sets its displayed value. `onPick` lets
+  // the mode tab cascade into the other two.
+  function fillHeroTab(tab, values, selected, onPick) {
+    tab.value.textContent = selected;
+    tab.menu.innerHTML = '';
+    values.forEach((val) => {
+      const opt = document.createElement('button');
+      opt.type = 'button';
+      opt.className = 'hero-search__option' + (val === selected ? ' is-selected' : '');
+      opt.setAttribute('role', 'option');
+      opt.setAttribute('aria-selected', String(val === selected));
+      opt.textContent = val;
+      opt.addEventListener('click', () => {
+        fillHeroTab(tab, values, val, onPick);
+        closeHeroMenus();
+        if (onPick) onPick(val);
+      });
+      tab.menu.appendChild(opt);
+    });
+  }
+
+  function applyHeroMode(mode) {
+    const opts = HERO_SEARCH_OPTIONS[mode];
+    fillHeroTab(heroTabs.location, opts.locations, opts.locations[0]);
+    fillHeroTab(heroTabs.position, opts.positions, opts.positions[0]);
+  }
+
+  fillHeroTab(heroTabs.mode, Object.keys(HERO_SEARCH_OPTIONS),
+              'Poslovi u lokalima', applyHeroMode);
+  applyHeroMode('Poslovi u lokalima');
+
+  Object.values(heroTabs).forEach((tab) => {
+    tab.trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = tab.menu.hidden;
+      closeHeroMenus(willOpen ? tab : null);
+      tab.menu.hidden = !willOpen;
+      tab.root.classList.toggle('is-open', willOpen);
+      tab.trigger.setAttribute('aria-expanded', String(willOpen));
+      // Keep the checked row in view when reopening a long list.
+      if (willOpen) {
+        const sel = tab.menu.querySelector('.is-selected');
+        if (sel) tab.menu.scrollTop = Math.max(0, sel.offsetTop - tab.menu.clientHeight / 2);
+      }
+    });
+  });
+
+  document.addEventListener('click', () => closeHeroMenus());
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeHeroMenus();
+  });
+
+  /* ==========================================================================
+     IMPACT — scroll-scrubbed text reveal
+     Each line is an array of {t: text, hl?: true} tokens; a highlighted
+     phrase is written as ONE token ("challenge injustice", not two) so it
+     renders as a single span and the marker paints as one continuous bar
+     instead of a separate patch per word. Rendered up front, then
+     updateImpact() just toggles a per-token class — no DOM reads on
+     scroll, same cheap-per-tick approach as updateHero().
+
+     The reveal is entirely self-timed off the paragraph's own position
+     (independent of the hero's scroll length, so tuning one never throws
+     off the other):
+       - nothing fills in until the WHOLE paragraph is on screen: the
+         start is pinned to the moment the last line has fully cleared
+         the bottom edge, so the reader first sees all four lines pale,
+         and only then do they start turning dark
+       - finishes once the paragraph has scrolled up to sit ~350px below
+         the fixed header, at which point every word is dark
+     On a short viewport those two points can end up too close together
+     (or inverted), so the run is floored at IMPACT_MIN_RUN px of scroll —
+     the fill then starts a touch before the last line is fully in rather
+     than snapping through in a few pixels.
+     Highlight markers are a separate step: they only start their
+     left-to-right sweep once the text reveal above has fully finished
+     (progress reaches 1), each with a small stagger (--hl-delay) in
+     reading order so they don't all wipe in at the exact same instant.
+  ========================================================================== */
+  const IMPACT_LINES = [
+    [{ t: 'Ne' }, { t: 'pristajemo' }, { t: 'na' }, { t: 'nepravdu' }, { t: 'i' }, { t: 'menjamo' }, { t: 'stvari' }, { t: 'nabolje.' }],
+    [{ t: 'Cilj' }, { t: 'nam' }, { t: 'je' }, { t: 'jednostavan:' }, { t: 'fer' }, { t: 'izbor' }, { t: 'za' }, { t: 'milione' }, { t: 'ljudi.' }],
+    [{ t: 'Profit' }, { t: 'ne' }, { t: 'zadržavamo,' }, { t: 'već' }, { t: 'ga' }, { t: 'vraćamo' }, { t: 'zajednici.' }],
+    [{ t: 'Zajedno možemo mnogo više.', hl: true }],
+  ];
+
+  let hlIndex = 0;
+  const impactHeading = document.getElementById('impact-heading');
+  impactHeading.innerHTML = IMPACT_LINES
+    .map((line) => line.map((w) => {
+      if (!w.hl) return `<span class="impact-word">${w.t}</span>`;
+      const delay = hlIndex * 150;
+      hlIndex += 1;
+      return `<span class="impact-word impact-word--hl" style="--hl-delay:${delay}ms">${w.t}</span>`;
+    }).join(' '))
+    .join('<br>');
+
+  const impactWordEls = Array.from(impactHeading.querySelectorAll('.impact-word'));
+  const impactHlEls = Array.from(impactHeading.querySelectorAll('.impact-word--hl'));
+  const IMPACT_NAV_GAP = 350; // px — heading sits this far below the header once fully revealed
+  const IMPACT_LAST_LINE_GAP = 32; // px of clearance under the last line before the fill starts
+  const IMPACT_MIN_RUN = 260; // px — shortest scroll distance the fill is allowed to take
+
+  let impactHeadingTop = 0;
+  let impactHeadingHeight = 0;
+  function measureImpact() {
+    const rect = impactHeading.getBoundingClientRect();
+    impactHeadingTop = rect.top + window.scrollY; // document-space top of the paragraph
+    impactHeadingHeight = rect.height;
+  }
+
+  function updateImpact(scrollY) {
+    const vh = window.innerHeight;
+    // Last line fully inside the viewport (+ a little clearance under it).
+    const lastLineIn = impactHeadingTop + impactHeadingHeight + IMPACT_LAST_LINE_GAP - vh;
+    const endScrollY = impactHeadingTop - IMPACT_NAV_GAP;
+    const startScrollY = Math.min(lastLineIn, endScrollY - IMPACT_MIN_RUN);
+    const progress = clamp((scrollY - startScrollY) / (endScrollY - startScrollY), 0, 1);
+    const activeCount = Math.round(progress * impactWordEls.length);
+    impactWordEls.forEach((el, i) => el.classList.toggle('is-active', i < activeCount));
+    const marked = progress >= 1;
+    impactHlEls.forEach((el) => el.classList.toggle('is-marked', marked));
+  }
+
+  measureImpact();
+  lenis.on('scroll', ({ scroll }) => updateImpact(scroll));
+  window.addEventListener('resize', () => {
+    measureImpact();
+    updateImpact(lenis.scroll);
+  });
+  updateImpact(lenis.scroll);
+
+  /* ==========================================================================
+     SCROLL REVEAL — IntersectionObserver fade-in for all `.reveal` elements
+  ========================================================================== */
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
+
+  /* ==========================================================================
+     NAJNOVIJE POZICIJE — job cards + staggered left-to-right reveal
+     Plain white cards, all the same size, laid out in one flat row of four —
+     the stagger lives entirely in the CSS transition-delay (see
+     .opening-card above), not in per-card size/position differences.
+
+     Card proportions are matched to the reference: ~26px title on a ~313px
+     card, 12px radius, 28px padding, and the CTA pinned to the bottom edge
+     (mt-auto on its wrapper) so buttons line up across cards even when the
+     titles run to different line counts.
+  ========================================================================== */
+  const OPENINGS = [
+    { city: 'Beograd', title: 'Šef poslovnice - Beograd', category: 'Operativa' },
+    { city: 'Novi Sad', title: 'Blagajnik/ca u kladionici - Novi Sad', category: 'Prodaja' },
+    { city: 'Niš', title: 'Regionalni menadžer poslovnica - Niš', category: 'Menadžment' },
+    { city: 'Kragujevac', title: 'Operater u kladionici - Kragujevac', category: 'Operativa' },
+  ];
+
+  const openingsGrid = document.getElementById('openings-grid');
+  openingsGrid.innerHTML = OPENINGS.map((job, i) => `
+    <div class="opening-card bg-white rounded-xl p-7 flex flex-col min-h-[290px]" style="--stagger-delay:${i * 190}ms">
+      <div class="flex items-center gap-1.5 text-[13px] font-bold text-brand-gold">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-7.58 8-13A8 8 0 0 0 4 9c0 5.42 8 13 8 13z"/>
+          <circle cx="12" cy="9" r="2.5"/>
+        </svg>
+        <span>${job.city}</span>
+      </div>
+
+      <h3 class="font-bold text-brand-dark mt-3.5" style="font-size: clamp(1.375rem, 1.85vw, 1.625rem); line-height: 1.12;">${job.title}</h3>
+
+      <div class="flex flex-col gap-2 text-[13px] font-medium text-brand-dark/50 mt-6">
+        <div class="flex items-center gap-2">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
+          <span>${job.category}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 7v5l3 3"/>
+          </svg>
+          <span>Full time</span>
+        </div>
+      </div>
+
+      <div class="mt-auto pt-7">
+        <a href="oglas-primer.html" class="inline-flex items-center justify-center bg-brand-yellow text-white rounded-full px-6 py-2 font-bold text-[13px] hover:brightness-95 transition cursor-pointer">
+          Prijavi se
+        </a>
+      </div>
+    </div>
+  `).join('');
+
+  const openingCards = Array.from(openingsGrid.querySelectorAll('.opening-card'));
+
+  // Snap the cards back to their pre-reveal state with transitions switched
+  // off for a single frame, so re-arming the cascade is invisible. The
+  // forced reflow between removing `is-revealed` and dropping `is-resetting`
+  // is load-bearing: without it the browser coalesces both class changes
+  // into one style recalculation and the "no transition" window never
+  // actually exists, so the cards animate backwards on their way out.
+  function resetOpenings() {
+    openingCards.forEach((card) => {
+      card.classList.add('is-resetting');
+      card.classList.remove('is-revealed');
+    });
+    void openingsGrid.offsetWidth;
+    openingCards.forEach((card) => card.classList.remove('is-resetting'));
+  }
+
+  // Note: no unobserve() — the row re-plays its cascade every time it comes
+  // back into view, rather than firing once for the life of the page.
+  const openingsObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        openingCards.forEach((card) => card.classList.add('is-revealed'));
+      } else {
+        resetOpenings();
+      }
+    });
+  }, { rootMargin: '0px 0px 200px 0px', threshold: 0 });
+  openingsObserver.observe(openingsGrid);
+
+  /* ==========================================================================
+     ŽIVOT U BALKAN BET-U — multimedia mosaic
+
+     One flat array drives all three columns; `col` says which stack a tile
+     belongs to and the array order is the order within that stack, so the
+     whole layout can be re-shuffled here without touching the markup.
+
+     Tiles are deliberately not all the same thing:
+       kind 'image' / 'video' — a photo or a muted looping clip
+       kind 'stat'            — an informative colour block, no link. Its
+                                number counts up from zero every time the
+                                mosaic comes into view (see the counter
+                                block under the render loop)
+       kind 'quotes'          — the employee quote slider (see ZIVOT_QUOTES)
+       a `cta` field          — makes the tile a link AND gives it the yellow
+                                hover face (see .zivot-tile__cta in the CSS)
+
+     Column heights are set by each tile's aspect-ratio rather than by a
+     fixed pixel height, so the mosaic keeps its proportions at any width.
+     They are picked so the three stacks end at visibly different depths —
+     that unevenness IS the layout; equal columns would read as a plain grid.
+
+     Entrance stagger runs on the diagonal: the delay adds up from both the
+     column and the row, so the wave crosses the mosaic top-left to
+     bottom-right instead of filling one column at a time.
+  ========================================================================== */
+  const ZIVOT_RAFTING = 'assets/bb-zivot/2d951b17-9587-4d63-b43b-902873edcb51.png';
+
+  // Employee quotes for the slider tile. PLACEHOLDER COPY — names, positions
+  // and wording are written to look right in the mockup; swap them for real
+  // statements before this goes anywhere near production.
+  const ZIVOT_QUOTES = [
+    {
+      src: 'assets/bb-zivot/quote-01.png',
+      focus: 'center 22%',
+      line: 'Počela sam kao operater, a danas vodim smenu. Ovde niko ne stoji u mestu ako sam to ne želi.',
+      name: 'Milica Jovanović',
+      role: 'Blagajnik u kladionici, Novi Sad',
+    },
+    {
+      src: 'assets/bb-zivot/quote-02.png',
+      focus: 'center 20%',
+      line: 'Najviše mi znači ekipa — na poslu se smejemo, a kad zatreba, svi uskočimo bez pitanja.',
+      name: 'Ana Petrović',
+      role: 'Šef poslovnice, Beograd',
+    },
+  ];
+
+  const ZIVOT_TILES = [
+    // ---- left column
+    { col: 0, kind: 'image', src: ZIVOT_RAFTING, ratio: '3 / 4',
+      label: 'Balkan Bet teambuilding',
+      cta: { line: 'Rafting, trke, druženja — ekipa se ne zadržava samo u lokalu.', action: 'Život u Balkan Betu' } },
+    { col: 0, kind: 'stat', tone: 'dark', ratio: '7 / 6',
+      value: '90+', caption: 'lokala u celoj Srbiji' },
+    { col: 0, kind: 'image', src: 'assets/bb-zivot/1-Autor-Zeljko-Stevanovic.jpg', ratio: '4 / 5',
+      label: 'Balkan Bet teambuilding' },
+
+    // ---- middle column (starts lower — see lg:mt-10 in the markup)
+    { col: 1, kind: 'image', src: 'assets/bb-zivot/3-1-1024x683.jpg', ratio: '3 / 4',
+      label: 'Liga dobrih dela' },
+    { col: 1, kind: 'image', src: 'assets/bb-zivot/storage-profili.png', ratio: '5 / 7',
+      label: 'Poslovi u lokalima',
+      cta: { line: 'Blagajnici, operateri i šefovi poslovnica — u celoj Srbiji.', action: 'Pogledaj pozicije' } },
+    // Fills the gap the short middle column used to leave under itself, and
+    // brings all three stacks to roughly the same depth.
+    { col: 1, kind: 'stat', tone: 'dark', ratio: '7 / 6',
+      value: '25', caption: 'godina poslovanja' },
+
+    // ---- right column
+    { col: 2, kind: 'stat', tone: 'yellow', ratio: '7 / 6',
+      value: '1100+', caption: 'zaposlenih' },
+    { col: 2, kind: 'video', src: 'assets/bb-zivot/8141231-uhd_2160_3840_25fps.mp4', ratio: '7 / 10',
+      label: 'Posao u centrali',
+      cta: { line: 'Marketing, IT, finansije, HR — timovi iza celog sistema.', action: 'Pogledaj pozicije' } },
+    // Employee quote slider — closes the right column (see ZIVOT_QUOTES).
+    { col: 2, kind: 'quotes', ratio: '4 / 5' },
+  ];
+
+  const zivotMosaic = document.getElementById('zivot-mosaic');
+
+  function zivotFace(tile) {
+    if (tile.kind === 'stat') {
+      const dark = tile.tone === 'dark';
+      // The number is split into the part that can actually count ("90") and
+      // whatever trails it ("+"), so the counter only ever touches the digits.
+      const [, digits, suffix] = String(tile.value).match(/^(\d+)(.*)$/);
+      return `
+        <div>
+          <div class="font-bold ${dark ? 'text-brand-yellow' : 'text-brand-dark'}"
+               data-count-to="${digits}" data-count-suffix="${suffix}"
+               style="font-size: clamp(2.5rem, 4.2vw, 4rem); line-height: 1;">0${suffix}</div>
+          <div class="mt-2 font-medium ${dark ? 'text-white' : 'text-brand-dark'}"
+               style="font-size: clamp(1rem, 1.35vw, 1.25rem);">${tile.caption}</div>
+        </div>`;
+    }
+
+    if (tile.kind === 'quotes') return zivotQuotesFace();
+
+    const focus = tile.focus ? ` style="object-position:${tile.focus}"` : '';
+    const media = tile.kind === 'video'
+      ? `<video class="zivot-tile__media" src="${tile.src}" autoplay muted loop playsinline preload="metadata"${focus}></video>`
+      : `<img class="zivot-tile__media" src="${tile.src}" alt="${tile.label}"${focus}>`;
+
+    return `
+      ${media}
+      <div class="zivot-tile__scrim"></div>
+      <span class="zivot-tile__label">${tile.label}</span>`;
+  }
+
+  // Quote slider face: both slides are stacked in the tile and cross-faded,
+  // so there is no layout work per switch — only an opacity swap.
+  function zivotQuotesFace() {
+    const slides = ZIVOT_QUOTES.map((q, i) => `
+      <figure class="zivot-quote${i === 0 ? ' is-active' : ''}">
+        <img class="zivot-tile__media" src="${q.src}" alt="${q.name}, ${q.role}" style="object-position:${q.focus}">
+        <div class="zivot-quote__scrim"></div>
+        <figcaption class="zivot-quote__body">
+          <p class="zivot-quote__line">${q.line}</p>
+          <p class="zivot-quote__name">${q.name}</p>
+          <p class="zivot-quote__role">${q.role}</p>
+        </figcaption>
+      </figure>`).join('');
+
+    return `
+      ${slides}
+      <svg class="zivot-quote__mark" viewBox="0 0 28 26" width="44" height="41" fill="#FDB913" aria-hidden="true">
+        <path d="M11.8 2.4C5.6 5.1 1.6 10.4 1.6 16.6V24h10.2V13.1H7.3c.2-2.9 2-5.4 5.2-6.7z"/>
+        <path d="M26.4 2.4c-6.2 2.7-10.2 8-10.2 14.2V24h10.2V13.1h-4.5c.2-2.9 2-5.4 5.2-6.7z"/>
+      </svg>
+      <div class="zivot-quotes__nav">
+        <button type="button" class="zivot-quotes__arrow" data-quote-step="-1" aria-label="Prethodna izjava">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <button type="button" class="zivot-quotes__arrow" data-quote-step="1" aria-label="Sledeća izjava">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+      </div>`;
+  }
+
+  function zivotCtaFace(tile) {
+    return `
+      <div class="zivot-tile__cta">
+        <p class="text-brand-dark font-bold leading-snug" style="font-size: clamp(1.05rem, 1.45vw, 1.35rem);">
+          ${tile.cta.line}
+        </p>
+        <span class="inline-flex items-center gap-2 self-start mt-6 bg-brand-dark text-white rounded-full px-6 py-3 font-bold text-[13px] uppercase tracking-wide">
+          ${tile.cta.action}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h14M13 6l6 6-6 6"/>
+          </svg>
+        </span>
+      </div>`;
+  }
+
+  ZIVOT_TILES.forEach((tile) => { tile.row = ZIVOT_TILES.filter((t) => t.col === tile.col).indexOf(tile); });
+
+  [0, 1, 2].forEach((col) => {
+    document.getElementById(`zivot-col-${col}`).innerHTML = ZIVOT_TILES
+      .filter((tile) => tile.col === col)
+      .map((tile) => {
+        // Column-only stagger. It used to add `tile.row * 170` on top, from when
+        // one observer opened the whole mosaic at once and the row term was what
+        // walked the wave down the page. Now every tile is triggered by its own
+        // position, so a row term would just make lower tiles idle after they
+        // had already been asked to open.
+        const delay = tile.col * 110;
+        const style = `aspect-ratio:${tile.ratio}; --stagger-delay:${delay}ms`
+          + (tile.kind === 'stat' ? `; background:${tile.tone === 'dark' ? '#231F20' : '#FDB813'}` : '');
+        const cls = `zivot-tile${tile.kind === 'stat' ? ' zivot-tile--stat' : ''}`
+          + `${tile.kind === 'quotes' ? ' zivot-quotes' : ''}${tile.cta ? ' cursor-pointer' : ''}`;
+        const body = zivotFace(tile) + (tile.cta ? zivotCtaFace(tile) : '');
+        return tile.cta
+          ? `<a href="#" class="${cls}" style="${style}">${body}</a>`
+          : `<div class="${cls}" style="${style}">${body}</div>`;
+      })
+      .join('');
+  });
+
+  const zivotTileEls = Array.from(zivotMosaic.querySelectorAll('.zivot-tile'));
+
+  /* --------------------------------------------------------------------
+     Stat counters — the number block's digits run up from zero.
+
+     EACH COUNTER IS OBSERVED ON ITS OWN, not off the mosaic as a whole. The
+     mosaic is roughly two viewports tall, so a single container observer fired
+     them all the moment its top edge appeared: only the first block ("1100+")
+     was ever watched while counting, and by the time "90+" and "25" were
+     scrolled to they had long since landed. Its own observer means every
+     number starts from zero at the moment it actually shows up, and re-arms
+     when it leaves again. Do not fold this back into zivotObserver.
+
+     WHAT IS OBSERVED IS THE TILE, NOT THE NUMBER — and that is not arbitrary.
+     A shut .zivot-tile carries `clip-path: inset(0 0 100%)`, and an ancestor
+     clip zeroes a DESCENDANT's intersection rect: with the tile closed, the
+     number reports isIntersecting:false however much run-up the rootMargin is
+     given, while the tile itself reports true. Observing the number therefore
+     could not start the count until the tile had already wiped open — which is
+     precisely the "you see 0, a short pause, then it runs" this was reported
+     as. An element's own clip-path does not affect its own intersection, so the
+     tile is a sound trigger. Do not point these observers back at the digits.
+
+     The run is ease-out: it covers most of the distance early and settles on
+     the last few digits, which is what makes it read as "landing" on the
+     number. There is no start delay — waiting out the tile's entrance stagger
+     meant sitting on a visible 0 for a moment. Reduced motion skips straight to
+     the final value.
+  -------------------------------------------------------------------- */
+  const statCounterEls = Array.from(zivotMosaic.querySelectorAll('[data-count-to]'));
+  // tile -> the number inside it, so the observers can trigger off the tile
+  const counterTiles = new Map(statCounterEls.map((el) => [el.closest('.zivot-tile'), el]));
+  const COUNTER_DURATION = 1500;
+  const wantsLessMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const counterFrames = new Map(); // element -> its own rAF id
+
+  function paintCounter(el, value) {
+    el.textContent = value + el.dataset.countSuffix;
+  }
+
+  function resetCounter(el) {
+    cancelAnimationFrame(counterFrames.get(el) || 0);
+    counterFrames.delete(el);
+    paintCounter(el, 0);
+  }
+
+  function runCounter(el) {
+    // Never restart something that is already moving or has already landed.
+    // Without this, leaving and re-entering the (generous) start box would
+    // snap a finished number back to 0 in front of the reader.
+    if (counterFrames.has(el)) return;
+    const target = Number(el.dataset.countTo);
+    if (el.textContent === target + el.dataset.countSuffix) return;
+    if (wantsLessMotion) {
+      paintCounter(el, target);
+      return;
+    }
+    const started = performance.now();
+    const step = (now) => {
+      const t = clamp((now - started) / COUNTER_DURATION, 0, 1);
+      paintCounter(el, Math.round((1 - Math.pow(1 - t, 3)) * target));
+      if (t < 1) counterFrames.set(el, requestAnimationFrame(step));
+      else counterFrames.delete(el);
+    };
+    counterFrames.set(el, requestAnimationFrame(step));
+  }
+
+  /* TWO observers, and both margins matter.
+
+     Starting: the box is grown by COUNTER_LEAD on the TOP as well as the bottom.
+     A bottom-only margin only leads the reader coming DOWN the page; scrolling
+     back UP, the block crosses the real top edge with no run-up at all. The lead
+     is kept modest (220px) on purpose — it only has to cover the first fraction
+     of the run, where the digits still read as "0". Make it much larger and the
+     number has finished landing before it is ever on screen, so the count is
+     never seen at all.
+
+     Resetting: a much larger box, so a number is only allowed back to 0 once it
+     is well out of reach. Resetting on the same boundary that starts it puts the
+     two events one pixel apart, so the smallest scroll jitter at the edge reads
+     as a flicker back to zero. runCounter() also refuses to restart a number
+     that is already running or has already landed — between that and the
+     hysteresis, 0 is only ever painted off-screen. */
+  const COUNTER_LEAD = 220; // px of run-up before the block can be seen, either way
+  const COUNTER_KEEP = 900; // px it must be past before the value may return to 0
+
+  const counterStartObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => { if (entry.isIntersecting) runCounter(counterTiles.get(entry.target)); });
+  }, { rootMargin: `${COUNTER_LEAD}px 0px ${COUNTER_LEAD}px 0px`, threshold: 0 });
+
+  const counterResetObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => { if (!entry.isIntersecting) resetCounter(counterTiles.get(entry.target)); });
+  }, { rootMargin: `${COUNTER_KEEP}px 0px ${COUNTER_KEEP}px 0px`, threshold: 0 });
+
+  statCounterEls.forEach((el) => paintCounter(el, 0));
+  counterTiles.forEach((el, tile) => {
+    counterStartObserver.observe(tile);
+    counterResetObserver.observe(tile);
+  });
+
+  /* --------------------------------------------------------------------
+     Employee quote slider — cross-fades between the stacked slides, auto
+     advances every 5s, and the arrows drive it manually. A manual pick
+     restarts the clock so the next auto-switch isn't a leftover fraction
+     of the previous interval.
+  -------------------------------------------------------------------- */
+  const quotesTile = zivotMosaic.querySelector('.zivot-quotes');
+  if (quotesTile) {
+    const quoteSlides = Array.from(quotesTile.querySelectorAll('.zivot-quote'));
+    const QUOTE_INTERVAL = 5000;
+    let quoteIndex = 0;
+    let quoteTimer = 0;
+
+    function showQuote(next) {
+      quoteIndex = (next + quoteSlides.length) % quoteSlides.length;
+      quoteSlides.forEach((slide, i) => slide.classList.toggle('is-active', i === quoteIndex));
+    }
+    function armQuotes() {
+      clearInterval(quoteTimer);
+      quoteTimer = setInterval(() => showQuote(quoteIndex + 1), QUOTE_INTERVAL);
+    }
+
+    quotesTile.querySelectorAll('[data-quote-step]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        showQuote(quoteIndex + Number(btn.dataset.quoteStep));
+        armQuotes();
+      });
+    });
+    armQuotes();
+  }
+
+  // Same one-frame reset as resetOpenings — the forced reflow between the two
+  // class changes is what actually creates the no-transition window.
+  function resetTile(el) {
+    el.classList.add('is-resetting');
+    el.classList.remove('is-revealed');
+    void el.offsetWidth;
+    el.classList.remove('is-resetting');
+  }
+
+  /* EVERY TILE IS OBSERVED ON ITS OWN, and the bottom rootMargin means it is
+     told to open while it is still just below the fold — so the clip-path wipe
+     is already under way by the time it scrolls into view rather than starting
+     from a blank box in front of the reader. This used to observe the mosaic as
+     a whole and reveal all twelve tiles at once, which meant everything below
+     the first screenful had finished animating long before anyone got to it.
+     Counters are not driven from here either; see counterStartObserver above. */
+  const zivotObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) entry.target.classList.add('is-revealed');
+      else resetTile(entry.target);
+    });
+  }, { rootMargin: '0px 0px 180px 0px', threshold: 0 });
+  zivotTileEls.forEach((el) => zivotObserver.observe(el));
+
+  /* ==========================================================================
+     BALKAN BET BENEFITI — five icon + label items closing the white panel.
+
+     The discs are the client's own artwork: assets/bb-zivot/benefiti.png was
+     cut into benefit-01…05.png, one square crop per yellow circle, and the
+     crop's white corners are clipped away by the disc's border-radius (see
+     .benefit-item__disc). The five entries below are in the SAME ORDER as that
+     sheet, and each title is matched to the glyph the client drew for it —
+     reordering this array silently pairs the wrong icon with the wrong text.
+     There is no numbering: the 01–05 index above each label was dropped.
+
+     These items carry `.reveal`, but the shared revealObserver has already
+     swept the document by the time this markup exists, so they are handed to
+     it explicitly below. The per-item --stagger-delay turns that shared
+     fade-in into a left-to-right ripple.
+  ========================================================================== */
+  const BENEFITS = [
+    { title: 'Posao u blizini mesta stanovanja',  icon: 'assets/bb-zivot/benefit-01.png' },
+    { title: 'Benefiti za tebe i tvoju porodicu', icon: 'assets/bb-zivot/benefit-02.png' },
+    { title: 'Zajednička druženja i timbilding aktivnosti', icon: 'assets/bb-zivot/benefit-03.png' },
+    { title: 'Obuke, edukacije i prilike za razvoj', icon: 'assets/bb-zivot/benefit-04.png' },
+    { title: 'Fiksna zarada – bonus + bakšiš',    icon: 'assets/bb-zivot/benefit-05.png' },
+  ];
+
+  const benefitsGrid = document.getElementById('benefits-grid');
+  benefitsGrid.innerHTML = BENEFITS.map((benefit, i) => `
+    <div class="reveal benefit-item" style="--stagger-delay:${i * 110}ms">
+      <span class="benefit-item__disc">
+        <img src="${benefit.icon}" alt="" loading="lazy">
+      </span>
+      <p class="benefit-item__title">${benefit.title}</p>
+    </div>
+  `).join('');
+
+  benefitsGrid.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
+
+  /* ==========================================================================
+     PROCES ZAPOŠLJAVANJA — scroll-written hand lettering
+
+     Replaced an auto-advancing icon+text slider with dot nav. Nothing here is
+     timed: the four steps are WRITTEN as the section scrolls, piece by piece
+     from the left, and un-write if the reader scrolls back up.
+
+     The pieces are simply every `.proc-ink` in DOCUMENT order — that is why
+     index.html authors the composition in writing order (01, "Pronađi",
+     "poziciju", arrow, 02, …) even though every piece is absolutely
+     positioned and DOM order has no effect on where it lands.
+
+     Each piece gets a --w of 0→1; the CSS decides what that means (a mask
+     sweeping across glyphs, a dashoffset drawing an arrow). Slots overlap by a
+     hair (PROC_SPAN is slightly wider than an even share) so the hand does not
+     stop dead between pieces, and the starts are spaced so the LAST piece
+     finishes exactly at progress 1 rather than running past the window.
+
+     Window length is derived, not fixed: the whole run has to fit in the
+     scroll distance over which the stage stays fully on screen, otherwise the
+     last step would be written above the top edge where nobody sees it. On a
+     ~900px viewport that works out to ~400px of scroll for all 15 pieces —
+     deliberately brisk, the client asked for the four steps not to drag.
+  ========================================================================== */
+  const procStage = document.getElementById('proces-stage');
+  const procInkEls = Array.from(procStage.querySelectorAll('.proc-ink'));
+  // Writing starts as soon as the TOP of the composition clears the bottom edge
+  // by this much. It used to wait for the whole stage to be on screen, which
+  // meant the reader had the four steps sitting there blank for a moment before
+  // anything happened.
+  const PROC_LEAD = 70;
+
+  // Arrows are drawn with stroke-dashoffset, which needs the path's real
+  // length — a guessed dasharray wraps the pattern and flashes the whole arrow
+  // in at once. Measured once here and handed to the CSS as --len.
+  procStage.querySelectorAll('.proc-arrow path').forEach((path) => {
+    path.style.setProperty('--len', path.getTotalLength().toFixed(1));
+  });
+
+  let procStart = 0;
+  let procRun = 1;
+  let procActive = procInkEls; // pieces currently on screen at all (see below)
+  let procSpan = 1;
+  let procGap = 1;
+
+  function measureProcess() {
+    const rect = procStage.getBoundingClientRect();
+    const top = rect.top + window.scrollY;
+    const vh = window.innerHeight;
+    procStart = top + PROC_LEAD - vh;
+    // Half a viewport of scroll for all 15 pieces. Short on purpose (the client
+    // asked for the four steps not to drag), and short enough that the run ends
+    // with the whole composition still comfortably in frame even though it now
+    // begins the moment the composition's top edge appears.
+    procRun = clamp(vh * 0.5, 280, 520);
+
+    // The stacked phone layout drops the arrows (display:none). They must drop
+    // out of the sequence too, or their slots become dead pauses between steps.
+    procActive = procInkEls.filter((el) => el.offsetParent !== null);
+    procInkEls.forEach((el) => {
+      if (!procActive.includes(el)) el.style.setProperty('--w', '1');
+    });
+    procSpan = Math.min(1, 1.15 / Math.max(1, procActive.length));
+    procGap = (1 - procSpan) / Math.max(1, procActive.length - 1);
+  }
+
+  function updateProcess(scrollY) {
+    const progress = wantsLessMotion ? 1 : clamp((scrollY - procStart) / procRun, 0, 1);
+    procActive.forEach((el, i) => {
+      el.style.setProperty('--w', clamp((progress - i * procGap) / procSpan, 0, 1).toFixed(3));
+    });
+  }
+
+  measureProcess();
+  lenis.on('scroll', ({ scroll }) => updateProcess(scroll));
+  window.addEventListener('resize', () => {
+    measureProcess();
+    updateProcess(lenis.scroll);
+  });
+
+  /* ==========================================================================
+     FINAL RE-MEASURE — measureImpact() runs inside the IMPACT block, which
+     sits ABOVE the block that renders the job cards, so at that point the
+     openings grid is still empty and every offset it reads is ~300px short.
+     Anything that changes the page height above the paragraph (cards, web
+     fonts swapping in) invalidates it, so it is taken again once the document
+     and its fonts have actually settled. measureProcess() rides along for the
+     same reason — it sits even further down the page, and its own stage is
+     sized by two web fonts that have almost certainly not landed yet.
+  ========================================================================== */
+  function remeasureAll() {
+    measureImpact();
+    updateImpact(lenis.scroll);
+    measureProcess();
+    updateProcess(lenis.scroll);
+  }
+  remeasureAll();
+  window.addEventListener('load', remeasureAll);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasureAll);
+
+</script>
+</body>
+</html>

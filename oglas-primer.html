@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Balkan Bet | Operater u lokalu - Beograd</title>
+
+<!-- ==========================================================================
+     SHARED SETUP — identical on index.html and poslovi-u-lokalima.html.
+========================================================================== -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="brand-setup.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<!-- ============================================================================
+     AD TEMPLATE — this file is the template for a single job ad, filled in
+     with "Operater u lokalu, Beograd" as the worked example. Every card on
+     poslovi-u-lokalima.html currently links here; when the real ads exist,
+     each one becomes its own copy of this page (or is generated from data)
+     and only the hero + the two prefilled form selects change.
+============================================================================ -->
+<body class="font-sans text-brand-dark antialiased overflow-x-hidden">
+
+<div class="animated-bg" aria-hidden="true">
+  <span class="animated-bg__blob animated-bg__blob--1"></span>
+  <span class="animated-bg__blob animated-bg__blob--2"></span>
+  <span class="animated-bg__blob animated-bg__blob--3"></span>
+</div>
+
+<!-- ============================================================================
+     HEADER — copy of the homepage header; index.html is the source of truth.
+============================================================================ -->
+<header class="fixed top-6 inset-x-0 z-50 flex justify-center px-4">
+  <div class="w-full max-w-[1300px] flex items-center justify-between gap-5
+              bg-brand-dark/40 backdrop-blur-md border border-white/25
+              rounded-full pl-[30px] pr-[30px] py-3">
+
+    <a href="index.html" class="flex items-center shrink-0" aria-label="Balkan Bet početna">
+      <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[51.2px] w-auto">
+    </a>
+
+    <nav class="hidden md:flex items-center gap-5 text-base font-medium uppercase text-white whitespace-nowrap">
+      <a href="poslovi-u-lokalima.html" class="text-brand-yellow transition-colors">Poslovi u lokalima</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Posao u centrali</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">O nama</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Život u Balkan Betu</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Kontakt</a>
+    </nav>
+
+    <a href="#prijava" class="bg-brand-yellow shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
+      Pronađi posao
+    </a>
+  </div>
+</header>
+
+<!-- ============================================================================
+     HERO — position, location, tags, apply button + the photo slot
+============================================================================ -->
+<section class="page-hero relative z-10 section-panel rounded-[32px] mt-6 pt-[190px] pb-20">
+  <div class="max-w-[1440px] mx-auto px-8 md:px-16 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-14 items-center">
+
+    <div>
+      <a href="poslovi-u-lokalima.html" class="inline-flex items-center gap-2 text-white/70 text-sm font-medium hover:text-brand-yellow transition-colors mb-7">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+        Sve otvorene pozicije
+      </a>
+
+      <h1 class="uppercase font-extrabold tracking-tight text-white"
+          style="font-size: clamp(1.75rem, 4.4vw, 3.5rem); line-height: 1.05;">
+        Operater u lokalu
+      </h1>
+
+      <div class="flex items-center gap-2 text-brand-yellow font-bold mt-5">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.58 8-13A8 8 0 0 0 4 9c0 5.42 8 13 8 13z"/><circle cx="12" cy="9" r="2.5"/></svg>
+        <span class="text-lg">Beograd</span>
+      </div>
+
+      <!-- Tags. Both are brand-yellow rather than the reference's green: this
+           site has no green anywhere, and a lone green pill would read as a
+           foreign component. -->
+      <div class="flex flex-wrap gap-3 mt-8">
+        <span class="inline-flex items-center gap-2 bg-brand-yellow/15 border border-brand-yellow/45 text-white rounded-full px-5 py-2.5 text-sm font-medium">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FDB813" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          Smene 8h
+        </span>
+        <span class="inline-flex items-center gap-2 bg-brand-yellow/15 border border-brand-yellow/45 text-white rounded-full px-5 py-2.5 text-sm font-medium">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FDB813" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg>
+          Bez CV-ja
+        </span>
+      </div>
+
+      <a href="#prijava" class="cta-gradient inline-flex items-center gap-2 mt-10 text-brand-dark rounded-full px-9 py-4 font-bold hover:brightness-95 transition-all cursor-pointer">
+        Prijavi se sada
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+
+    <!-- Photo slot — placeholder until the client supplies a photo for the
+         position; swap this whole block for an <img> with the same radius. -->
+    <div class="rounded-[24px] border-2 border-dashed border-brand-yellow/40 bg-white/5 h-[380px] flex flex-col items-center justify-center gap-4 text-center px-6">
+      <div class="w-14 h-14 rounded-full bg-brand-yellow/15 flex items-center justify-center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FDB813" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a7 7 0 0114 0v1"/></svg>
+      </div>
+      <p class="text-white/55 text-sm font-medium">Foto zaposlenog</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     DESCRIPTION — white panel
+============================================================================ -->
+<section class="relative z-20 panel-overlap section-panel rounded-[32px] bg-white pt-24 pb-24">
+  <div class="max-w-[900px] mx-auto px-8 md:px-16">
+
+    <p class="reveal text-brand-dark/80 text-lg leading-relaxed">
+      Dobro došli u Centar dobre zabave! Balkan Bet je kompanija koja posluje već 25 godina
+      na našem tržištu, broji preko 1000 zaposlenih u više od 90 lokala i 13 gradova Srbije.
+      Od prošle godine ponosni smo sponzor Olimpijskog tima Srbije i veliku pažnju
+      posvećujemo društvenoj odgovornosti.
+    </p>
+
+    <p class="reveal text-brand-dark/80 text-lg leading-relaxed mt-6">
+      U potrazi smo za kandidatima koji će svojim trudom i pozitivnom energijom naše lokale
+      učiniti još boljim!
+    </p>
+
+    <h2 class="reveal uppercase font-extrabold tracking-tight text-brand-dark text-center mt-16"
+        style="font-size: clamp(1.25rem, 2.4vw, 1.75rem);">
+      Operater/ka u kladionici i automat klubu
+    </h2>
+
+    <p class="reveal text-brand-dark/80 text-lg leading-relaxed mt-10">
+      Naši lokali su centar dobre zabave, timskog rada i profesionalne usluge. Ako si
+      komunikativan/na, odgovoran/na i voliš rad sa ljudima, pridruži nam se kao operater/ka
+      i postani deo Balkan Bet tima.
+    </p>
+
+    <p class="reveal text-brand-dark/80 text-lg leading-relaxed mt-6">
+      Očekujemo samo da si punoletan/na, da znaš osnove rada na računaru i da imaš želju da
+      učiš — sve ostalo ćemo te naučiti!
+    </p>
+
+    <h3 class="reveal font-bold text-brand-dark mt-14" style="font-size: clamp(1.25rem, 2vw, 1.5rem);">
+      Kako izgleda rad u kompaniji Balkan Bet?
+    </h3>
+
+    <!-- Benefits. The reference screenshot repeats two of these bullets
+         ("Dobijaš stimulacije..." and "Cenimo tvoje ideje..."); each appears
+         once here. -->
+    <ul class="reveal flex flex-col gap-4 mt-8">
+      <li class="flex gap-4 text-brand-dark/80 text-lg leading-relaxed">
+        <span class="text-brand-yellow font-bold shrink-0 mt-1">&#9679;</span>
+        Radiš u lokalu premium brenda
+      </li>
+      <li class="flex gap-4 text-brand-dark/80 text-lg leading-relaxed">
+        <span class="text-brand-yellow font-bold shrink-0 mt-1">&#9679;</span>
+        Trudimo se da ti posao bude što bliže kući
+      </li>
+      <li class="flex gap-4 text-brand-dark/80 text-lg leading-relaxed">
+        <span class="text-brand-yellow font-bold shrink-0 mt-1">&#9679;</span>
+        Bezbednost je na visokom nivou zahvaljujući patrolama obezbeđenja i 24/7 video nadzoru
+      </li>
+      <li class="flex gap-4 text-brand-dark/80 text-lg leading-relaxed">
+        <span class="text-brand-yellow font-bold shrink-0 mt-1">&#9679;</span>
+        Dobijaš stimulacije u vidu bonusa za iskazano zalaganje i kvalitet rada
+      </li>
+      <li class="flex gap-4 text-brand-dark/80 text-lg leading-relaxed">
+        <span class="text-brand-yellow font-bold shrink-0 mt-1">&#9679;</span>
+        Cenimo tvoje ideje koje poboljšavaju ili olakšavaju naše poslovanje i najbolje nagrađujemo
+      </li>
+      <li class="flex gap-4 text-brand-dark/80 text-lg leading-relaxed">
+        <span class="text-brand-yellow font-bold shrink-0 mt-1">&#9679;</span>
+        Kroz Program preporuke imaš priliku da ostvariš dodatni bonus
+      </li>
+      <li class="flex gap-4 text-brand-dark/80 text-lg leading-relaxed">
+        <span class="text-brand-yellow font-bold shrink-0 mt-1">&#9679;</span>
+        Postoji mogućnost napredovanja
+      </li>
+      <li class="flex gap-4 text-brand-dark/80 text-lg leading-relaxed">
+        <span class="text-brand-yellow font-bold shrink-0 mt-1">&#9679;</span>
+        Svi zaposleni imaju popuste za različite usluge, hotele i restorane širom Srbije,
+        kao i niz drugih benefita za tebe i tvoju porodicu
+      </li>
+    </ul>
+
+    <p class="reveal text-brand-dark/80 text-lg leading-relaxed mt-10">
+      Iskustvo na istoj poziciji, kao i predznanje iz oblasti sporta, slota ili virtuelnih
+      igara nisu potrebni. Za održavanje higijene lokala imamo angažovano profesionalno osoblje.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================================
+     APPLICATION FORM — dark panel.
+     Nothing is submitted anywhere (no backend in this mockup): the button
+     validates the consent checkbox and swaps the form for a confirmation.
+============================================================================ -->
+<section id="prijava" class="page-hero relative z-20 panel-overlap section-panel rounded-[32px] pt-20 pb-24">
+  <div class="max-w-[860px] mx-auto px-8 md:px-16">
+
+    <div class="text-center">
+      <span class="inline-flex items-center gap-2 bg-brand-yellow text-brand-dark rounded-full px-5 py-2 text-xs font-bold uppercase tracking-wide">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg>
+        Prijava
+      </span>
+
+      <h2 class="uppercase font-extrabold tracking-tight text-white mt-6"
+          style="font-size: clamp(1.5rem, 3.4vw, 2.5rem); line-height: 1.1;">
+        Prijavi se za 1 minut — bez CV-ja!
+      </h2>
+    </div>
+
+    <form id="apply-form" class="mt-12 bg-white/5 border border-white/15 rounded-[24px] p-8 md:p-10" novalidate>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="fld-label" for="f-pozicija">Pozicija</label>
+          <select id="f-pozicija" class="fld">
+            <option selected>Operater u lokalu</option>
+            <option>Konobar</option>
+            <option>Higijeničar</option>
+            <option>Radnik obezbeđenja</option>
+          </select>
+        </div>
+        <div>
+          <label class="fld-label" for="f-lokacija">Lokacija</label>
+          <select id="f-lokacija" class="fld">
+            <option selected>Beograd</option>
+            <option>Novi Sad</option>
+            <option>Niš</option>
+            <option>Kragujevac</option>
+            <option>Subotica</option>
+            <option>Čačak</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="fld-label" for="f-ime">Ime</label>
+          <input id="f-ime" class="fld" type="text" placeholder="Unesi ime">
+        </div>
+        <div>
+          <label class="fld-label" for="f-prezime">Prezime</label>
+          <input id="f-prezime" class="fld" type="text" placeholder="Unesi prezime">
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="fld-label" for="f-email">E-mail</label>
+          <input id="f-email" class="fld" type="email" placeholder="ime@email.com">
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="fld-label" for="f-telefon">Telefon</label>
+          <!-- Fixed +381 prefix sits outside the input so it cannot be deleted -->
+          <div class="flex">
+            <span class="fld shrink-0 w-[74px] rounded-r-none border-r-0 flex items-center justify-center text-white/70">+381</span>
+            <input id="f-telefon" class="fld rounded-l-none" type="tel" placeholder="60 123 4567">
+          </div>
+        </div>
+
+        <div>
+          <label class="fld-label" for="f-rodjenje">Datum rođenja</label>
+          <input id="f-rodjenje" class="fld" type="date">
+        </div>
+        <div>
+          <label class="fld-label" for="f-obrazovanje">Obrazovanje</label>
+          <select id="f-obrazovanje" class="fld">
+            <option value="" selected disabled>Izaberi nivo obrazovanja</option>
+            <option>Osnovna škola</option>
+            <option>Srednja škola</option>
+            <option>Viša škola</option>
+            <option>Fakultet</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="fld-label" for="f-iskustvo">Ukratko o prethodnom radnom iskustvu, ukoliko ga imaš</label>
+          <textarea id="f-iskustvo" class="fld" placeholder="Gde si radio/la i na kojoj poziciji — par rečenica je sasvim dovoljno."></textarea>
+        </div>
+
+        <div>
+          <label class="fld-label">Priloži CV (opciono)</label>
+          <label class="fld fld-file">
+            <input id="f-cv" type="file">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FDB813" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 20h16"/></svg>
+            <span id="f-cv-name" class="text-white/60">Izaberi fajl</span>
+          </label>
+        </div>
+        <div>
+          <label class="fld-label" for="f-ranije">Da li si ranije radio/la u Balkan Bet-u?</label>
+          <select id="f-ranije" class="fld">
+            <option value="" selected disabled>Izaberi odgovor</option>
+            <option>Ne</option>
+            <option>Da</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="jf-check mt-8 !px-0 !text-white/80 items-start" style="align-items: flex-start;">
+        <input id="f-saglasnost" type="checkbox">
+        <span class="jf-check__box shrink-0 mt-0.5" style="border-color: rgba(255,255,255,.35);">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#231F20" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </span>
+        <span class="text-sm leading-relaxed whitespace-normal">
+          Slažem se sa uslovima korišćenja i dozvoljavam kompaniji da koristi moje podatke u
+          svrhu regrutacije. Moji podaci neće biti deljeni sa trećim stranama.
+        </span>
+      </label>
+
+      <p id="form-error" class="hidden text-brand-yellow text-sm font-medium mt-5"></p>
+
+      <button type="submit" class="cta-gradient w-full mt-8 flex items-center justify-center gap-2 text-brand-dark rounded-full px-8 py-4 font-bold hover:brightness-95 transition-all cursor-pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        Pošalji prijavu
+      </button>
+    </form>
+
+    <!-- Confirmation, swapped in on submit -->
+    <div id="apply-done" class="hidden mt-12 bg-white/5 border border-brand-yellow/45 rounded-[24px] p-10 md:p-14 text-center">
+      <div class="w-16 h-16 rounded-full bg-brand-yellow mx-auto flex items-center justify-center">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#231F20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <h3 class="text-white uppercase font-extrabold mt-6" style="font-size: clamp(1.25rem, 2.6vw, 1.875rem);">
+        Hvala, javićemo ti se uskoro!
+      </h3>
+      <p class="text-white/75 mt-4 text-lg">
+        Tvoja prijava za poziciju <strong class="text-brand-yellow">Operater u lokalu — Beograd</strong>
+        je zabeležena. Kolege iz ljudskih resursa te kontaktiraju u naredih nekoliko dana.
+      </p>
+      <a href="poslovi-u-lokalima.html" class="inline-flex items-center gap-2 mt-9 bg-white text-brand-dark rounded-full px-8 py-4 font-bold hover:brightness-95 transition-all cursor-pointer">
+        Pogledaj ostale pozicije
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     SEARCH OTHER POSITIONS — small filter bar; submitting hands the chosen
+     city over to the listing page as ?grad=..., which pre-selects it there.
+============================================================================ -->
+<section class="relative z-20 panel-overlap section-panel rounded-[32px] bg-white pt-20 pb-20">
+  <div class="max-w-[1000px] mx-auto px-8 md:px-16">
+
+    <div class="text-center mb-10">
+      <h2 class="uppercase font-extrabold tracking-tight text-brand-dark"
+          style="font-size: clamp(1.5rem, 3vw, 2.25rem);">
+        Pretraži druge pozicije
+      </h2>
+      <p class="text-brand-dark/60 text-lg font-medium mt-3">
+        Pronađi posao koji ti najviše odgovara — u lokalu blizu tebe.
+      </p>
+    </div>
+
+    <div class="jf-bar" id="other-filter" style="box-shadow: 0 18px 40px rgba(35,31,32,.12);">
+      <div class="jf-field" data-filter="grad">
+        <span class="jf-label">Lokacija</span>
+        <button type="button" class="jf-trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="jf-value"></span>
+        </button>
+        <div class="jf-menu" hidden></div>
+      </div>
+
+      <label class="jf-check">
+        <input type="checkbox">
+        <span class="jf-check__box">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#231F20" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </span>
+        <span>Bez CV-ja</span>
+      </label>
+
+      <button type="button" class="jf-submit cta-gradient">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.3-4.3"/></svg>
+        Pretraži
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     LEARN MORE — three cards
+============================================================================ -->
+<section class="relative z-20 pt-24 pb-24">
+  <div class="max-w-[1440px] mx-auto px-8 md:px-16">
+
+    <h2 class="reveal uppercase font-extrabold tracking-tight text-white text-center mb-14"
+        style="font-size: clamp(1.5rem, 3vw, 2.25rem);">
+      Saznaj više o nama
+    </h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <a href="oglas-primer.html" class="info-card reveal block text-center">
+        <div class="w-14 h-14 rounded-full bg-brand-yellow mx-auto flex items-center justify-center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#231F20" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9h16v11H4z"/><path d="M9 20v-6h6v6"/></svg>
+        </div>
+        <h3 class="text-white font-bold uppercase mt-6 text-lg">Rad u lokalu</h3>
+        <p class="text-white/75 mt-4">
+          Saznaj kako izgleda svakodnevni rad u našim kladionicama, kakva je atmosfera i
+          šta možeš da očekuješ.
+        </p>
+        <span class="inline-flex items-center gap-2 mt-7 text-brand-yellow font-bold text-sm">
+          Pogledaj više
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+      <a href="index.html#impact" class="info-card reveal block text-center">
+        <div class="w-14 h-14 rounded-full bg-brand-yellow mx-auto flex items-center justify-center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#231F20" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2 20v-1a6 6 0 0110.5-4"/><circle cx="17" cy="11" r="2.6"/><path d="M13 20v-.5a4 4 0 018 0V20"/></svg>
+        </div>
+        <h3 class="text-white font-bold uppercase mt-6 text-lg">Život u Balkan Bet-u</h3>
+        <p class="text-white/75 mt-4">
+          Otkrij benefite, kulturu kompanije, teambuilding aktivnosti i šta naši zaposleni
+          kažu o radu sa nama.
+        </p>
+        <span class="inline-flex items-center gap-2 mt-7 text-brand-yellow font-bold text-sm">
+          Pogledaj više
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+
+      <a href="index.html" class="info-card reveal block text-center">
+        <div class="w-14 h-14 rounded-full bg-brand-yellow mx-auto flex items-center justify-center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#231F20" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 7-7"/><path d="M14 8h6v6"/></svg>
+        </div>
+        <h3 class="text-white font-bold uppercase mt-6 text-lg">O nama</h3>
+        <p class="text-white/75 mt-4">
+          Upoznaj se sa Balkan Bet kompanijom, našom istorijom, vrednostima i planovima
+          za budućnost.
+        </p>
+        <span class="inline-flex items-center gap-2 mt-7 text-brand-yellow font-bold text-sm">
+          Pogledaj više
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     FOOTER — copy of the homepage footer; index.html is the source of truth.
+============================================================================ -->
+<footer class="relative z-20 panel-overlap section-panel rounded-[32px] pt-20 pb-10">
+  <div class="max-w-[1440px] mx-auto px-8 md:px-16">
+
+    <div class="reveal grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <img src="assets/bb-zivot/storage-profili.png" alt="Balkan Bet lokal"
+           class="w-full h-72 lg:h-full object-cover rounded-3xl">
+
+      <div class="bg-white/10 border border-white/25 rounded-3xl p-10 flex flex-col justify-center">
+        <h2 class="text-white uppercase font-extrabold leading-tight" style="font-size: clamp(1.75rem, 3.5vw, 2.75rem);">
+          Postani deo našeg tima?
+        </h2>
+        <p class="text-white/85 mt-4 text-lg">
+          Tvoja sledeća prilika počinje ovde. Pogledaj otvorene pozicije u Balkan Betu.
+        </p>
+        <a href="poslovi-u-lokalima.html" class="self-start mt-8 bg-white text-brand-dark rounded-full px-8 py-4 font-bold uppercase text-sm tracking-wide hover:bg-brand-dark hover:text-white transition-colors cursor-pointer">
+          Pogledaj pozicije
+        </a>
+      </div>
+    </div>
+
+    <div class="reveal grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
+        <h3 class="text-white font-bold uppercase tracking-wide mb-4">Pun pogodak</h3>
+        <p class="text-white/85">
+          Poseti naš sajt i saznaj više o Balkan Betu — o ponudi, lokalima širom Srbije i svemu što radimo.
+        </p>
+        <a href="#" class="inline-flex items-center gap-2 mt-10 text-white font-bold uppercase tracking-wide border-b border-white/60 pb-1 hover:text-brand-dark hover:border-brand-dark transition-colors cursor-pointer">
+          <svg width="10" height="12" viewBox="0 0 10 12" fill="none"><path d="M1 1L9 6L1 11V1Z" fill="currentColor"/></svg>
+          balkanbet.rs
+        </a>
+      </div>
+
+      <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
+        <h3 class="text-white font-bold uppercase tracking-wide mb-6">Navigacija</h3>
+        <nav class="flex flex-col gap-4 text-white/90">
+          <a href="poslovi-u-lokalima.html" class="hover:text-brand-dark transition-colors w-fit">Poslovi u lokalima</a>
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Posao u centrali</a>
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">O nama</a>
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Život u Balkan Betu</a>
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Kontakt</a>
+        </nav>
+      </div>
+
+      <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
+        <h3 class="text-white font-bold uppercase tracking-wide mb-6">Prati nas</h3>
+        <div class="flex items-center gap-4">
+          <a href="#" aria-label="LinkedIn" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer font-bold text-sm">in</a>
+          <a href="#" aria-label="Instagram" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="1.2" fill="currentColor"/></svg>
+          </a>
+          <a href="#" aria-label="Facebook" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer font-bold">f</a>
+          <a href="#" aria-label="YouTube" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" stroke-width="2"/><path d="M10 9L15 12L10 15V9Z" fill="currentColor"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal flex flex-col sm:flex-row items-center justify-between gap-4 mt-10 pt-8 border-t border-white/20 text-white/80 text-sm">
+      <p>&copy;2026 Balkan Bet. Sva prava zadržana.</p>
+      <p>Dizajn i razvoj: Balkan Bet</p>
+      <a href="#" class="hover:text-white transition-colors">Politika privatnosti</a>
+      <a href="#top" class="hover:text-white transition-colors">Nazad na vrh</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================================
+     SCRIPTS
+============================================================================ -->
+<script src="job-filter.js"></script>
+<script>
+  /* ==========================================================================
+     APPLICATION FORM — mockup behaviour only.
+     No request is made anywhere. The only rule enforced is the consent
+     checkbox, because that is the one the user must actively perform;
+     everything else is left open so the form is quick to click through in a
+     demo.
+  ========================================================================== */
+  const form = document.getElementById('apply-form');
+  const errorEl = document.getElementById('form-error');
+  const doneEl = document.getElementById('apply-done');
+
+  // Show the picked file's name — a file input otherwise gives no feedback
+  // once its native button is hidden.
+  document.getElementById('f-cv').addEventListener('change', (e) => {
+    const name = e.target.files && e.target.files[0] ? e.target.files[0].name : 'Izaberi fajl';
+    document.getElementById('f-cv-name').textContent = name;
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    if (!document.getElementById('f-saglasnost').checked) {
+      errorEl.textContent = 'Potrebno je da prihvatiš uslove korišćenja pre slanja prijave.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    errorEl.classList.add('hidden');
+    form.classList.add('hidden');
+    doneEl.classList.remove('hidden');
+    doneEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  /* ==========================================================================
+     "PRETRAŽI DRUGE POZICIJE" — this bar has nothing to filter on this page,
+     so it hands the selection to the listing page instead of filtering here.
+  ========================================================================== */
+  const CITIES = ['Batajnica', 'Beograd', 'Čačak', 'Jagodina', 'Kragujevac', 'Kruševac',
+                  'Niš', 'Nova Pazova', 'Novi Banovci', 'Novi Sad', 'Paraćin', 'Pirot',
+                  'Ruma', 'Subotica', 'Šabac', 'Zlatibor'];
+
+  BBFilter.initBar(document.getElementById('other-filter'), {
+    fields: {
+      grad: [{ value: 'sve', label: 'Izaberi grad' }]
+        .concat(CITIES.map((c) => ({ value: c, label: c }))),
+    },
+    onChange: () => {},
+    onSubmit: (values) => {
+      const q = values.grad === 'sve' ? '' : '?grad=' + encodeURIComponent(values.grad);
+      window.location.href = 'poslovi-u-lokalima.html' + q;
+    },
+  });
+
+  /* Shared .reveal fade-in, same as the homepage. */
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
+</script>
+</body>
+</html>

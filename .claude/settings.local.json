@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(where python *)",
+      "Bash(mkdir -p \"C:\\\\Users\\\\Vukasin\\\\Desktop\\\\klijent-projekti\\\\sajt-klon/.claude\")",
+      "Bash(curl -s -o /tmp/serbia.geojson \"https://raw.githubusercontent.com/johan/world.geo.json/master/countries/SRB.geo.json\")",
+      "Read(//tmp/**)",
+      "Bash(python \"C:/Users/Vukasin/AppData/Local/Temp/claude/C--Users-Vukasin-Desktop-klijent-projekti-careers-balkanbet/928af58f-b6ef-4e46-9d1a-8048d9697a25/scratchpad/cut_bg.py\")",
+      "Bash(grep -n \"value-card__art\\\\|art: \\\\`\\\\|</svg>\\\\`\\\\|name: '\" index.html)",
+      "PowerShell(Get-ChildItem -Recurse -File \"C:\\\\Users\\\\Vukasin\\\\Desktop\\\\klijent-projekti\\\\careers-balkanbet\\\\assets\\\\bb-zivot\" | ForEach-Object { \"{0}  |  {1:N0} KB\" -f $_.Name, \\($_.Length/1KB\\) })",
+      "PowerShell($d=\"C:\\\\Users\\\\Vukasin\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-Vukasin-Desktop-klijent-projekti-careers-balkanbet\\\\70675f68-6bc0-47d2-8e18-d452eecf9497\\\\scratchpad\"; $s=\\(Get-Content \"$d\\\\frame.b64\" -Raw\\); $c=\\($s -replace '[^A-Za-z0-9+/=]',''\\); \"raw=$\\($s.Length\\) clean=$\\($c.Length\\) mod=$\\($c.Length % 4\\)\"; [IO.File]::WriteAllBytes\\(\"$d\\\\frame.jpg\", [Convert]::FromBase64String\\($c\\)\\); \\(Get-Item \"$d\\\\frame.jpg\"\\).Length)",
+      "PowerShell(Get-Process chrome -ErrorAction SilentlyContinue | Select-Object Id, StartTime | Measure-Object | ForEach-Object { \"chrome procs: \" + $_.Count })"
+    ]
+  }
+}

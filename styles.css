@@ -1,0 +1,1440 @@
+  /* ========================================================================
+     FONT FACES — NeoSansW1G, self-hosted, one family across 4 static weights
+     (Light 300 / Regular 400 / Medium 500 / Bold 700). Tailwind's font-*
+     utilities (font-light, font-normal, font-medium, font-bold, font-extrabold)
+     pick the matching face automatically via font-weight.
+  ======================================================================== */
+  @font-face {
+    font-family: 'NeoSansW1G';
+    src: url('assets/fonts/NeoSansW1G-Light.otf') format('opentype');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'NeoSansW1G';
+    src: url('assets/fonts/NeoSansW1G-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'NeoSansW1G';
+    src: url('assets/fonts/NeoSansW1G-Medium.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'NeoSansW1G';
+    src: url('assets/fonts/NeoSansW1G-Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  /* ------------------------------------------------------------------
+     HANDWRITING PAIR — used ONLY by the hiring-process section, per the
+     client's artwork: the 01–04 numerals are Lumiera, the step labels are
+     Patrick Hand. Nothing else on the site may use these two.
+     The Lumiera filename really does contain a space — it has to stay
+     percent-encoded here or the url() breaks.
+  ------------------------------------------------------------------ */
+  @font-face {
+    font-family: 'LumieraHandwriting';
+    src: url('assets/fonts/Lumiera%20Handwriting.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'PatrickHand';
+    src: url('assets/fonts/PatrickHand-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  /* ========================================================================
+     BASE
+     No background color/gradient is set on html/body — .animated-bg (fixed,
+     z-index 0) is the single source of page background color everywhere.
+  ======================================================================== */
+  body { font-family: 'NeoSansW1G', sans-serif; }
+
+  /* ========================================================================
+     GLOBAL ANIMATED BACKGROUND — fixed "aurora mesh" behind the whole page
+     A single `position: fixed` layer sits at z-index 0, painted once and
+     never scrolled; three blurred, slowly-drifting radial blobs give it a
+     living, animated feel. Sections with their own solid background color
+     (the ECECEC / white ones) simply paint over it and occlude it — no
+     extra work needed there. Sections that carry no solid fill of their
+     own (hero, departments, present-in, betano, events, footer) stay
+     transparent so this layer shows straight through.
+     Every in-flow section sits at z-index 10+ so it always stacks above.
+  ======================================================================== */
+  .animated-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    background: #FAA61A;
+    pointer-events: none;
+  }
+  .animated-bg__blob {
+    position: absolute;
+    width: 25vw;
+    height: 25vw;
+    border-radius: 50%;
+    background: #FFCB05;
+    filter: blur(110px);
+    will-change: transform;
+  }
+  .animated-bg__blob--1 {
+    top: -15%;
+    left: -12%;
+    opacity: 0.6;
+    animation: aurora-float-1 16s ease-in-out infinite alternate;
+  }
+  .animated-bg__blob--2 {
+    bottom: -22%;
+    right: -12%;
+    opacity: 0.45;
+    animation: aurora-float-2 19s ease-in-out infinite alternate;
+  }
+  .animated-bg__blob--3 {
+    top: 32%;
+    left: 32%;
+    width: 20vw;
+    height: 20vw;
+    opacity: 0.35;
+    animation: aurora-float-3 13s ease-in-out infinite alternate;
+  }
+  @keyframes aurora-float-1 {
+    0%   { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(35vw, 25vh) scale(1.15); }
+  }
+  @keyframes aurora-float-2 {
+    0%   { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-26vw, -33vh) scale(1.1); }
+  }
+  @keyframes aurora-float-3 {
+    0%   { transform: translate(-14vw, 7vh) scale(0.9); }
+    100% { transform: translate(18vw, -17vh) scale(1.1); }
+  }
+
+  /* ========================================================================
+     HEADER CTA GRADIENT — same radial gradient/stops as the ball graphic in
+     BalkanBetLogo.svg (its <radialGradient id="paint0_radial_313_77">),
+     reused here so the button reads as an extension of the logo mark.
+  ======================================================================== */
+  .cta-gradient {
+    background: radial-gradient(circle at 32% 28%,
+      #FFF75C 0%,
+      #FBC707 32%,
+      #FBC707 53.19%,
+      #F89C0E 85%,
+      #FAB20B 100%);
+  }
+
+  /* ========================================================================
+     IMPACT TEXT REVEAL — the section sits on a white panel, so words start
+     dark-at-low-opacity and fill in to solid dark; updateImpact() toggles
+     `.is-active` per word/phrase as the section scrolls through its reveal
+     window. Highlighted phrases are rendered as a SINGLE span (not one per
+     word) so the marker paints as one continuous bar, never a per-word
+     patch. The marker itself is a separate `::before` layer that only
+     starts its left-to-right sweep (`.is-marked`) once the text reveal has
+     fully finished — i.e. after the words have already turned dark, not
+     at the same time.
+  ======================================================================== */
+  .impact-word {
+    color: rgba(35, 31, 32, 0.28); /* brand-dark at low opacity — unrevealed */
+    /* No transition: words snap straight to solid dark as they activate —
+       a blunt fill sweeping left-to-right, row by row, not a fade-in. */
+  }
+  .impact-word.is-active {
+    color: #231F20;
+  }
+  .impact-word--hl {
+    position: relative;
+    z-index: 0;
+    padding: 0 0.2em;
+    margin: 0 -0.2em;
+  }
+  .impact-word--hl::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 0.14em -0.2em;
+    background: #FDB813;
+    border-radius: 3px;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.6s ease-out;
+    transition-delay: var(--hl-delay, 0ms);
+  }
+  .impact-word--hl.is-marked::before {
+    transform: scaleX(1);
+  }
+
+  /* ========================================================================
+     ŽIVOT U BALKAN BET-U — multimedia mosaic
+
+     Three columns of unequal-height tiles: a masonry look without a masonry
+     library, because the columns are plain flex stacks and each tile just
+     carries its own aspect-ratio. The middle column starts lower (see the
+     markup's lg:mt-10), which is what makes the rows read as offset rather
+     than as three tidy rows.
+
+     Tile kinds — the section is deliberately mixed-media:
+       .zivot-tile--stat  flat colour block, big number + caption. Purely
+                          informative: not a link, no hover state.
+       image / video      photo or a muted looping clip, with the caption
+                          over a bottom scrim.
+       [data-cta]         the clickable ones. Hovering slides a yellow panel
+                          over the whole tile with a line of copy + a CTA;
+                          it REPLACES the picture rather than tinting it, so
+                          the two states never fight for legibility.
+
+     Entrance: the frame wipes open downwards (clip-path) while the picture
+     inside settles back from an over-scale. The two run at different
+     durations on purpose — the image keeps drifting for a beat after its
+     frame has finished opening, which is what stops eight tiles arriving at
+     once from looking like a slideshow.
+  ======================================================================== */
+  .zivot-tile {
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    display: block;
+    /* Pre-reveal state; .is-revealed (set by the observer) is the rest state. */
+    opacity: 0;
+    transform: translateY(64px) scale(0.965);
+    clip-path: inset(0 0 100% 0);
+    transition: opacity .85s cubic-bezier(.22,.61,.36,1),
+                transform .85s cubic-bezier(.22,.61,.36,1),
+                clip-path .85s cubic-bezier(.22,.61,.36,1);
+    transition-delay: var(--stagger-delay, 0ms);
+  }
+  .zivot-tile.is-revealed {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0);
+  }
+  /* Same one-frame no-transition reset as .opening-card — see resetTile. */
+  .zivot-tile.is-resetting { transition: none; }
+
+  .zivot-tile__media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.16);
+    transition: transform 1.25s cubic-bezier(.22,.61,.36,1);
+    transition-delay: var(--stagger-delay, 0ms);
+  }
+  .zivot-tile.is-revealed .zivot-tile__media { transform: scale(1); }
+  /* Hover push-in. Needs to outweigh the rule above, hence the doubled
+     class, and it drops the stagger delay — a hover must not sit and wait
+     out the entrance delay this tile happened to be given. */
+  .zivot-tile.is-revealed:hover .zivot-tile__media {
+    transform: scale(1.06);
+    transition-duration: .6s;
+    transition-delay: 0ms;
+  }
+
+  .zivot-tile__scrim {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 46%;
+    background: linear-gradient(to top, rgba(0,0,0,0.66), rgba(0,0,0,0));
+    pointer-events: none;
+  }
+  .zivot-tile__label {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    bottom: 20px;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.25;
+    pointer-events: none;
+  }
+
+  /* The yellow face. Sits idle at the bottom of the tile and rises over it,
+     so the motion reads as the CTA coming up to meet the cursor. */
+  .zivot-tile__cta {
+    position: absolute;
+    inset: 0;
+    padding: 28px;
+    background: #FDB913;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    opacity: 0;
+    transform: translateY(18%);
+    transition: opacity .4s ease, transform .5s cubic-bezier(.22,.61,.36,1);
+  }
+  .zivot-tile:hover .zivot-tile__cta {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ------------------------------------------------------------------
+     Quote slider tile. Both slides are stacked at inset:0 and cross-faded,
+     so switching never reflows the tile — only opacity moves. The tile's
+     own hover push-in is cancelled here: the arrows and the quote have to
+     stay put while the cursor is inside, and two stacked photos drifting
+     together read as a wobble rather than as one image.
+  ------------------------------------------------------------------ */
+  .zivot-quote {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    transition: opacity .7s ease;
+  }
+  .zivot-quote.is-active { opacity: 1; }
+
+  .zivot-quotes.is-revealed:hover .zivot-tile__media { transform: scale(1); }
+
+  /* Deeper than the plain .zivot-tile__scrim — a whole quote sits on it, so
+     it has to hold small type, not just a one-line caption. */
+  .zivot-quote__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top,
+      rgba(0,0,0,0.93) 0%,
+      rgba(0,0,0,0.80) 32%,
+      rgba(0,0,0,0.28) 62%,
+      rgba(0,0,0,0.05) 100%);
+    pointer-events: none;
+  }
+  .zivot-quote__body {
+    position: absolute;
+    inset: auto 24px 22px 24px;
+    color: #fff;
+    text-align: left;
+  }
+  .zivot-quote__line {
+    font-size: clamp(1rem, 1.25vw, 1.15rem);
+    font-weight: 500;
+    line-height: 1.35;
+  }
+  .zivot-quote__name {
+    margin-top: 14px;
+    color: #FDB913;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .zivot-quote__role {
+    color: rgba(255,255,255,0.72);
+    font-size: 13px;
+    font-weight: 300;
+    margin-top: 2px;
+  }
+
+  /* Quote mark, top-left corner. Drawn as SVG rather than set as a &ldquo;:
+     NeoSans renders that glyph as two straight slashes, which reads as a
+     typo rather than as a quotation mark at this size. */
+  .zivot-quote__mark {
+    position: absolute;
+    top: 22px;
+    left: 24px;
+    pointer-events: none;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
+  }
+
+  .zivot-quotes__nav {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    display: flex;
+    gap: 8px;
+  }
+  .zivot-quotes__arrow {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    color: #fff;
+    background: rgba(20,18,18,0.45);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255,255,255,0.35);
+    cursor: pointer;
+    transition: background .25s ease, color .25s ease, border-color .25s ease;
+  }
+  .zivot-quotes__arrow:hover {
+    background: #FDB913;
+    border-color: #FDB913;
+    color: #231F20;
+  }
+
+  /* Informative blocks: no link, no hover — they only ever carry a number. */
+  .zivot-tile--stat {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 28px;
+  }
+
+  /* ========================================================================
+     BALKAN BET BENEFITI — icon disc + label, five across. No numbering.
+
+     The discs are the CLIENT'S OWN artwork: assets/bb-zivot/benefiti.png was
+     cut into five square crops (benefit-01…05.png), each one tight around its
+     yellow circle. The crop keeps the artwork's white/grey corners, which is
+     why the disc must stay `border-radius: 999px` with `overflow: hidden` —
+     the rounding is what clips those corners away. Do NOT swap this back to a
+     CSS-coloured disc with an inline SVG inside; that was the placeholder
+     while the client's set had not arrived.
+
+     The items reuse the shared .reveal fade-in; the only thing added here is
+     a per-item transition-delay so the row ripples in left to right instead
+     of landing as one block (same --stagger-delay convention as the cards
+     and the mosaic).
+  ======================================================================== */
+  .benefit-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition-delay: var(--stagger-delay, 0ms);
+  }
+  .benefit-item__disc {
+    width: 96px;
+    height: 96px;
+    border-radius: 999px;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: transform .35s cubic-bezier(.22,.61,.36,1);
+  }
+  .benefit-item__disc img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+  .benefit-item:hover .benefit-item__disc { transform: translateY(-6px); }
+  .benefit-item__title {
+    margin-top: 20px;
+    max-width: 15rem;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #231F20;
+  }
+  @media (max-width: 640px) {
+    .benefit-item__disc { width: 78px; height: 78px; }
+    .benefit-item__title { font-size: 15px; }
+  }
+
+  /* Card-stack effect: each new section overlaps the previous one slightly
+     (rounding itself is applied per-section via Tailwind's rounded-* utilities,
+     since which corners should round depends on what sits next to it). */
+  .panel-overlap {
+    position: relative;
+    margin-top: -48px;
+  }
+
+  /* ========================================================================
+     SECTION INSET — every content section below the hero is pulled in 30px
+     from the viewport's left/right edges, so the fixed animated background
+     is always visible as a margin down both sides instead of sections
+     running flush edge-to-edge. Rounding is added per-section via Tailwind
+     (rounded-[32px] normally; rounded-t-/rounded-b-only where two adjacent
+     sections share the exact same solid color and should read as one
+     continuous block rather than two separate cards).
+  ======================================================================== */
+  .section-panel {
+    margin-left: 30px;
+    margin-right: 30px;
+    overflow: hidden;
+  }
+
+  /* ========================================================================
+     HERO SCROLL MECHANIC
+     A tall spacer wraps a `position: sticky` stage. While the spacer scrolls
+     past, the stage stays pinned in the viewport and plays a multi-phase,
+     scroll-scrubbed choreography (all driven by JS reading scroll progress
+     0→1, see the HERO script block at the bottom of the file):
+
+       Phase 0  — heading only, centered, nothing else visible
+       Phase 1  — media rectangle rises from the bottom through the heading;
+                  it is BEHIND the text while crossing the lower two lines,
+                  then jumps (discrete z-index swap, not a fade) IN FRONT of
+                  the text once it crosses into the upper two lines
+       Phase 2  — media grows to near-fullscreen while the heading exits
+                  upward/fades out and the search block enters from below,
+                  all simultaneously
+       Phase 3  — brief "snap" hold: nothing animates for a short scroll range
+       Phase 4  — media + search block move together as one unit and slide
+                  up out of the viewport, revealing the next section
+
+     Every element's transform/opacity is set imperatively per animation
+     frame, so no CSS transitions are used here (a transition would fight
+     the scroll-driven values and introduce lag).
+  ======================================================================== */
+  /* Total pinned scroll = 100vh (the stage itself) + the four phase budgets
+     below, which are the single source of truth for hero pacing:
+       P0 heading-only ........   1vh   <- see note
+       P1+P2 entrance ......... 132vh
+       P3 snap-hold ...........  10vh
+       P4 exit ................ 130vh   <- must stay equal to HERO_EXIT_TRAVEL
+     ------------------------------------------------
+       100 + 1 + 132 + 10 + 130 = 373vh
+     P0 is deliberately almost nothing: it is pure dead scroll where only the
+     heading sits there, and at its old 10vh the video needed ~190px of
+     scrolling before its top edge even cleared the bottom of the viewport —
+     three or four wheel notches of "nothing happening". Trimming P0 alone
+     only got that to ~113px, still a whole notch, so HERO_ENTER_TRAVEL was
+     shortened too; together they put the video on screen inside notch one.
+     HERO_PHASE in the script block holds these same splits as fractions of
+     the scrollable range (273vh); change one, recompute the other. */
+  #hero-spacer { height: 373vh; }
+
+  /* ========================================================================
+     HERO → FIRST SECTION OVERLAP  (this is what kills the video↔section gap)
+
+     Whichever section comes first after the hero carries this rule — today
+     that is #openings ("Najnovije pozicije"); it used to be #impact, which
+     now sits one section lower. It is pulled up by a negative margin so it
+     is already sitting just below the viewport when P4 starts, and is then
+     uncovered by the exiting video instead of waiting for the hero's scroll
+     to run out. If the section order changes again, this rule MOVES with the
+     first-after-hero slot — it is about the hero exit, not about that
+     section's own content.
+
+     The gap between the video's bottom edge and that section's top edge
+     during the exit works out to a CONSTANT:
+
+         gap(t) = (P4budget - |margin|) + (HERO_EXIT_TRAVEL - P4budget) * t
+
+     The second term is what used to open the hole: the video travels
+     130vh (HERO_EXIT_TRAVEL, i.e. vh * 1.3 in updateHero) while P4 only
+     spent 60vh of scroll, so the video ran 2.16x faster than the page and
+     tore away from the section behind it, the gap widening the whole way
+     down. Setting P4budget = HERO_EXIT_TRAVEL = 130vh zeroes that term:
+     the video now moves at exactly scroll speed, so it reads as *pushing*
+     the section up rather than outrunning it.
+
+     With the t-term gone the gap is just (130 - |margin|), held steady for
+     the entire exit. |margin| is the FULL 130vh, which zeroes that term too,
+     so the only thing left between the video's bottom edge and the section's
+     top edge is the media box's own 30px bottom inset — a constant 30px at
+     every viewport height, never a fraction of vh.
+
+     That constant is what makes the requested 200px video→title gap
+     expressible in px at all: it is the section's 170px top padding plus
+     those 30px. Anything less than 130vh here leaves a (130 - |margin|)vh
+     remainder that gets added on top, and the gap goes back to growing with
+     the viewport (at 122vh it measured 188px on a 780px-tall screen and
+     ~216px on a 1120px one). Anything MORE would push the section up over
+     the video's bottom edge.
+
+     If P4's budget or HERO_EXIT_TRAVEL changes, re-derive from the formula
+     above — the two must stay equal or the gap starts growing again.
+  ======================================================================== */
+  #openings { margin-top: -130vh; }
+
+  #hero-stage { height: 100vh; }
+
+  #hero-heading-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+  }
+
+  /* ========================================================================
+     HERO SCROLL HINT — the logo's ball, bouncing, in place of a chevron.
+     Sits below the headline (a scroll cue in the dead centre would land on
+     top of the h1). z-index 3 is deliberately UNDER the media box's starting
+     5: the video rises from the bottom straight through where this sits, and
+     passing over it is what lets the ball fade on exactly the headline's
+     timing without ever appearing to float on top of the video.
+  ======================================================================== */
+  #hero-scroll-ball {
+    position: absolute;
+    left: 50%;
+    bottom: 8vh;
+    transform: translateX(-50%);
+    z-index: 3;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+  .hero-scroll-ball__dot {
+    display: block;
+    width: 30px;
+    height: 30px;
+    overflow: visible;   /* the squash keyframes scale past the viewBox */
+    animation: hero-ball-bounce 1.15s infinite;
+  }
+  /* Cast shadow on the floor the ball bounces off. Pinned to that floor
+     (it never moves) and animated on the SAME duration and keyframe stops as
+     the bounce, so the two stay locked together: widest and most visible at
+     the apex, tight and nearly gone at the moment of contact. */
+  .hero-scroll-ball__shadow {
+    position: absolute;
+    left: 50%;
+    bottom: -13px;
+    width: 30px;
+    height: 7px;
+    border-radius: 50%;
+    background: #231F20;
+    filter: blur(3px);
+    transform: translateX(-50%);
+    animation: hero-ball-shadow 1.15s infinite;
+  }
+  /* Gravity-ish: quick off the floor, hanging at the apex, accelerating back
+     down, with a squash on contact and a slight stretch at the top. */
+  @keyframes hero-ball-bounce {
+    0%   { transform: translateY(0)     scale(1.10, 0.90); animation-timing-function: ease-out; }
+    12%  { transform: translateY(-6px)  scale(1, 1);       animation-timing-function: ease-out; }
+    50%  { transform: translateY(-30px) scale(0.96, 1.04); animation-timing-function: ease-in; }
+    88%  { transform: translateY(-6px)  scale(1, 1);       animation-timing-function: ease-in; }
+    100% { transform: translateY(0)     scale(1.10, 0.90); }
+  }
+  /* Keyframe stops mirror hero-ball-bounce exactly (0/12/50/88/100 with the
+     same easing per stop) — that is what keeps the shadow reading as cast by
+     THAT ball rather than pulsing on its own clock.
+     Size and opacity move TOGETHER, both tracking distance: far = wide and
+     slightly more present, near = tight and almost gone at contact. Keep the
+     whole opacity range low (.05-.17) — the ball is small and sits on a busy
+     orange background, so anything heavier at the apex stops reading as a
+     cast shadow and starts looking like a second dark blob under the ball. */
+  @keyframes hero-ball-shadow {
+    0%   { transform: translateX(-50%) scale(0.70); opacity: .05; animation-timing-function: ease-out; }
+    12%  { transform: translateX(-50%) scale(0.80); opacity: .08; animation-timing-function: ease-out; }
+    50%  { transform: translateX(-50%) scale(1.30); opacity: .17; animation-timing-function: ease-in; }
+    88%  { transform: translateX(-50%) scale(0.80); opacity: .08; animation-timing-function: ease-in; }
+    100% { transform: translateX(-50%) scale(0.70); opacity: .05; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-scroll-ball__dot,
+    .hero-scroll-ball__shadow { animation: none; }
+  }
+
+  #hero-media-box {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    will-change: transform, width, height;
+  }
+
+  /* Percentage height (not px) so the wash keeps the same proportion of the
+     frame as the box grows from its small starting size to full. */
+  .hero-media-fade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 42%;
+    pointer-events: none;
+    /* Pure black, not brand-dark. Every dark overlay on the site (this, the
+       mosaic scrims, the footer CTA scrim) is #000 on request — brand-dark
+       #231F20 was used here before, and yellow before that; do not go back. */
+    background: linear-gradient(to bottom,
+      rgba(0,0,0,0)    0%,
+      rgba(0,0,0,.28) 45%,
+      rgba(0,0,0,.58) 75%,
+      rgba(0,0,0,.78) 100%);
+  }
+
+  /* Anchored to the BOTTOM of the stage rather than centred: the block used
+     to sit at top:50% and be pulled back by translateY(-50%), which is why
+     updateHero's transform for it is translateX only — do not reintroduce a
+     vertical -50% there or it will float back into the middle of the video.
+     96px clears the media box's own 30px bottom inset with room to spare. */
+  #hero-search-block {
+    position: absolute;
+    left: 50%;
+    bottom: 96px;
+    z-index: 25;
+    width: 92%;
+    /* Widened from 48rem: at that size the longest values were ellipsised
+       inside their tabs. This has to clear the widest value in every list,
+       not just the average one — the binding case is "Regionalni menadžer
+       poslovnica" in the position tab. */
+    max-width: 66rem;
+    will-change: transform, opacity;
+  }
+  /* ========================================================================
+     HERO SEARCH — booking-style bar: a yellow frame holding three separate
+     white tabs (job type / location / position) and a black submit.
+
+     Background is #FDB913, the LIGHTEST of the three brand yellows (it beats
+     #FDB813 and #FAA61A on luminance, 187.5 / 186.8 / 173.8), chosen so the
+     frame still separates from the orange wash the bar sits on.
+
+     These are CUSTOM dropdowns, not <select>s. Native select popups ignore
+     padding and line-height on <option> (Chrome on Windows renders them at a
+     fixed system metric), so the requested inner padding and row spacing are
+     simply not expressible with them. The trigger + panel below are plain
+     buttons, which the HERO SEARCH script block wires up.
+  ======================================================================== */
+  .hero-search {
+    display: flex;
+    align-items: stretch;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 12px;
+    background: #FDB913;
+    box-shadow: 0 20px 44px rgba(0,0,0,.30);
+  }
+  .hero-search__tab {
+    position: relative;          /* anchor for the absolutely-placed panel */
+    flex: 1 1 0;
+    min-width: 0;                /* lets the three tabs actually share the row */
+    border-radius: 7px;
+    background: #fff;
+  }
+  /* Not equal thirds: the tabs hold very different longest-values, so equal
+     widths ellipsise the position tab while leaving slack in the mode tab.
+     Ratios are sized off the widest entry each list can show. */
+  .hero-search__tab[data-tab="location"] { flex-grow: 1.15; }
+  .hero-search__tab[data-tab="position"] { flex-grow: 1.5; }
+  /* The chevron is a flex sibling of the label+value column, so `align-items:
+     center` puts it on the tab's own vertical centre line rather than beside
+     the value row. */
+  .hero-search__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 18px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .hero-search__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;                /* required for the value's ellipsis */
+  }
+  .hero-search__label {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: rgba(35,31,32,.55);
+  }
+  .hero-search__value {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #231F20;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hero-search__chevron {
+    flex: 0 0 auto;
+    color: #231F20;
+    transition: transform .2s ease;
+  }
+  .hero-search__tab.is-open .hero-search__chevron { transform: rotate(180deg); }
+
+  /* Dropdown panel — opens UPWARD. The bar sits ~96px off the bottom of a
+     `overflow: hidden` stage, so a downward panel is clipped after a row or
+     two; above it there is the whole height of the video to use. */
+  .hero-search__menu {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 40;
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 10px;               /* the inner breathing room */
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 18px 40px rgba(0,0,0,.28);
+  }
+  .hero-search__menu[hidden] { display: none; }
+  .hero-search__option {
+    display: block;
+    width: 100%;
+    margin-bottom: 3px;          /* row spacing */
+    padding: 11px 14px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: #231F20;
+    text-align: left;
+    cursor: pointer;
+    transition: background .15s ease;
+  }
+  .hero-search__option:last-child { margin-bottom: 0; }
+  .hero-search__option:hover { background: rgba(253,185,19,.28); }
+  .hero-search__option.is-selected {
+    background: #231F20;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .hero-search__submit {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 7px;
+    padding: 0 40px;
+    background: #231F20;
+    font-family: inherit;
+    font-size: 19px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: filter .15s ease;
+  }
+  .hero-search__submit:hover { filter: brightness(1.35); }
+
+  @media (max-width: 860px) {
+    .hero-search { flex-wrap: wrap; }
+    .hero-search__tab { flex-basis: 100%; }
+    .hero-search__submit { flex-basis: 100%; padding: 16px 40px; }
+  }
+
+  /* ========================================================================
+     SCROLL REVEAL — fade-in + translateY(20px -> 0) via IntersectionObserver
+  ======================================================================== */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  .reveal.in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ========================================================================
+     NAJNOVIJE POZICIJE — staggered left-to-right card reveal
+     Each card starts fully transparent and dropped 300px down; once the
+     IntersectionObserver in the OPENINGS script block fires, `.is-revealed`
+     is added to all four at once, but each card's own `--stagger-delay`
+     (0/190/380/570ms, set inline per card) staggers when its own transition
+     actually starts.
+
+     Three values are tuned together to produce the reference cascade; each
+     one matters:
+
+       delay ÷ duration = 190ms ÷ 0.8s ≈ 0.24 — adjacent cards are always
+         ~24% of the way apart in progress, which is what lands the
+         reference's opacity ladder (card 1 fully in, then ≈0.75, ≈0.5,
+         ≈0.3) at the frame where the first card touches down.
+       travel = 380px — that same 24% gap then reads as ~90px of vertical
+         offset between neighbours, the visible "staircase".
+       easing — deliberately NEAR-LINEAR through the middle. A normal
+         ease-out front-loads the motion, so later cards catch up almost
+         immediately and the staircase collapses into a flat fade. The
+         soft ends keep it from looking mechanical.
+  ======================================================================== */
+  .opening-card {
+    opacity: 0;
+    transform: translateY(380px);
+    transition: opacity 0.8s cubic-bezier(0.35, 0.12, 0.45, 0.92),
+                transform 0.8s cubic-bezier(0.35, 0.12, 0.45, 0.92);
+    transition-delay: var(--stagger-delay, 0ms);
+  }
+  .opening-card.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  /* The reveal re-arms every time the row leaves the viewport, so the cards
+     have to be put back to their start values WITHOUT animating — otherwise
+     they'd visibly slide/fade backwards on the way out and, worse, the
+     staggered delays would still be counting down when the row scrolled
+     back in, desyncing the cascade. Applied for one frame only (see
+     resetOpenings). */
+  .opening-card.is-resetting {
+    transition: none;
+  }
+
+  /* ========================================================================
+     UTILITY: hide scrollbars on carousel tracks
+  ======================================================================== */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* ########################################################################
+     SUB-PAGES — poslovi-u-lokalima.html + oglas-primer.html
+
+     Everything below is only used by the two job pages. It lives in this
+     shared file (rather than in a <style> on each page) so the sub-pages
+     cannot drift away from the homepage's tokens: same radii, same yellows,
+     same NeoSans weights, same pill buttons.
+  ######################################################################## */
+
+  /* ------------------------------------------------------------------
+     Dark hero band. Reuses the homepage's card-stack language — 30px side
+     margins and a 32px radius via .section-panel/.rounded-[32px] in the
+     markup — so a sub-page reads as another card in the same stack rather
+     than a full-bleed header from a different site.
+  ------------------------------------------------------------------ */
+  .page-hero {
+    background: #231F20;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Faint brand glow in the corner, so the flat dark panel isn't dead flat.
+     Same trick as the aurora, just static and much weaker.
+     `closest-side` is load-bearing: the default (farthest-corner) sizes the
+     circle past this box on a tall panel, so the gradient gets clipped by the
+     box edge and draws a hard vertical seam across anything sitting on top of
+     it — visible straight through the semi-transparent application form. */
+  .page-hero::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -10%;
+    width: 55%;
+    height: 160%;
+    background: radial-gradient(circle closest-side, rgba(253,184,19,.22) 0%, rgba(253,184,19,0) 100%);
+    pointer-events: none;
+  }
+  .page-hero > * { position: relative; z-index: 1; }
+
+  /* ------------------------------------------------------------------
+     JOB FILTER BAR (.jf-*) — white card on the dark hero.
+
+     The dropdowns are custom (trigger button + panel), NOT <select>, for the
+     same reason as the homepage hero bar: native <option> ignores padding
+     and line-height on Windows Chrome, so the menus could never match the
+     rest of the site. Unlike the hero bar these open DOWNWARDS — there is no
+     overflow:hidden stage below them here.
+  ------------------------------------------------------------------ */
+  .jf-bar {
+    background: #fff;
+    border-radius: 22px;
+    padding: 12px;
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.28);
+  }
+  .jf-field {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    background: #F4F4F4;
+    border-radius: 14px;
+    padding: 10px 16px;
+    text-align: left;
+  }
+  .jf-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(35,31,32,.55);
+    margin-bottom: 2px;
+  }
+  .jf-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    color: #231F20;
+    text-align: left;
+  }
+  .jf-trigger svg { flex-shrink: 0; transition: transform .2s ease; }
+  .jf-field.is-open .jf-trigger svg { transform: rotate(180deg); }
+  .jf-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .jf-menu {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    max-height: 320px;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(35,31,32,.28);
+    padding: 8px;
+  }
+  .jf-menu[hidden] { display: none; }
+  .jf-option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    color: #231F20;
+    padding: 11px 14px;
+    border-radius: 10px;
+  }
+  .jf-option:hover { background: #F4F4F4; }
+  .jf-option.is-selected { background: #FDB913; font-weight: 700; }
+
+  /* Checkbox — the native box is hidden and redrawn, because the default
+     control cannot take the brand's radius/colour. */
+  .jf-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #231F20;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .jf-check input { position: absolute; opacity: 0; pointer-events: none; }
+  .jf-check__box {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    border: 2px solid rgba(35,31,32,.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .18s ease, border-color .18s ease;
+  }
+  .jf-check__box svg { opacity: 0; transition: opacity .18s ease; }
+  .jf-check input:checked + .jf-check__box { background: #FDB813; border-color: #FDB813; }
+  .jf-check input:checked + .jf-check__box svg { opacity: 1; }
+
+  .jf-submit {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    color: #231F20;
+    border-radius: 14px;
+    padding: 0 34px;
+  }
+  .jf-submit:hover { filter: brightness(.95); }
+
+  /* ------------------------------------------------------------------
+     JOB CARDS — the listing grid.
+     Reveal reuses .opening-card's easing and travel so the two card grids
+     on the site move the same way; the stagger here runs across the row
+     (delay from the column index) instead of across four fixed cards.
+  ------------------------------------------------------------------ */
+  .job-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: translateY(60px);
+    transition: opacity .7s cubic-bezier(.35,.12,.45,.92),
+                transform .7s cubic-bezier(.35,.12,.45,.92),
+                box-shadow .25s ease;
+    transition-delay: var(--stagger-delay, 0ms);
+  }
+  .job-card.is-revealed { opacity: 1; transform: none; }
+  .job-card:hover { box-shadow: 0 18px 40px rgba(35,31,32,.16); }
+  .job-card__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(35,31,32,.6);
+  }
+  .job-card__meta--city { color: #FAA61A; font-weight: 700; }
+
+  /* ------------------------------------------------------------------
+     FORM CONTROLS on the dark application panel. Inputs are drawn as
+     lighter blocks on #231F20 rather than outlined boxes, so the form reads
+     as one surface instead of a grid of borders.
+  ------------------------------------------------------------------ */
+  .fld-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255,255,255,.75);
+    margin-bottom: 8px;
+  }
+  .fld {
+    width: 100%;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    color: #fff;
+    outline: none;
+    transition: border-color .2s ease, background .2s ease;
+  }
+  .fld::placeholder { color: rgba(255,255,255,.4); }
+  .fld:focus { border-color: #FDB813; background: rgba(255,255,255,.12); }
+  .fld:disabled { opacity: .75; cursor: not-allowed; }
+  /* appearance:none strips the native arrow, so it is redrawn as a background
+     image — same chevron shape the filter dropdowns use. */
+  select.fld {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 44px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+  }
+  /* The dropdown list itself is drawn by the OS, so at least force readable
+     colours on the options instead of white-on-white. */
+  select.fld option { background: #231F20; color: #fff; }
+  textarea.fld { resize: vertical; min-height: 110px; }
+
+  .fld-file {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  .fld-file input { display: none; }
+
+  /* ------------------------------------------------------------------
+     "Saznaj više" info cards + the two dark cards at the bottom of the
+     listing page. Lift on hover, same 12px-family radius as the job cards.
+  ------------------------------------------------------------------ */
+  .info-card {
+    background: #231F20;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 20px;
+    padding: 32px;
+    transition: transform .3s ease, border-color .3s ease;
+  }
+  .info-card:hover { transform: translateY(-6px); border-color: rgba(253,184,19,.55); }
+
+  /* ========================================================================
+     PROCES ZAPOŠLJAVANJA — hand-lettered, scroll-written composition
+
+     This section is a straight rebuild of the client's artwork: four steps
+     scattered on a zigzag baseline, the 01–04 numerals in Lumiera and the
+     labels in Patrick Hand, joined by three hand-drawn arrows. It replaced an
+     icon-disc + dot-nav slider; do not put that back.
+
+     Geometry: #proces-stage is a fixed-ratio box carrying `container-type:
+     inline-size`, and EVERY size inside it is in `cqw` (percent of the stage's
+     own width) while every position is a percentage. That is the whole reason
+     the composition holds its proportions at any viewport width — it scales as
+     one drawing instead of reflowing. The percentages come straight off the
+     artwork, normalised to the step band; if a step moves, move it in the
+     markup's inline --x/--y and nothing here changes.
+
+     Writing-on: each piece of ink (numeral, label line, arrow) is revealed by
+     updateProcess() in index.html, which only writes a --w of 0→1 per piece.
+     Text uses a hard-ish mask edge sweeping left to right — a mask, NOT
+     clip-path, so ascenders/descenders are never cut off vertically. Arrows
+     are stroked paths drawn with dashoffset (their --len is measured in JS via
+     getTotalLength(); a hardcoded guess wraps the dash pattern and shows the
+     whole arrow at once).
+  ======================================================================== */
+  #proces-stage {
+    position: relative;
+    container-type: inline-size;
+    /* Matches the artwork's step band: 1380 x 320 of its own units. Every
+       --x/--y in the markup is a percentage of THIS box, so changing the ratio
+       silently re-scales all four steps vertically. */
+    aspect-ratio: 1380 / 320;
+  }
+  .proc-step {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    display: flex;
+    align-items: center;
+    gap: 1.4cqw;
+    white-space: nowrap;
+  }
+  /* Sizes are calibrated off the two fonts' MEASURED ink, not their em size,
+     because the two disagree wildly: Lumiera's digits are only ~0.48em tall
+     (and ~0.42em wide) while Patrick Hand's caps are ~0.66em. Setting both to
+     a similar font-size — the obvious thing — draws the numerals about half
+     the size the artwork has them.
+     line-height .5 on the numeral is deliberate and load-bearing: Lumiera
+     reports a 1.57em content box, so the default (or the .8 this used to have)
+     leaves a huge empty band under each numeral, which drives the flex row's
+     height and pushes step 03 straight out the bottom of the stage. .5em ≈ the
+     digits' real ink height, so the row is as tall as what you can actually
+     see. If the numeral size changes, re-check this. */
+  .proc-step__num {
+    font-family: 'LumieraHandwriting', cursive;
+    font-size: 18.2cqw;
+    line-height: .5;
+    color: #231F20;
+  }
+  .proc-step__label {
+    font-family: 'PatrickHand', cursive;
+    font-size: 3.64cqw;
+    line-height: 1.08;
+    letter-spacing: .01em;
+    text-transform: uppercase;
+    color: #231F20;
+  }
+  .proc-step__label span { display: block; }
+
+  .proc-arrow {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 8.2cqw;
+    height: auto;
+    overflow: visible;
+  }
+  /* Arrow 2 dives instead of climbing — same drawing, mirrored, so all three
+     keep an identical hand. */
+  .proc-arrow--down { transform: scaleY(-1); }
+  .proc-arrow path {
+    fill: none;
+    stroke: #231F20;
+    /* Matched to Lumiera's own pen, not picked by eye. Its stroke measures
+       0.02 x font-size (scanned off a canvas render), so at the numerals'
+       18.2cqw that is 0.364cqw; one viewBox unit here is 8.2/96 = 0.0854cqw,
+       hence 0.364 / 0.0854 = 4.3. If either the arrow width or the numeral
+       size changes, redo that division — anything heavier and the arrows read
+       as drawn by a fatter marker than the numbers next to them. */
+    stroke-width: 4.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: var(--len, 200);
+    stroke-dashoffset: calc(var(--len, 200) * (1 - var(--w, 0)));
+  }
+
+  /* The ink mask: a black-to-transparent hand-off travelling from the left
+     edge. The 118%/-9% overshoot is what lets --w:0 hide the glyphs entirely
+     and --w:1 clear the last one, soft edge included. */
+  .proc-ink {
+    -webkit-mask-image: linear-gradient(90deg,
+      #000 calc(var(--w, 0) * 118% - 9%), transparent calc(var(--w, 0) * 118%));
+    mask-image: linear-gradient(90deg,
+      #000 calc(var(--w, 0) * 118% - 9%), transparent calc(var(--w, 0) * 118%));
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+  /* Arrows carry --w too, but theirs drives the dash — masking them as well
+     would double up and clip the head off. */
+  svg.proc-ink {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  /* Under ~700px the zigzag stops working (the numerals would be ~30px), so
+     the absolute layout is dropped for a plain stacked list. */
+  @media (max-width: 700px) {
+    #proces-stage {
+      aspect-ratio: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      align-items: flex-start;
+      padding-left: 6vw;
+    }
+    .proc-step {
+      position: static;
+      gap: 16px;
+    }
+    .proc-step__num { font-size: 110px; }
+    .proc-step__label { font-size: 24px; }
+    .proc-arrow { display: none; }
+  }
+
+  /* ========================================================================
+     FOOTER CTA PAIR — two photo/video cards that open the footer.
+
+     Replaced the old "photo + Postani deo našeg tima? box" pair: both slots
+     are now real CTAs (lokali / centrala).
+
+     The hover is deliberately the SAME mechanic as the mosaic's clickable
+     tiles (.zivot-tile__cta): a full-bleed yellow face idles just below the
+     card and rises over the media, replacing it rather than tinting it — same
+     #FDB913, same translateY(18%) start, same durations. An earlier version
+     used a skewed sheet rising to 60% height; it is gone, keep these two
+     hovers reading as one gesture across the page.
+
+     Unlike the tiles, the type does NOT live inside the yellow face: title and
+     subtitle sit in one always-centred block above it (both axes, at rest and
+     on hover) and just change colour, so nothing jumps when the face arrives.
+     The pill is the only thing that appears, and it appears BY TAKING UP SPACE
+     — its wrapper animates grid-template-rows 0fr -> 1fr — so it pushes the
+     title and subtitle up and the three of them stay centred together. That is
+     the whole reason for the wrapper; a plain opacity fade would leave the text
+     off-centre once the button showed up.
+  ======================================================================== */
+  .footer-cta {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: 24px;
+    aspect-ratio: 16 / 11;
+    min-height: 300px;
+    isolation: isolate;
+  }
+  .footer-cta__media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .7s cubic-bezier(.22,.61,.36,1);
+  }
+  .footer-cta:hover .footer-cta__media,
+  .footer-cta:focus-visible .footer-cta__media { transform: scale(1.06); }
+  .footer-cta__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.72) 100%);
+  }
+  .footer-cta__face {
+    position: absolute;
+    inset: 0;
+    background: #FDB913;
+    opacity: 0;
+    transform: translateY(18%);
+    transition: opacity .4s ease, transform .5s cubic-bezier(.22,.61,.36,1);
+  }
+  .footer-cta:hover .footer-cta__face,
+  .footer-cta:focus-visible .footer-cta__face {
+    opacity: 1;
+    transform: none;
+  }
+  .footer-cta:focus-visible { outline: none; }
+
+  .footer-cta__body {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px;
+  }
+  .footer-cta__title {
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    text-transform: uppercase;
+    color: #FFFFFF;
+    transition: color .4s ease;
+  }
+  .footer-cta__sub {
+    margin-top: 10px;
+    font-size: clamp(1rem, 1.25vw, 1.125rem);
+    color: rgba(255,255,255,.88);
+    transition: color .4s ease;
+  }
+  .footer-cta:hover .footer-cta__title,
+  .footer-cta:focus-visible .footer-cta__title,
+  .footer-cta:hover .footer-cta__sub,
+  .footer-cta:focus-visible .footer-cta__sub { color: #231F20; }
+
+  /* 0fr -> 1fr is what makes the pill occupy height as it appears; the inner
+     span needs overflow:hidden + min-height:0 or the collapsed row still
+     shows it. */
+  .footer-cta__pillwrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .5s cubic-bezier(.22,.61,.36,1);
+  }
+  .footer-cta__pillwrap > span {
+    overflow: hidden;
+    min-height: 0;
+  }
+  .footer-cta:hover .footer-cta__pillwrap,
+  .footer-cta:focus-visible .footer-cta__pillwrap { grid-template-rows: 1fr; }
+  /* No arrow glyph and NOT uppercase — same explicit exception as the header
+     CTA, the "Prijavi se" card buttons and "Saznaj više o nama". */
+  .footer-cta__pill {
+    display: inline-block;
+    margin-top: 24px;
+    padding: 13px 28px;
+    border-radius: 999px;
+    background: #231F20;
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity .35s ease .12s;
+  }
+  .footer-cta:hover .footer-cta__pill,
+  .footer-cta:focus-visible .footer-cta__pill { opacity: 1; }
+
+  @media (max-width: 640px) {
+    .footer-cta { aspect-ratio: 4 / 3; }
+    .footer-cta__body { padding: 26px; }
+  }
+
+  /* ========================================================================
+     REDUCED MOTION — everything that animates on entry is decorative, so for
+     visitors who ask the OS for less motion it is skipped entirely and the
+     element is simply shown in its finished state. The hero choreography on
+     index.html is scroll-driven rather than timed, so it is left alone.
+  ======================================================================== */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .opening-card,
+    .job-card,
+    .zivot-tile {
+      opacity: 1 !important;
+      transform: none !important;
+      clip-path: none !important;
+      transition: none !important;
+    }
+    .zivot-tile__media { transform: none !important; transition: none !important; }
+    /* The quote slider still switches, it just cuts instead of cross-fading.
+       Its slides keep their own opacity (only .is-active is visible), so
+       they are exempt from the opacity override above. */
+    .zivot-quote { transition: none !important; }
+    .zivot-quote:not(.is-active) { opacity: 0 !important; }
+    .benefit-item__disc { transition: none !important; }
+    /* The hiring process is scroll-scrubbed, so updateProcess() already jumps
+       every piece to --w:1 here; this is the belt-and-braces version in case
+       the mask/dash vars are still at their initial 0. */
+    .proc-ink {
+      -webkit-mask-image: none !important;
+      mask-image: none !important;
+    }
+    .proc-arrow path { stroke-dashoffset: 0 !important; }
+    .footer-cta__media,
+    .footer-cta__face,
+    .footer-cta__pillwrap,
+    .footer-cta__pill { transition: none !important; }
+    .animated-bg__blob,
+    .hero-scroll-ball__dot,
+    .hero-scroll-ball__shadow { animation: none !important; }
+  }
+
