@@ -6,7 +6,7 @@
 <title>Balkan Bet | Operater u lokalu - Beograd</title>
 
 <!-- ==========================================================================
-     SHARED SETUP — identical on index.html and poslovi-u-lokalima.html.
+     SHARED SETUP — identical on index.html and listanje.html.
 ========================================================================== -->
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="brand-setup.js"></script>
@@ -16,7 +16,7 @@
 <!-- ============================================================================
      AD TEMPLATE — this file is the template for a single job ad, filled in
      with "Operater u lokalu, Beograd" as the worked example. Every card on
-     poslovi-u-lokalima.html currently links here; when the real ads exist,
+     listanje.html currently links here; when the real ads exist,
      each one becomes its own copy of this page (or is generated from data)
      and only the hero + the two prefilled form selects change.
 ============================================================================ -->
@@ -29,26 +29,50 @@
 </div>
 
 <!-- ============================================================================
-     HEADER — copy of the homepage header; index.html is the source of truth.
+     HEADER — floating pill nav, fixed across the whole page.
+
+     ⚠ SHARED BLOCK — this exact markup is duplicated BYTE-FOR-BYTE in
+     listanje.html and oglas-primer.html (no build step here, and a static
+     mockup should not need JS to draw its own navigation). index.html is the
+     source of truth: edit here first, then copy this comment and the whole
+     header element across unchanged. Nothing page-specific goes in it — no
+     per-page active state, no per-page hrefs — so the copies cannot drift.
+     (Do not write a literal closing header/footer tag inside these comments:
+     the sync is done by matching from the banner to the first closing tag.)
+
+     NOTE for dev handoff: the "#" hrefs are placeholders. Swap them for real
+     paths once the rest of the site exists, e.g.:
+       Poslovi u lokalima     -> poslovi-u-lokalima.html   (its own page, TBD)
+       Posao u centrali       -> posao-u-centrali.html
+       O nama                 -> o-nama.html
+       Život u Balkan Betu    -> zivot-u-balkan-betu.html
+       Kontakt                -> kontakt.html
 ============================================================================ -->
 <header class="fixed top-6 inset-x-0 z-50 flex justify-center px-4">
   <div class="w-full max-w-[1300px] flex items-center justify-between gap-5
               bg-brand-dark/40 backdrop-blur-md border border-white/25
               rounded-full pl-[30px] pr-[30px] py-3">
 
+    <!-- Logo (2x original size, then reduced 20% -> h-16 * 0.8 = h-[51.2px]) -->
     <a href="index.html" class="flex items-center shrink-0" aria-label="Balkan Bet početna">
       <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[51.2px] w-auto">
     </a>
 
+    <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case -->
     <nav class="hidden md:flex items-center gap-5 text-base font-medium uppercase text-white whitespace-nowrap">
-      <a href="poslovi-u-lokalima.html" class="text-brand-yellow transition-colors">Poslovi u lokalima</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Poslovi u lokalima</a>
       <a href="#" class="hover:text-brand-yellow transition-colors">Posao u centrali</a>
       <a href="#" class="hover:text-brand-yellow transition-colors">O nama</a>
       <a href="#" class="hover:text-brand-yellow transition-colors">Život u Balkan Betu</a>
       <a href="#" class="hover:text-brand-yellow transition-colors">Kontakt</a>
     </nav>
 
-    <a href="#prijava" class="bg-brand-yellow shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
+    <!-- CTA — flat brand yellow + white text, same fill as the "Prijavi se"
+         buttons on the job cards. Sentence case on purpose: this is the one
+         CTA on the page that is NOT set uppercase.
+         This is one of the entry points into the listing page (together with
+         every "Pretraži" / "Pogledaj sve pozicije" on the site). -->
+    <a href="listanje.html" class="bg-brand-yellow shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
       Pronađi posao
     </a>
   </div>
@@ -61,7 +85,7 @@
   <div class="max-w-[1440px] mx-auto px-8 md:px-16 grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-14 items-center">
 
     <div>
-      <a href="poslovi-u-lokalima.html" class="inline-flex items-center gap-2 text-white/70 text-sm font-medium hover:text-brand-yellow transition-colors mb-7">
+      <a href="listanje.html" class="inline-flex items-center gap-2 text-white/70 text-sm font-medium hover:text-brand-yellow transition-colors mb-7">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
         Sve otvorene pozicije
       </a>
@@ -326,7 +350,7 @@
         Tvoja prijava za poziciju <strong class="text-brand-yellow">Operater u lokalu — Beograd</strong>
         je zabeležena. Kolege iz ljudskih resursa te kontaktiraju u naredih nekoliko dana.
       </p>
-      <a href="poslovi-u-lokalima.html" class="inline-flex items-center gap-2 mt-9 bg-white text-brand-dark rounded-full px-8 py-4 font-bold hover:brightness-95 transition-all cursor-pointer">
+      <a href="listanje.html" class="inline-flex items-center gap-2 mt-9 bg-white text-brand-dark rounded-full px-8 py-4 font-bold hover:brightness-95 transition-all cursor-pointer">
         Pogledaj ostale pozicije
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
@@ -336,7 +360,7 @@
 
 <!-- ============================================================================
      SEARCH OTHER POSITIONS — small filter bar; submitting hands the chosen
-     city over to the listing page as ?grad=..., which pre-selects it there.
+     city over to listanje.html as ?lokacija=..., which pre-selects it there.
 ============================================================================ -->
 <section class="relative z-20 panel-overlap section-panel rounded-[32px] bg-white pt-20 pb-20">
   <div class="max-w-[1000px] mx-auto px-8 md:px-16">
@@ -437,44 +461,75 @@
 </section>
 
 <!-- ============================================================================
-     FOOTER — copy of the homepage footer; index.html is the source of truth.
+     FOOTER CTA — closing call-to-action + site navigation + socials
+
+     ⚠ SHARED BLOCK — same rule as the header above: this exact markup is
+     duplicated BYTE-FOR-BYTE in listanje.html and oglas-primer.html.
+     index.html is the source of truth; edit here, then copy this comment and
+     the whole footer element across unchanged.
 ============================================================================ -->
 <footer class="relative z-20 panel-overlap section-panel rounded-[32px] pt-20 pb-10">
   <div class="max-w-[1440px] mx-auto px-8 md:px-16">
 
+    <!-- Two media CTAs opening the footer — lokali / centrala. Both slots used
+         to be one photo + one "Postani deo našeg tima?" text box; they are now
+         a matched pair of links (see .footer-cta in styles.css for the yellow
+         swing-up hover). The visuals deliberately reuse what already stands for
+         each track in the ŽIVOT mosaic: the lokal photo and the centrala clip
+         (same src, so the video costs no extra download). -->
     <div class="reveal grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-      <img src="assets/bb-zivot/storage-profili.png" alt="Balkan Bet lokal"
-           class="w-full h-72 lg:h-full object-cover rounded-3xl">
+      <a href="listanje.html" class="footer-cta">
+        <img class="footer-cta__media" src="assets/bb-zivot/storage-profili.png" alt="Balkan Bet lokal">
+        <div class="footer-cta__scrim"></div>
+        <div class="footer-cta__face"></div>
+        <div class="footer-cta__body">
+          <h2 class="footer-cta__title">Poslovi u lokalima</h2>
+          <p class="footer-cta__sub">Pogledaj otvorene pozicije u Balkan Betu.</p>
+          <!-- The extra span is not decoration: .footer-cta__pillwrap animates
+               grid-template-rows 0fr -> 1fr and the span is the row that has to
+               clip while collapsed. -->
+          <div class="footer-cta__pillwrap"><span>
+            <span class="footer-cta__pill">Pogledaj pozicije</span>
+          </span></div>
+        </div>
+      </a>
 
-      <div class="bg-white/10 border border-white/25 rounded-3xl p-10 flex flex-col justify-center">
-        <h2 class="text-white uppercase font-extrabold leading-tight" style="font-size: clamp(1.75rem, 3.5vw, 2.75rem);">
-          Postani deo našeg tima?
-        </h2>
-        <p class="text-white/85 mt-4 text-lg">
-          Tvoja sledeća prilika počinje ovde. Pogledaj otvorene pozicije u Balkan Betu.
-        </p>
-        <a href="poslovi-u-lokalima.html" class="self-start mt-8 bg-white text-brand-dark rounded-full px-8 py-4 font-bold uppercase text-sm tracking-wide hover:bg-brand-dark hover:text-white transition-colors cursor-pointer">
-          Pogledaj pozicije
-        </a>
-      </div>
+      <a href="#" class="footer-cta">
+        <video class="footer-cta__media" src="assets/bb-zivot/8141231-uhd_2160_3840_25fps.mp4"
+               autoplay muted loop playsinline preload="metadata"></video>
+        <div class="footer-cta__scrim"></div>
+        <div class="footer-cta__face"></div>
+        <div class="footer-cta__body">
+          <h2 class="footer-cta__title">Posao u centrali</h2>
+          <p class="footer-cta__sub">Postani deo našeg tima</p>
+          <div class="footer-cta__pillwrap"><span>
+            <span class="footer-cta__pill">Pogledaj pozicije</span>
+          </span></div>
+        </div>
+      </a>
     </div>
 
     <div class="reveal grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Column: corporate site -->
       <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
         <h3 class="text-white font-bold uppercase tracking-wide mb-4">Pun pogodak</h3>
         <p class="text-white/85">
           Poseti naš sajt i saznaj više o Balkan Betu — o ponudi, lokalima širom Srbije i svemu što radimo.
         </p>
-        <a href="#" class="inline-flex items-center gap-2 mt-10 text-white font-bold uppercase tracking-wide border-b border-white/60 pb-1 hover:text-brand-dark hover:border-brand-dark transition-colors cursor-pointer">
+        <!-- border-b-2 + solid white: same underline weight as the
+             "Pogledaj sve pozicije" link in #openings, so the two text CTAs
+             read as one style. -->
+        <a href="#" class="inline-flex items-center gap-2 mt-10 text-white font-bold uppercase tracking-wide border-b-2 border-white pb-1 hover:text-brand-dark hover:border-brand-dark transition-colors cursor-pointer">
           <svg width="10" height="12" viewBox="0 0 10 12" fill="none"><path d="M1 1L9 6L1 11V1Z" fill="currentColor"/></svg>
           balkanbet.rs
         </a>
       </div>
 
+      <!-- Column: site navigation -->
       <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
         <h3 class="text-white font-bold uppercase tracking-wide mb-6">Navigacija</h3>
-        <nav class="flex flex-col gap-4 text-white/90">
-          <a href="poslovi-u-lokalima.html" class="hover:text-brand-dark transition-colors w-fit">Poslovi u lokalima</a>
+        <nav class="flex flex-col gap-4 text-white/90 font-bold">
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Poslovi u lokalima</a>
           <a href="#" class="hover:text-brand-dark transition-colors w-fit">Posao u centrali</a>
           <a href="#" class="hover:text-brand-dark transition-colors w-fit">O nama</a>
           <a href="#" class="hover:text-brand-dark transition-colors w-fit">Život u Balkan Betu</a>
@@ -482,6 +537,7 @@
         </nav>
       </div>
 
+      <!-- Column: social -->
       <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
         <h3 class="text-white font-bold uppercase tracking-wide mb-6">Prati nas</h3>
         <div class="flex items-center gap-4">
@@ -497,11 +553,18 @@
       </div>
     </div>
 
-    <div class="reveal flex flex-col sm:flex-row items-center justify-between gap-4 mt-10 pt-8 border-t border-white/20 text-white/80 text-sm">
-      <p>&copy;2026 Balkan Bet. Sva prava zadržana.</p>
-      <p>Dizajn i razvoj: Balkan Bet</p>
-      <a href="#" class="hover:text-white transition-colors">Politika privatnosti</a>
-      <a href="#top" class="hover:text-white transition-colors">Nazad na vrh</a>
+    <!-- Three slots, so "Nazad na vrh" is centred against the FOOTER, not
+         against whatever the two side texts happen to measure — hence a
+         3-column grid rather than justify-between. -->
+    <div class="reveal grid grid-cols-1 sm:grid-cols-3 items-center gap-4 mt-10 pt-8 border-t border-white/20 text-white/80 text-sm text-center sm:text-left">
+      <p class="sm:justify-self-start">&copy;2026 Balkan Bet. Sva prava zadržana.</p>
+      <a href="#top" class="sm:justify-self-center hover:text-white transition-colors">Nazad na vrh</a>
+      <span class="sm:justify-self-end inline-flex items-center gap-2">
+        Dizajn i razvoj
+        <!-- smartweb-logo.svg is already all-white (fill="#fff"), so it needs no
+             filter here. Height is in em so it tracks this row's font size. -->
+        <img src="assets/logo/smartweb-logo.svg" alt="Smartweb" class="h-[1.15em] w-auto">
+      </span>
     </div>
   </div>
 </footer>
@@ -559,8 +622,12 @@
     },
     onChange: () => {},
     onSubmit: (values) => {
-      const q = values.grad === 'sve' ? '' : '?grad=' + encodeURIComponent(values.grad);
-      window.location.href = 'poslovi-u-lokalima.html' + q;
+      // Same query keys the homepage hero bar uses, so the listing page has
+      // one contract to read rather than one per referrer.
+      const q = new URLSearchParams({ vrsta: 'lokali' });
+      if (values.grad !== 'sve') q.set('lokacija', values.grad);
+      if (values.nocv) q.set('nocv', '1');
+      window.location.href = 'listanje.html?' + q.toString();
     },
   });
 

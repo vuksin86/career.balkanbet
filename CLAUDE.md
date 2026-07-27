@@ -10,21 +10,47 @@ kaže drugačije.
 
 ## Fajlovi (VAŽNO pre bilo koje izmene)
 - **index.html** - homepage
-- **poslovi-u-lokalima.html** - listing otvorenih pozicija, sa filterom koji stvarno radi
+- **listanje.html** - listing otvorenih pozicija, sa filterom koji stvarno radi. 
+  ⚠ NIJE isto što i "Poslovi u lokalima" - to će biti ZASEBNA stranica koja još ne 
+  postoji (nav link za nju stoji na `#`). Na listanje se dolazi klikom na "Pronađi 
+  posao", "Pretraži", "Pogledaj sve pozicije" i footer CTA kartice. Fajl se ranije zvao 
+  poslovi-u-lokalima.html
 - **oglas-primer.html** - template pojedinačnog oglasa + forma za prijavu
 - **styles.css** - JEDAN zajednički stylesheet za SVE tri stranice (@font-face, 
-  .animated-bg, hero, .zivot-tile, .opening-card, .jf-* filter bar, .job-card, .fld-* 
-  polja forme, .info-card, prefers-reduced-motion blok). Stoji u root-u NAMERNO - 
-  url() putanje do fontova su relativne (assets/fonts/...), pa bi premeštanje u 
-  podfolder polomilo fontove. CSS više NIJE inline u index.html
+  .animated-bg, hero, .hero-search, .zivot-tile, .opening-card, .page-hero, .jf-* filter 
+  bar, .jobs-panel, .job-card, .fld-* polja forme, .info-card, prefers-reduced-motion 
+  blok). Stoji u root-u NAMERNO - url() putanje do fontova su relativne 
+  (assets/fonts/...), pa bi premeštanje u podfolder polomilo fontove. CSS više NIJE 
+  inline u index.html
 - **brand-setup.js** - Tailwind (Play CDN) config sa brend tokenima, učitava se odmah 
   posle CDN skripte na sve tri stranice
 - **job-filter.js** - custom dropdown-i za filter barove + srpska množina za brojive 
-  imenice ("1 poziciju / 2-4 pozicije / 5+ pozicija")
-- Header i footer su DUPLIRANI kao markup na sve tri stranice (nema build koraka, a 
-  statični mockup ne treba da zavisi od JS-a da bi nacrtao svoju navigaciju). 
-  **index.html je izvor istine** - kad se menja header/footer, promeni tamo pa prenesi 
-  u druge dve stranice
+  imenice ("1 poziciju / 2-4 pozicije / 5+ pozicija"). Ista mehanika u DVA SKINA 
+  (SKINS objekat): `jf` (kompaktni bar na oglas-primer.html + sortiranje na listanju) i 
+  `hero` (.hero-search bar). `initBar(bar, {skin, fields, onChange, onSubmit})` vraća 
+  `{values, set, refill}`; `refill` služi kad izbor u jednom tabu poništi listu drugog
+
+### ⚠ HEADER I FOOTER SU ZAKUCANI - IDENTIČNI NA SVE TRI STRANICE
+Header i footer su DUPLIRANI kao markup na sve tri stranice (nema build koraka, a 
+statični mockup ne treba da zavisi od JS-a da bi nacrtao svoju navigaciju).
+**index.html je IZVOR ISTINE.** Pravilo je strogo: blokovi moraju biti BYTE-IDENTIČNI 
+na sve tri stranice. Kad se menja header/footer, promeni SAMO u index.html pa prekopiraj 
+ceo `<header>…</header>` i ceo `<footer>…</footer>` u druge dve stranice bez ijedne 
+izmene.
+- NEMA ničeg page-specific u njima: ni per-page aktivnog stanja (raniji 
+  `text-brand-yellow` na "Poslovi u lokalima" na podstranicama je UKLONJEN), ni 
+  per-page href-ova. Logo svuda vodi na index.html.
+- Podstranice su do sada nosile STARI, neizbrendiran futer ("Postani deo našeg tima?" 
+  tekst box); zamenjen je aktuelnim futerom sa dve .footer-cta kartice
+- Provera da nisu odlutali (hešuje se blok iz sva tri fajla, sva tri moraju biti ista):
+  ```
+  for f in index.html listanje.html oglas-primer.html; do printf "%-20s %s %s\n" "$f" \
+    "$(sed -n '/^<header /,/^<\/header>/p' $f | md5sum | cut -c1-8)" \
+    "$(sed -n '/^<footer /,/^<\/footer>/p' $f | md5sum | cut -c1-8)"; done
+  ```
+- U banner komentarima iznad ta dva bloka NE PISATI doslovno `</header>` ni `</footer>` 
+  kao deo teksta - kopiranje se radi matchovanjem od banner-a do prvog zatvarajućeg 
+  taga, pa takav tekst u komentaru preseče blok na pola (dogodilo se)
 
 ## Brend - Balkan Bet
 ### Boje
@@ -112,10 +138,19 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      native <option> IGNORIŠE padding i line-height (Chrome na Windows-u ih crta po 
      sistemskoj metrici), pa traženi razmak u padajućem meniju sa njima nije moguć. 
      Meni se otvara NAGORE (bottom: calc(100% + 6px)) - bar stoji 96px od dna stage-a 
-     koji ima overflow:hidden, pa bi nadole bio odsečen. Tabovi NEMAJU jednake širine 
-     (flex-grow 1 / 1.15 / 1.5) - liste imaju bitno različite najduže vrednosti, a 
-     najduža je "Regionalni menadžer poslovnica"; sa jednakim širinama se odseca. 
-     Bez ikonica
+     koji ima overflow:hidden, pa bi nadole bio odsečen. Bez ikonica.
+     ⚠ SVI ELEMENTI U BARU IMAJU JEDNAKU ŠIRINU - i tabovi i checkbox i dugme 
+     "Pretraži". Zato je `.hero-search` **GRID** (`grid-auto-flow: column` + 
+     `grid-auto-columns: 1fr`), a NE flex - NE vraćati na flex. Sa `flex: 1 1 0` se 
+     dolazi blizu ali ne do kraja: `<button>` i `<label>` ispadnu ~32px odnosno ~28px 
+     širi od taba (tačno njihov levi+desni padding), jer se flex stavka meri po content 
+     box-u a dugme odbija da se stegne do kraja. 1fr traka po detetu meri TRAKE, pa deca 
+     nemaju šta da kažu. Deca nose `min-width: 0` da duga vrednost skrati sa "…" umesto 
+     da razvuče traku.
+     Raniji flex-grow 1 / 1.15 / 1.5 (širine štimovane po najdužoj vrednosti svake liste) 
+     je UKLONJEN na eksplicitan zahtev - posledica je da se najduža vrednost, 
+     "Regionalni menadžer poslovnica", skraćuje u zatvorenom tabu; ceo tekst se i dalje 
+     vidi u otvorenom meniju
    - kratka scroll "snap" pauza kad video dostigne max veličinu i search bar centar ekrana
    - zatim video+search bar kao jedna celina klize gore i izlaze, otkrivajući sledeću sekciju
    - Lenis.js koristi se za smooth scroll (VAŽNO: scroll progress se čita ISKLJUČIVO 
@@ -206,8 +241,11 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      jedan piksel jedan od drugog, pa najmanje drmusanje na ivici čita kao treperenje u 
      nulu. runCounter() uz to ODBIJA da restartuje broj koji već ide ili je sleteo.
      NEMA start delay-a (ranije je čekao --stagger-delay svoje kartice, pa se stajalo na 
-     vidljivoj 0). Parsiraju se kao cifre + sufiks ("90" + "+"), resetuju se na 0 samo 
-     daleko od kadra, a uz prefers-reduced-motion odmah skoče na konačnu vrednost
+     vidljivoj 0). Parsiraju se kao cifre + sufiks ("90" + "+"), a uz 
+     prefers-reduced-motion odmah skoče na konačnu vrednost.
+     RESET SAMO NADOLE, isto kao kartice: broj se vraća na 0 samo ako je blok izašao 
+     kroz DNO (boundingClientRect.top >= 0). Ako je izašao kroz vrh, povratak nagore 
+     zatiče konačnu cifru kako stoji - ne nulu koja kreće ispočetka
    - QUOTE SLAJDER (donja desna kartica, kind 'quotes', podaci u ZIVOT_QUOTES): dve 
      fotografije zaposlenih (assets/bb-zivot/quote-01.png i quote-02.png) sa tamnim 
      gradijent overlay-em, preko njega izjava + ime + pozicija, žuti navodnici gore levo 
@@ -227,13 +265,19 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      što se doskroluje. Stagger je zato SAMO PO KOLONI (delay = kolona*110ms); raniji 
      `+ red*170ms` je pripadao onom režimu i sada bi samo terao donje kartice da stoje 
      posle sopstvenog trigera.
-     POZNATO I PRIHVAĆENO: pri skrolu NAGORE animacija se tehnički ponavlja (reset radi, 
-     provereno 0/9 na dnu strane), ali se ne vidi - kartice su visoke do ~590px a triger 
-     se pali kad im samo 1px zađe u kadar odozgo, pa se wipe od 0.85s odigra dok je 
-     kartica još skoro cela iznad ekrana i deluje kao da je već otvorena. Da bi se videla 
-     i nagore, triger bi morao da čeka ~260px vidljive kartice, što ostavlja prazan pojas 
-     na vrhu ekrana dok čeka - klijent je to video i IZABRAO da ostane kako je. Ne 
-     "popravljati" bez novog zahteva
+     RE-ARM SAMO NADOLE (isto pravilo važi za .opening-card i za brojače): reset se 
+     okida SAMO ako je element izašao KROZ DNO, tj. entry.boundingClientRect.top >= 0 - 
+     tada je čitalac iznad sekcije i sledeći put joj prilazi odozdo nadole, u smeru za 
+     koji je kaskada i pravljena. Ako je izašao kroz VRH (top < 0), kartica OSTAJE 
+     OTVORENA, pa povratak nagore zatiče sekciju tačno kako je ostavljena. Ranije se 
+     resetovalo na obe strane, pa se pri vraćanju gore ponovo pokretao ulaz koji se 
+     ionako ne vidi (kartice su visoke do ~590px, a triger se pali na prvi vidljivi 
+     piksel, pa se wipe od 0.85s odigra dok je kartica još skoro cela iznad ekrana).
+     Gleda se ZNAK boundingClientRect.top, ne entry.rootBounds - rootBounds nije uvek 
+     popunjen. PAŽNJA pri testiranju: IntersectionObserver okida samo na PROMENU stanja, 
+     pa skok koji preskoči ceo vidljivi opseg (iz "nevidljivo iznad" pravo u "nevidljivo 
+     ispod") ne pošalje nikakav callback i reset izostane - to je artefakt skoka, ne bag; 
+     testirati postupnim skrolom
    - "BALKAN BET BENEFITI" - poslednji deo belog panela, ispod mozaika: naslov (manji 
      clamp od h2, clamp(1.5rem, 3.2vw, 2.5rem)) + 5 benefita u redu (2 kolone na 
      telefonu, 3 na tabletu, 5 na desktopu), svaki = ikonica u krugu 96px + naslov 
@@ -304,7 +348,7 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      slotovi bili mrtve pauze između koraka
 6. Footer - IZBRENDIRAN, kompletno na srpskom. Otvaraju ga DVE CTA kartice sa medijem 
    (.footer-cta): "Poslovi u lokalima" (fotografija storage-profili.png, podnaslov 
-   "Pogledaj otvorene pozicije u Balkan Betu.", vodi na poslovi-u-lokalima.html) i 
+   "Pogledaj otvorene pozicije u Balkan Betu.", vodi na listanje.html) i 
    "Posao u centrali" (isti video kao kartica centrale u mozaiku, pa ne košta dodatan 
    download; podnaslov "Postani deo našeg tima"). Ranije je tu bila jedna slika + tekst 
    box "Postani deo našeg tima?" - ne vraćati.
@@ -340,21 +384,99 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
   eventi, nikad izbrendirani
 - Ranije uklonjeno: "Naše poslovnice" (Leaflet mapa Srbije, zajedno sa Leaflet CDN-om)
 
-## poslovi-u-lokalima.html (listing)
-Struktura: tamna hero traka (.page-hero, #231F20, isti section-panel + 32px radius kao 
-ostale sekcije da se čita kao još jedna kartica u istom "stack"-u) sa naslovom "Pronađi 
-svoj posao" i BELIM filter barom → beli panel sa 16 kartica pozicija (3 u redu) → dve 
-tamne kartice "Rad u lokalu" / "Rad u centrali" → footer.
-- FILTER STVARNO RADI, bez servera: filtrira kartice u realnom vremenu na svaku promenu 
-  (Grad / Pozicija / Tip / checkbox "Bez CV-ja"), a brojač "Pronašli smo N pozicija" se 
-  računa iz broja vidljivih kartica uz ispravnu srpsku množinu. Ako nema rezultata, 
-  prikazuje se prazno stanje umesto praznog grida
-- Dropdown-i su CUSTOM (.jf-*), ne <select> - isti razlog kao u hero baru na homepage-u: 
-  native <option> ignoriše padding/line-height na Windows Chrome-u. Ovde se otvaraju 
-  NADOLE (ima mesta ispod)
-- Podaci o pozicijama su u JOBS nizu na dnu fajla. Sva dugmad "Pogledaj oglas" vode na 
-  isti oglas-primer.html - kad stignu pravi oglasi, svaki dobija svoj url
-- Tip "Centrala" namerno ne vraća rezultate (na ovoj stranici žive samo lokali)
+## listanje.html (listing)
+Struktura: tamna hero traka (.page-hero) sa naslovom "Pronađi svoj posao" i search barom 
+→ svetli panel sa 16 kartica pozicija (4 u redu) → footer.
+
+### Hero traka - FULL-BLEED, BEZ RADIJUSA
+`.page-hero.page-hero--flush` - NEMA .section-panel inset, NEMA mt-6 i NEMA zaobljene 
+uglove ni na jednoj strani: traka ide od ivice do ivice gore i sa OBE strane, a fiksirani 
+header lebdi preko nje kao i inače. Ranije je imala `rounded-b-[32px]` - UKLONJENO, ne 
+vraćati. Ono što "lebdi" na ovoj stranici je panel sa karticama ispod (odmaknut 30px sa 
+svih strana), pa traka iza njega treba da ostane ravna podloga, a ne još jedna 
+zaobljena kartica.
+- `.page-hero--flush` ima `overflow: visible` jer se dropdown paneli search bara otvaraju 
+  NADOLE i inače bi bili odsečeni na donjoj ivici trake. Zbog toga glow VIŠE NIJE 
+  `::after` (njegovi negativni offseti zavise od klipovanja) nego `background-image` na 
+  samom elementu - browser ga besplatno klipuje po border-radius-u. `::after` je ugašen 
+  sa `content: none`
+- z-30 na traci (a z-10 na panelu ispod) - inače otvoren dropdown završi ISPOD panela
+
+### Search bar
+IDENTIČAN dizajn kao na naslovnoj - ista `.hero-search` komponenta (žuti #FDB913 okvir, 
+tri bela taba, crno dugme "Pretraži"), plus JEDNA stvar koje na naslovnoj nema: checkbox 
+**"Bez CV-ja"** (`.hero-search__check`, nacrtan kao četvrta bela pločica u istom okviru). 
+Raniji beli `.jf-bar` na ovoj stranici je UKLONJEN, kao i rečenica ispod njega ("Za većinu 
+pozicija u lokalima CV nije potreban...").
+- `.hero-search--down` okreće panele da se otvaraju NADOLE. Na naslovnoj se otvaraju 
+  nagore samo zato što bar tamo stoji 96px od dna klipovanog stage-a
+- SVIH PET elemenata (3 taba + checkbox + dugme) ima JEDNAKU širinu - isto pravilo i 
+  ista grid mehanika kao na naslovnoj, videti tačku 2 gore
+- Wrapper bara je `max-w-[1372px] mx-auto px-[30px]`, pa na ≥1372px bar meri tačno 
+  1312px - ISTU širinu kao red kartica u panelu ispod, tako da bar i grid dele levu i 
+  desnu ivicu. Onih 30px paddinga je isti inset koji nosi i panel, pa su poravnati na 
+  svakoj širini, ne samo na kepu. Širina je bitna otkad su svi elementi jednaki: na 
+  ranijih 1072px pet jednakih polja je bilo preusko i default "Poslovi u lokalima" se 
+  sekao već pri učitavanju
+- Tabovi su isti kao na naslovnoj: Vrsta posla / Lokacija / Pozicija. Tab 1 UPRAVLJA 
+  ostalima (`bar.refill(...)`) - liste se prave iz JOBS niza za izabranu vrstu, pa 
+  "Posao u centrali" ne nudi pozicije iz poslovnica
+- FILTER STVARNO RADI, bez servera: filtrira kartice u realnom vremenu na svaku promenu, 
+  a brojač "Pronašli smo N pozicija" se računa iz broja vidljivih kartica uz ispravnu 
+  srpsku množinu. Ako nema rezultata, prikazuje se prazno stanje umesto praznog grida
+- Dropdown-i su CUSTOM (job-filter.js, skin `hero`), ne <select> - native <option> 
+  ignoriše padding/line-height na Windows Chrome-u
+- Vrsta "Posao u centrali" namerno ne vraća rezultate (u JOBS nizu žive samo lokali)
+
+### Panel sa karticama
+`.jobs-panel` - background **#F4F4F4**, **margin 30px sa svih strana** (30px tamne trake 
+se vidi iznad njega i 30px sa obe strane ekrana) + 30px unutrašnjeg padinga + 
+`rounded-[32px]` (isti radijus kao svi paneli na naslovnoj). BEZ `.panel-overlap` - taj 
+razmak od 30px je ceo efekat, dva panela ne smeju da se dodiruju.
+- Kartice su **4 U REDU** (`lg:grid-cols-4`, gap-5) i imaju IDENTIČAN dizajn kao kartice 
+  "Najnovije pozicije" na naslovnoj - isti markup polje po polje (zlatni pin + grad, 
+  ~26px naslov, kategorija + "Full time", žuto dugme "Prijavi se" prikovano za dno preko 
+  mt-auto) i isti box (belo, 12px radijus, 28px padding, min-height 290px)
+- I ISTU VELIČINU: unutrašnji kontejner je `max-w-[1312px] mx-auto`, a 1312px je tačno 
+  ono što `max-w-[1440px] px-16` na naslovnoj izmeri. Zato red od četiri NE ide od ivice 
+  do ivice panela nego stane na istih ~313px po kartici i centrira se. Ako se menja 
+  container na naslovnoj, premeriti i ovde
+- **NEMA HOVER EFEKTA** na karticama (raniji box-shadow lift je UKLONJEN, ne vraćati) - 
+  kartice na naslovnoj ga takođe nemaju. Jedini hover unutar kartice je na dugmetu 
+  "Prijavi se"
+- RAZLIKA od naslovne je SAMO u ulaznoj animaciji, namerno: `.opening-card` pada 380px sa 
+  kaskadom 190ms po kartici, što je štimovano za JEDAN red od četiri. Preko grida od 16 
+  to izgleda kao haos, pa ove (`.job-card`) ulaze mekše - 60px, stagger po koloni
+- ⚠ ANIMACIJA SE PUŠTA SAMO JEDNOM po kartici: observer dodaje `is-revealed` i ODMAH 
+  radi `unobserve()`. Kartica koja je odigrala ulaz ostaje takva do kraja posete. Ovo je 
+  SUPROTNO od reda na naslovnoj, koji se re-armira svaki put kad izađe iz kadra - tamo su 
+  četiri kartice jedan gest, ovde je grid od 16 kroz koji se skroluje gore-dole, pa 
+  ponavljanje fade-a čita kao treperenje. Unobserve (umesto obične zastavice) usput znači 
+  i da filter može da sakrije i vrati karticu preko `display` a da se observer ne oglasi
+- Iznad grida je toolbar: levo brojač rezultata, desno dropdown za sortiranje (Najnovije 
+  / Lokacija A-Š / Pozicija A-Š). **BEZ labele "Sortiraj" iznad vrednosti** - polje je 
+  samostalna kontrola, a ne ćelija označenog bara, i sama vrednost ("Najnovije") kaže šta 
+  je; labela živi kao `aria-label` na trigeru radi čitača ekrana. Zato nosi 
+  `.jf-field--nolabel`, koji vraća visinu pločice kroz veći vertikalni padding.
+  Stoji u istom 1312px kontejneru pa se poravnava sa redom kartica. Sortiranje radi na 
+  VIDLJIVOM skupu pa se slaže sa filterom umesto da se tuku; `applySort()` samo 
+  re-appenduje postojeće nodove (pomera ih, ne pravi nove)
+- Podaci o pozicijama su u JOBS nizu na dnu fajla (title / city / category / vrsta / 
+  nocv). Sva dugmad "Prijavi se" vode na isti oglas-primer.html - kad stignu pravi 
+  oglasi, svaki dobija svoj url
+
+### Uklonjeno sa listanja (NE vraćati bez eksplicitnog zahteva)
+- Sekcija sa dve tamne `.info-card` kartice **"Rad u lokalu" / "Rad u centrali"** (stajala 
+  je između panela sa karticama i futera). `.info-card` CSS OSTAJE u styles.css - 
+  oglas-primer.html ga i dalje koristi za tri kartice "Saznaj više o nama"
+- Beli `.jf-bar` filter bar i rečenica "Za većinu pozicija u lokalima CV nije potreban..."
+
+### Query parametri (dolazak sa druge stranice)
+Listanje čita `?vrsta=lokali|centrala`, `?lokacija=...`, `?pozicija=...`, `?nocv=1` i 
+pretpodesi svoj bar. `vrsta` se postavlja PRVA jer ona rebuild-uje ostale dve liste.
+Šalju ih: hero "Pretraži" na naslovnoj i mali bar "Pretraži druge pozicije" na 
+oglas-primer.html. To je JEDAN ugovor za sve pozivaoce - ne uvoditi po jedan set ključeva 
+po stranici (raniji `?grad=` je zamenjen sa `?lokacija=`).
 
 ## oglas-primer.html (template oglasa)
 Struktura: tamni hero (naziv pozicije, lokacija, tagovi "Smene 8h" i "Bez CV-ja", CTA 
@@ -365,7 +487,8 @@ kartice "Saznaj više o nama" → footer.
   zamenjuje formu potvrdom "Hvala, javićemo ti se uskoro!"
 - Tagovi su BREND ŽUTI, ne zeleni kao na referentnoj slici - na sajtu nema zelene boje
 - Mali filter bar "Pretraži druge pozicije" ne filtrira ovde nego prosleđuje izabrani 
-  grad na listing preko ?grad=... (listing ga pročita i pretpodesi)
+  grad na listanje.html preko ?lokacija=... (listing ga pročita i pretpodesi). Isti set 
+  ključeva koji šalje i hero bar sa naslovne - videti "Query parametri" iznad
 - Sadržaj oglasa je iz klijentske reference; dupliran bullet iz reference je UKLONJEN 
   (8 bullet-a, svaki jednom). PAŽNJA: uvodni pasus kaže "90 lokala i 13 gradova Srbije" 
   (tako traži brief), a listing prikazuje 16 različitih gradova - proveriti sa klijentom

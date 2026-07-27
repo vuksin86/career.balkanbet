@@ -681,8 +681,19 @@
      simply not expressible with them. The trigger + panel below are plain
      buttons, which the HERO SEARCH script block wires up.
   ======================================================================== */
+  /* GRID, not flex, and that is the whole reason: every element in the bar has
+     to be exactly the same width — the three tabs, the checkbox and the submit
+     alike. `flex: 1 1 0` on all of them gets close but not there: the <button>
+     and the <label> settled ~32px and ~28px wider than a tab (their own
+     left+right padding), because a flex item's size is resolved from its
+     content box and buttons refuse to shrink the rest of the way. One
+     `grid-auto-columns: 1fr` track per child sizes the TRACKS instead, so the
+     children have no say in it and every tile measures the same.
+     Do not switch this back to flex. */
   .hero-search {
-    display: flex;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
     align-items: stretch;
     gap: 6px;
     padding: 6px;
@@ -690,18 +701,26 @@
     background: #FDB913;
     box-shadow: 0 20px 44px rgba(0,0,0,.30);
   }
+  /* min-width:0 so a long value ellipsises inside its track instead of forcing
+     the track wider and unbalancing the row again. */
+  .hero-search > * { box-sizing: border-box; min-width: 0; }
+  /* EVERY child of the bar is the same width — the three tabs, the checkbox and
+     the submit alike (see .hero-search__check and .hero-search__submit, which
+     carry the same `flex: 1 1 0`). Requested explicitly.
+
+     The tabs used to be sized off their longest option instead (flex-grow
+     1 / 1.15 / 1.5), because equal widths ellipsise the longest value a list
+     can show — "Regionalni menadžer poslovnica" in the position tab. That is
+     now accepted: the closed tab truncates with "…", and the full text is
+     still readable in the open panel, which is what a booking bar normally
+     does. Do not reintroduce the uneven ratios. */
   .hero-search__tab {
     position: relative;          /* anchor for the absolutely-placed panel */
     flex: 1 1 0;
-    min-width: 0;                /* lets the three tabs actually share the row */
+    min-width: 0;                /* lets the tabs actually share the row */
     border-radius: 7px;
     background: #fff;
   }
-  /* Not equal thirds: the tabs hold very different longest-values, so equal
-     widths ellipsise the position tab while leaving slack in the mode tab.
-     Ratios are sized off the widest entry each list can show. */
-  .hero-search__tab[data-tab="location"] { flex-grow: 1.15; }
-  .hero-search__tab[data-tab="position"] { flex-grow: 1.5; }
   /* The chevron is a flex sibling of the label+value column, so `align-items:
      center` puts it on the tab's own vertical centre line rather than beside
      the value row. */
@@ -790,13 +809,17 @@
   }
 
   .hero-search__submit {
-    flex: 0 0 auto;
+    /* Same width as every other element in the bar — not sized to its label.
+       min-width:0 so it can actually shrink to its share instead of being
+       held open by "Pretraži" plus the old 40px side padding. */
+    flex: 1 1 0;
+    min-width: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border: 0;
     border-radius: 7px;
-    padding: 0 40px;
+    padding: 0 16px;
     background: #231F20;
     font-family: inherit;
     font-size: 19px;
@@ -807,10 +830,68 @@
   }
   .hero-search__submit:hover { filter: brightness(1.35); }
 
+  /* Panels open DOWNWARDS instead. Used on listanje.html, where the bar sits
+     near the TOP of the page and there is nothing above it to open into — the
+     upward default exists only for the homepage's clipped hero stage. The host
+     section must not clip either; see .page-hero--flush. */
+  .hero-search--down .hero-search__menu {
+    top: calc(100% + 6px);
+    bottom: auto;
+  }
+
+  /* "Bez CV-ja" — an extra control the listing bar carries and the homepage bar
+     does not. Drawn as a fourth white tile inside the same yellow frame, so it
+     reads as part of the bar rather than a checkbox floating next to it.
+     `flex: 1 1 0` like everything else in the bar: all elements share the row
+     equally, including this one and the submit. */
+  .hero-search__check {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 14px;
+    border-radius: 7px;
+    background: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    color: #231F20;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+  /* The native box cannot take the brand radius/colour, so it is hidden and
+     redrawn — same approach as .jf-check on the sub-page filter bar. */
+  .hero-search__check input { position: absolute; opacity: 0; pointer-events: none; }
+  .hero-search__box {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 auto;
+    border-radius: 7px;
+    border: 2px solid rgba(35,31,32,.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .18s ease, border-color .18s ease;
+  }
+  .hero-search__box svg { opacity: 0; transition: opacity .18s ease; }
+  .hero-search__check input:checked + .hero-search__box {
+    background: #FDB813;
+    border-color: #FDB813;
+  }
+  .hero-search__check input:checked + .hero-search__box svg { opacity: 1; }
+  .hero-search__check input:focus-visible + .hero-search__box {
+    outline: 2px solid #231F20;
+    outline-offset: 2px;
+  }
+
+  /* One full-width row per control. grid-auto-flow: row + auto rows, so each
+     tile is as tall as it needs to be instead of sharing one track height. */
   @media (max-width: 860px) {
-    .hero-search { flex-wrap: wrap; }
-    .hero-search__tab { flex-basis: 100%; }
-    .hero-search__submit { flex-basis: 100%; padding: 16px 40px; }
+    .hero-search { grid-auto-flow: row; grid-auto-columns: auto; }
+    .hero-search__check { justify-content: flex-start; padding: 14px 18px; }
+    .hero-search__submit { padding: 16px 40px; }
   }
 
   /* ========================================================================
@@ -876,7 +957,7 @@
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
   /* ########################################################################
-     SUB-PAGES — poslovi-u-lokalima.html + oglas-primer.html
+     SUB-PAGES — listanje.html + oglas-primer.html
 
      Everything below is only used by the two job pages. It lives in this
      shared file (rather than in a <style> on each page) so the sub-pages
@@ -912,6 +993,41 @@
     pointer-events: none;
   }
   .page-hero > * { position: relative; z-index: 1; }
+
+  /* Full-bleed variant — listanje.html. The band runs edge to edge at the top
+     and on both sides (no .section-panel inset, no top margin) and only its
+     BOTTOM corners are rounded, via rounded-b-[32px] in the markup.
+
+     overflow has to be VISIBLE: the search bar inside opens its dropdown
+     panels downwards and they would be sliced off at the band's bottom edge
+     otherwise. That means the glow can no longer be the ::after above, whose
+     negative offsets rely on being clipped — it becomes a background-image
+     instead, which the browser clips to the border radius for free. */
+  .page-hero--flush {
+    overflow: visible;
+    background-image: radial-gradient(closest-side circle at 86% 22%,
+                                      rgba(253,184,19,.22) 0%,
+                                      rgba(253,184,19,0) 100%);
+  }
+  .page-hero--flush::after { content: none; }
+
+  /* ------------------------------------------------------------------
+     RESULTS PANEL (listanje.html) — flat light panel holding the card grid.
+
+     MARGIN, not padding, on all four sides: the panel has to sit 30px clear of
+     the dark hero above it and 30px in from both viewport edges, so it reads as
+     a light card floating on the band rather than the band's own lower half.
+     That is also why the hero has no bottom radius and why this panel must NOT
+     take .panel-overlap — the 30px gap is the effect.
+
+     The inner padding is the same 30px, so the grid never touches the panel's
+     own edge on narrow screens where the 1312px cap is not what is binding.
+  ------------------------------------------------------------------ */
+  .jobs-panel {
+    background: #F4F4F4;
+    margin: 30px;
+    padding: 30px;
+  }
 
   /* ------------------------------------------------------------------
      JOB FILTER BAR (.jf-*) — white card on the dark hero.
@@ -998,6 +1114,20 @@
   .jf-option:hover { background: #F4F4F4; }
   .jf-option.is-selected { background: #FDB913; font-weight: 700; }
 
+  /* Sort control on the results panel. The field's default #F4F4F4 fill is the
+     panel's own background there, so it would vanish — this variant gives it a
+     white tile and a fixed width, since it is a lone control rather than one
+     cell of a bar that shares a row. */
+  .jf-sort { flex: 0 0 auto; }
+  .jf-field--solid {
+    background: #fff;
+    flex: 0 0 auto;
+    min-width: 240px;
+  }
+  /* No caption row above the value, so the field's own vertical padding has to
+     grow to keep the same tile height as a labelled .jf-field. */
+  .jf-field--nolabel { padding-top: 16px; padding-bottom: 16px; }
+
   /* Checkbox — the native box is hidden and redrawn, because the default
      control cannot take the brand's radius/colour. */
   .jf-check {
@@ -1045,25 +1175,36 @@
 
   /* ------------------------------------------------------------------
      JOB CARDS — the listing grid.
-     Reveal reuses .opening-card's easing and travel so the two card grids
-     on the site move the same way; the stagger here runs across the row
-     (delay from the column index) instead of across four fixed cards.
+
+     The BOX is the homepage "Najnovije pozicije" card, to the pixel: white,
+     12px radius, 28px padding, 290px minimum height, flex column so the CTA
+     can be pushed to the bottom edge with mt-auto. The inner markup matches
+     it too (gold pin + city, ~26px title, meta rows, yellow "Prijavi se"), so
+     the two grids read as the same component.
+
+     Only the REVEAL differs, on purpose: .opening-card drops 380px with a
+     190ms-per-card cascade, which is tuned for one row of exactly four. Across
+     a 16-card grid that reads as chaos, so these fade up 60px with one
+     observer per card and the stagger running across the row (delay from the
+     column index).
   ------------------------------------------------------------------ */
   .job-card {
     background: #fff;
     border-radius: 12px;
     padding: 28px;
+    min-height: 290px;
     display: flex;
     flex-direction: column;
     opacity: 0;
     transform: translateY(60px);
     transition: opacity .7s cubic-bezier(.35,.12,.45,.92),
-                transform .7s cubic-bezier(.35,.12,.45,.92),
-                box-shadow .25s ease;
+                transform .7s cubic-bezier(.35,.12,.45,.92);
     transition-delay: var(--stagger-delay, 0ms);
   }
   .job-card.is-revealed { opacity: 1; transform: none; }
-  .job-card:hover { box-shadow: 0 18px 40px rgba(35,31,32,.16); }
+  /* NO hover state on purpose — the homepage cards have none either, and the
+     lift/shadow this used to carry made the listing read as a different
+     component. The only hover in the card is on the "Prijavi se" button. */
   .job-card__meta {
     display: flex;
     align-items: center;

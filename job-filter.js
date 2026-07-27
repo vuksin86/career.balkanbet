@@ -1,5 +1,5 @@
 /* ============================================================================
-   JOB FILTER — shared by poslovi-u-lokalima.html and oglas-primer.html
+   JOB FILTER — shared by listanje.html and oglas-primer.html
 
    Two things live here, both needed by more than one page:
 
@@ -13,6 +13,17 @@
       results heading ("Pronašli smo N pozicija") is rendered from a live
       count, so it cannot be a fixed string.
 
+   TWO SKINS, ONE MECHANIC. The dropdowns are structurally the same control in
+   two costumes, so the behaviour is written once and the class names it
+   reaches for come from SKINS:
+
+     'jf'   — the compact bar on oglas-primer.html and the sort control on the
+              listing panel. Its trigger has no chevron in the markup, so one
+              is injected.
+     'hero' — the big booking-style bar (.hero-search), used on the homepage
+              and, filtering for real, at the top of listanje.html. Its markup
+              already carries a chevron and a two-line label/value body.
+
    No backend anywhere: filtering is done in the page against markup that is
    already in the DOM.
 ============================================================================ */
@@ -22,6 +33,20 @@
   var CHEVRON =
     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"' +
     ' stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+
+  var SKINS = {
+    jf: {
+      trigger: '.jf-trigger', value: '.jf-value', menu: '.jf-menu',
+      option: 'jf-option', check: '.jf-check input', submit: '.jf-submit',
+      injectChevron: true,
+    },
+    hero: {
+      trigger: '.hero-search__trigger', value: '.hero-search__value',
+      menu: '.hero-search__menu', option: 'hero-search__option',
+      check: '.hero-search__check input', submit: '.hero-search__submit',
+      injectChevron: false,
+    },
+  };
 
   var fields = []; // every dropdown on the page, so one click can close the rest
 
@@ -36,15 +61,16 @@
 
   /* One dropdown. `options` is [{value, label}]; the first entry is the
      default ("Svi gradovi" and friends), i.e. the no-filter state. */
-  function buildField(root, options, onChange) {
-    var trigger = root.querySelector('.jf-trigger');
-    var valueEl = root.querySelector('.jf-value');
-    var menu = root.querySelector('.jf-menu');
+  function buildField(root, options, onChange, skin) {
+    var trigger = root.querySelector(skin.trigger);
+    var valueEl = root.querySelector(skin.value);
+    var menu = root.querySelector(skin.menu);
 
-    trigger.insertAdjacentHTML('beforeend', CHEVRON);
+    if (skin.injectChevron) trigger.insertAdjacentHTML('beforeend', CHEVRON);
     menu.innerHTML = options
       .map(function (o, i) {
-        return '<button type="button" class="jf-option' + (i === 0 ? ' is-selected' : '') +
+        return '<button type="button" role="option" class="' + skin.option +
+               (i === 0 ? ' is-selected' : '') +
                '" data-value="' + o.value + '">' + o.label + '</button>';
       })
       .join('');
@@ -62,10 +88,16 @@
       menu.hidden = !willOpen;
       root.classList.toggle('is-open', willOpen);
       trigger.setAttribute('aria-expanded', String(willOpen));
+      // Keep the checked row in view when reopening a long list (the location
+      // list runs to every municipality in the country).
+      if (willOpen) {
+        var sel = menu.querySelector('.is-selected');
+        if (sel) menu.scrollTop = Math.max(0, sel.offsetTop - menu.clientHeight / 2);
+      }
     });
 
     menu.addEventListener('click', function (e) {
-      var btn = e.target.closest('.jf-option');
+      var btn = e.target.closest('.' + skin.option);
       if (!btn) return;
       field.value = btn.dataset.value;
       valueEl.textContent = btn.textContent;
@@ -82,17 +114,18 @@
   /* Wires a whole bar. `spec.fields` maps a [data-filter] name to its option
      list; `spec.onChange` gets {name: value} on every change, including the
      checkbox, so a page can filter as the user picks rather than only on
-     "Pretraži". */
+     "Pretraži". `spec.skin` selects the costume (default 'jf'). */
   function initBar(bar, spec) {
+    var skin = SKINS[spec.skin || 'jf'];
     var built = {};
 
     Object.keys(spec.fields).forEach(function (name) {
       var root = bar.querySelector('[data-filter="' + name + '"]');
       if (!root) return;
-      built[name] = buildField(root, spec.fields[name], emit);
+      built[name] = buildField(root, spec.fields[name], emit, skin);
     });
 
-    var checkbox = bar.querySelector('.jf-check input');
+    var checkbox = bar.querySelector(skin.check);
     if (checkbox) checkbox.addEventListener('change', emit);
 
     function values() {
@@ -106,7 +139,7 @@
       if (spec.onChange) spec.onChange(values());
     }
 
-    var submit = bar.querySelector('.jf-submit');
+    var submit = bar.querySelector(skin.submit);
     if (submit) {
       submit.addEventListener('click', function () {
         if (spec.onSubmit) spec.onSubmit(values());
@@ -114,8 +147,26 @@
       });
     }
 
+    /* Rebuilds one field's option list in place — used when a choice in one
+       tab invalidates another's list (picking "Posao u centrali" must not
+       leave shop-floor positions on offer). Silent by design: the caller is
+       already inside a change it is about to act on. */
+    function refill(name, options) {
+      var f = built[name];
+      if (!f) return;
+      f.menu.innerHTML = options
+        .map(function (o, i) {
+          return '<button type="button" role="option" class="' + skin.option +
+                 (i === 0 ? ' is-selected' : '') +
+                 '" data-value="' + o.value + '">' + o.label + '</button>';
+        })
+        .join('');
+      f.value = options[0].value;
+      f.root.querySelector(skin.value).textContent = options[0].label;
+    }
+
     // Let a page pre-select values (used when arriving from another page
-    // with ?grad=... in the URL).
+    // with ?lokacija=... in the URL).
     function set(name, value) {
       var f = built[name];
       if (!f) return;
@@ -124,7 +175,7 @@
     }
 
     emit();
-    return { values: values, set: set };
+    return { values: values, set: set, refill: refill };
   }
 
   /* Serbian counted-noun forms: 1 poziciju / 2–4 pozicije / 5+ pozicija,

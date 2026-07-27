@@ -2,7 +2,7 @@
    BRAND TOKENS — Tailwind (Play CDN) config, shared by every page.
 
    Loaded as a plain <script> right AFTER the Tailwind CDN on index.html,
-   poslovi-u-lokalima.html and oglas-primer.html, so all three pages get the
+   listanje.html and oglas-primer.html, so all three pages get the
    same colour names, font stack and radius scale. Edit here, never per page.
 ============================================================================ */
 tailwind.config = {

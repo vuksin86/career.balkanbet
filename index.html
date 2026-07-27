@@ -38,10 +38,20 @@
 </div>
 
 <!-- ============================================================================
-     HEADER — floating pill nav, fixed across the whole page
-     NOTE for dev handoff: all hrefs below are placeholders ("#"). Swap them
-     for real paths once the rest of the site exists, e.g.:
-       Poslovi u lokalima     -> poslovi-u-lokalima.html
+     HEADER — floating pill nav, fixed across the whole page.
+
+     ⚠ SHARED BLOCK — this exact markup is duplicated BYTE-FOR-BYTE in
+     listanje.html and oglas-primer.html (no build step here, and a static
+     mockup should not need JS to draw its own navigation). index.html is the
+     source of truth: edit here first, then copy this comment and the whole
+     header element across unchanged. Nothing page-specific goes in it — no
+     per-page active state, no per-page hrefs — so the copies cannot drift.
+     (Do not write a literal closing header/footer tag inside these comments:
+     the sync is done by matching from the banner to the first closing tag.)
+
+     NOTE for dev handoff: the "#" hrefs are placeholders. Swap them for real
+     paths once the rest of the site exists, e.g.:
+       Poslovi u lokalima     -> poslovi-u-lokalima.html   (its own page, TBD)
        Posao u centrali       -> posao-u-centrali.html
        O nama                 -> o-nama.html
        Život u Balkan Betu    -> zivot-u-balkan-betu.html
@@ -53,13 +63,13 @@
               rounded-full pl-[30px] pr-[30px] py-3">
 
     <!-- Logo (2x original size, then reduced 20% -> h-16 * 0.8 = h-[51.2px]) -->
-    <a href="#" class="flex items-center shrink-0" aria-label="Balkan Bet home">
+    <a href="index.html" class="flex items-center shrink-0" aria-label="Balkan Bet početna">
       <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[51.2px] w-auto">
     </a>
 
     <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case -->
     <nav class="hidden md:flex items-center gap-5 text-base font-medium uppercase text-white whitespace-nowrap">
-      <a href="poslovi-u-lokalima.html" class="hover:text-brand-yellow transition-colors">Poslovi u lokalima</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Poslovi u lokalima</a>
       <a href="#" class="hover:text-brand-yellow transition-colors">Posao u centrali</a>
       <a href="#" class="hover:text-brand-yellow transition-colors">O nama</a>
       <a href="#" class="hover:text-brand-yellow transition-colors">Život u Balkan Betu</a>
@@ -68,8 +78,10 @@
 
     <!-- CTA — flat brand yellow + white text, same fill as the "Prijavi se"
          buttons on the job cards. Sentence case on purpose: this is the one
-         CTA on the page that is NOT set uppercase. -->
-    <a href="poslovi-u-lokalima.html" class="bg-brand-yellow shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
+         CTA on the page that is NOT set uppercase.
+         This is one of the entry points into the listing page (together with
+         every "Pretraži" / "Pogledaj sve pozicije" on the site). -->
+    <a href="listanje.html" class="bg-brand-yellow shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
       Pronađi posao
     </a>
   </div>
@@ -240,7 +252,7 @@
 
     <!-- Text CTA (white-underlined) — sits UNDER the row, not under the title -->
     <div class="reveal text-center mt-[45px]">
-      <a href="poslovi-u-lokalima.html" class="inline-block font-medium uppercase text-white text-base border-b-2 border-white pb-0.5 hover:text-brand-dark hover:border-brand-dark transition-colors cursor-pointer">
+      <a href="listanje.html" class="inline-block font-medium uppercase text-white text-base border-b-2 border-white pb-0.5 hover:text-brand-dark hover:border-brand-dark transition-colors cursor-pointer">
         Pogledaj sve pozicije
       </a>
     </div>
@@ -403,6 +415,11 @@
 
 <!-- ============================================================================
      FOOTER CTA — closing call-to-action + site navigation + socials
+
+     ⚠ SHARED BLOCK — same rule as the header above: this exact markup is
+     duplicated BYTE-FOR-BYTE in listanje.html and oglas-primer.html.
+     index.html is the source of truth; edit here, then copy this comment and
+     the whole footer element across unchanged.
 ============================================================================ -->
 <footer class="relative z-20 panel-overlap section-panel rounded-[32px] pt-20 pb-10">
   <div class="max-w-[1440px] mx-auto px-8 md:px-16">
@@ -414,7 +431,7 @@
          each track in the ŽIVOT mosaic: the lokal photo and the centrala clip
          (same src, so the video costs no extra download). -->
     <div class="reveal grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-      <a href="poslovi-u-lokalima.html" class="footer-cta">
+      <a href="listanje.html" class="footer-cta">
         <img class="footer-cta__media" src="assets/bb-zivot/storage-profili.png" alt="Balkan Bet lokal">
         <div class="footer-cta__scrim"></div>
         <div class="footer-cta__face"></div>
@@ -465,7 +482,7 @@
       <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
         <h3 class="text-white font-bold uppercase tracking-wide mb-6">Navigacija</h3>
         <nav class="flex flex-col gap-4 text-white/90 font-bold">
-          <a href="poslovi-u-lokalima.html" class="hover:text-brand-dark transition-colors w-fit">Poslovi u lokalima</a>
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Poslovi u lokalima</a>
           <a href="#" class="hover:text-brand-dark transition-colors w-fit">Posao u centrali</a>
           <a href="#" class="hover:text-brand-dark transition-colors w-fit">O nama</a>
           <a href="#" class="hover:text-brand-dark transition-colors w-fit">Život u Balkan Betu</a>
@@ -836,6 +853,22 @@
     if (e.key === 'Escape') closeHeroMenus();
   });
 
+  /* "Pretraži" hands the three picks over to listanje.html, which reads them
+     out of the query string and pre-selects its own bar. The bar there is the
+     same control with the same option lists, so the values travel as-is; the
+     mode only has to be mapped onto the short key that page filters on.
+     "Sve ..." is dropped rather than sent — it IS the unfiltered state, and
+     leaving it out keeps the URL readable. */
+  document.querySelector('.hero-search__submit').addEventListener('click', () => {
+    const q = new URLSearchParams();
+    q.set('vrsta', heroTabs.mode.value.textContent === 'Posao u centrali' ? 'centrala' : 'lokali');
+    const loc = heroTabs.location.value.textContent;
+    const pos = heroTabs.position.value.textContent;
+    if (loc !== 'Sve lokacije') q.set('lokacija', loc);
+    if (pos !== 'Sve pozicije') q.set('pozicija', pos);
+    window.location.href = 'listanje.html?' + q.toString();
+  });
+
   /* ==========================================================================
      IMPACT — scroll-scrubbed text reveal
      Each line is an array of {t: text, hl?: true} tokens; a highlighted
@@ -1003,15 +1036,24 @@
     openingCards.forEach((card) => card.classList.remove('is-resetting'));
   }
 
-  // Note: no unobserve() — the row re-plays its cascade every time it comes
-  // back into view, rather than firing once for the life of the page.
+  /* No unobserve() — the row re-plays its cascade rather than firing once for
+     the life of the page. But it only RE-ARMS ON THE WAY DOWN: the reset is
+     gated on WHICH SIDE the row left through.
+
+       left through the BOTTOM (boundingClientRect.top >= 0, i.e. the row sits
+         below the viewport) — the reader is above the section and will next
+         meet it coming down, the direction the cascade is built for. Re-arm.
+       left through the TOP (top < 0) — the reader has scrolled past it. Leave
+         the cards OPEN, so coming back up finds them exactly as they were.
+
+     Resetting on both sides is what made a return trip upward re-run an
+     entrance that plays out while the cards are still above the fold. The sign
+     of boundingClientRect.top is enough to tell the two apart and avoids
+     depending on entry.rootBounds, which is not always populated. */
   const openingsObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        openingCards.forEach((card) => card.classList.add('is-revealed'));
-      } else {
-        resetOpenings();
-      }
+      if (entry.isIntersecting) openingCards.forEach((card) => card.classList.add('is-revealed'));
+      else if (entry.boundingClientRect.top >= 0) resetOpenings();
     });
   }, { rootMargin: '0px 0px 200px 0px', threshold: 0 });
   openingsObserver.observe(openingsGrid);
@@ -1285,8 +1327,17 @@
     entries.forEach((entry) => { if (entry.isIntersecting) runCounter(counterTiles.get(entry.target)); });
   }, { rootMargin: `${COUNTER_LEAD}px 0px ${COUNTER_LEAD}px 0px`, threshold: 0 });
 
+  /* Same "only re-arm on the way down" rule the tiles use: a landed number is
+     only sent back to 0 once the block is BELOW the viewport (top >= 0). If it
+     left through the top, the reader has scrolled past it and coming back up
+     must find the final figure sitting there, not a zero that starts running
+     again — the tile behind it stays open in that direction too. */
   const counterResetObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => { if (!entry.isIntersecting) resetCounter(counterTiles.get(entry.target)); });
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting && entry.boundingClientRect.top >= 0) {
+        resetCounter(counterTiles.get(entry.target));
+      }
+    });
   }, { rootMargin: `${COUNTER_KEEP}px 0px ${COUNTER_KEEP}px 0px`, threshold: 0 });
 
   statCounterEls.forEach((el) => paintCounter(el, 0));
@@ -1341,11 +1392,19 @@
      from a blank box in front of the reader. This used to observe the mosaic as
      a whole and reveal all twelve tiles at once, which meant everything below
      the first screenful had finished animating long before anyone got to it.
-     Counters are not driven from here either; see counterStartObserver above. */
+     Counters are not driven from here either; see counterStartObserver above.
+
+     A tile only RE-ARMS ON THE WAY DOWN — same rule as openingsObserver: it is
+     reset when it leaves through the BOTTOM (boundingClientRect.top >= 0, so
+     the reader is above it and will next meet it coming down), and left OPEN
+     when it leaves through the top. Scrolling back up therefore finds the
+     mosaic exactly as it was left instead of re-running an entrance the reader
+     cannot see anyway, since these tiles run up to ~590px tall and the trigger
+     fires on their first visible pixel. */
   const zivotObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) entry.target.classList.add('is-revealed');
-      else resetTile(entry.target);
+      else if (entry.boundingClientRect.top >= 0) resetTile(entry.target);
     });
   }, { rootMargin: '0px 0px 180px 0px', threshold: 0 });
   zivotTileEls.forEach((el) => zivotObserver.observe(el));

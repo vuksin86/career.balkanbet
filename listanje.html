@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Balkan Bet | Pronađi svoj posao</title>
+
+<!-- ==========================================================================
+     SHARED SETUP — identical on index.html and oglas-primer.html.
+     (index.html additionally loads Lenis for its scroll-driven hero.)
+     Tailwind + brand tokens (brand-setup.js) + the one stylesheet that carries
+     every component on the site (styles.css, including the @font-face rules
+     for NeoSansW1G). Nothing page-specific is defined in this file.
+========================================================================== -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="brand-setup.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="font-sans text-brand-dark antialiased overflow-x-hidden">
+
+<!-- Same fixed aurora as the homepage, so the light sections here sit on the
+     same living orange rather than a flat fill. -->
+<div class="animated-bg" aria-hidden="true">
+  <span class="animated-bg__blob animated-bg__blob--1"></span>
+  <span class="animated-bg__blob animated-bg__blob--2"></span>
+  <span class="animated-bg__blob animated-bg__blob--3"></span>
+</div>
+
+<!-- ============================================================================
+     HEADER — floating pill nav, fixed across the whole page.
+
+     ⚠ SHARED BLOCK — this exact markup is duplicated BYTE-FOR-BYTE in
+     listanje.html and oglas-primer.html (no build step here, and a static
+     mockup should not need JS to draw its own navigation). index.html is the
+     source of truth: edit here first, then copy this comment and the whole
+     header element across unchanged. Nothing page-specific goes in it — no
+     per-page active state, no per-page hrefs — so the copies cannot drift.
+     (Do not write a literal closing header/footer tag inside these comments:
+     the sync is done by matching from the banner to the first closing tag.)
+
+     NOTE for dev handoff: the "#" hrefs are placeholders. Swap them for real
+     paths once the rest of the site exists, e.g.:
+       Poslovi u lokalima     -> poslovi-u-lokalima.html   (its own page, TBD)
+       Posao u centrali       -> posao-u-centrali.html
+       O nama                 -> o-nama.html
+       Život u Balkan Betu    -> zivot-u-balkan-betu.html
+       Kontakt                -> kontakt.html
+============================================================================ -->
+<header class="fixed top-6 inset-x-0 z-50 flex justify-center px-4">
+  <div class="w-full max-w-[1300px] flex items-center justify-between gap-5
+              bg-brand-dark/40 backdrop-blur-md border border-white/25
+              rounded-full pl-[30px] pr-[30px] py-3">
+
+    <!-- Logo (2x original size, then reduced 20% -> h-16 * 0.8 = h-[51.2px]) -->
+    <a href="index.html" class="flex items-center shrink-0" aria-label="Balkan Bet početna">
+      <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[51.2px] w-auto">
+    </a>
+
+    <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case -->
+    <nav class="hidden md:flex items-center gap-5 text-base font-medium uppercase text-white whitespace-nowrap">
+      <a href="#" class="hover:text-brand-yellow transition-colors">Poslovi u lokalima</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Posao u centrali</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">O nama</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Život u Balkan Betu</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Kontakt</a>
+    </nav>
+
+    <!-- CTA — flat brand yellow + white text, same fill as the "Prijavi se"
+         buttons on the job cards. Sentence case on purpose: this is the one
+         CTA on the page that is NOT set uppercase.
+         This is one of the entry points into the listing page (together with
+         every "Pretraži" / "Pogledaj sve pozicije" on the site). -->
+    <a href="listanje.html" class="bg-brand-yellow shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
+      Pronađi posao
+    </a>
+  </div>
+</header>
+
+<!-- ============================================================================
+     HERO — dark band with the page title and the search bar.
+
+     FULL-BLEED and SQUARE on all four corners: no .section-panel inset, no top
+     margin and no radius, so the band runs edge to edge and the floating header
+     sits on top of it. The results panel below is the element that floats — it
+     is inset 30px on every side — so the band behind it stays a flat backdrop
+     rather than a rounded card of its own.
+
+     overflow is deliberately VISIBLE here (.page-hero--flush): the search
+     bar's dropdown panels open downwards and would otherwise be cut off at
+     the band's bottom edge. The corner glow is therefore painted as a
+     background-image rather than the overflow-clipped ::after used elsewhere,
+     and z-30 keeps an open panel above the results panel below.
+
+     pt-[190px] clears the fixed header (which floats 24px from the top and is
+     ~78px tall) and still leaves the title breathing room.
+============================================================================ -->
+<section class="page-hero page-hero--flush relative z-30 pt-[190px] pb-16">
+  <div class="max-w-[1200px] mx-auto px-8 md:px-16 text-center">
+    <h1 class="uppercase font-extrabold tracking-tight text-white"
+        style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
+      Pronađi svoj posao
+    </h1>
+    <p class="text-white/80 text-lg font-medium mt-5 max-w-2xl mx-auto">
+      Pridruži se timu od preko 1000 zaposlenih širom Srbije.
+      Pretraži otvorene pozicije u Balkan Betu.
+    </p>
+  </div>
+
+  <!-- SEARCH BAR — the homepage hero bar reused as-is (.hero-search: yellow
+       frame, three white tabs, black submit), plus the one control this page
+       needs on top of it: the "Bez CV-ja" checkbox. Same custom dropdowns,
+       not <select>s — see the CSS note on .hero-search.
+
+       .hero-search--down flips the panels to open DOWNWARDS. The homepage bar
+       opens upward only because it sits 96px off the bottom of a clipped
+       stage; here there is a whole page below it.
+
+       Unlike the homepage bar this one actually filters: options are built
+       from the JOBS array and every change re-runs apply() (see the script at
+       the bottom of this file). job-filter.js owns the dropdown mechanics. -->
+  <!-- Wider than the title block above it, and capped so that at >=1372px it
+       measures exactly 1312px — the same width as the card row in the panel
+       below, so the bar and the grid share one left and right edge. The 30px
+       side padding is the same inset the results panel uses, which keeps the
+       two aligned at every width, not just at the cap.
+       The width matters now that every element in the bar is the same size:
+       at the old 1072px the five equal slots were too narrow for the default
+       "Poslovi u lokalima" and it truncated on load. -->
+  <div class="max-w-[1372px] mx-auto px-[30px] mt-12">
+    <div class="hero-search hero-search--down" id="job-filter">
+
+      <div class="hero-search__tab" data-filter="vrsta">
+        <button type="button" class="hero-search__trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="hero-search__body">
+            <span class="hero-search__label">Vrsta posla</span>
+            <span class="hero-search__value" data-value></span>
+          </span>
+          <svg class="hero-search__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="hero-search__menu" role="listbox" hidden></div>
+      </div>
+
+      <div class="hero-search__tab" data-filter="lokacija">
+        <button type="button" class="hero-search__trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="hero-search__body">
+            <span class="hero-search__label">Lokacija</span>
+            <span class="hero-search__value" data-value></span>
+          </span>
+          <svg class="hero-search__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="hero-search__menu" role="listbox" hidden></div>
+      </div>
+
+      <div class="hero-search__tab" data-filter="pozicija">
+        <button type="button" class="hero-search__trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="hero-search__body">
+            <span class="hero-search__label">Pozicija</span>
+            <span class="hero-search__value" data-value></span>
+          </span>
+          <svg class="hero-search__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true">
+            <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="hero-search__menu" role="listbox" hidden></div>
+      </div>
+
+      <!-- The extra control this bar has over the homepage one. Drawn as a
+           fourth white tile so it reads as part of the same frame; the native
+           box is hidden and redrawn because it cannot take the brand radius. -->
+      <label class="hero-search__check">
+        <input type="checkbox">
+        <span class="hero-search__box">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#231F20" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </span>
+        <span>Bez CV-ja</span>
+      </label>
+
+      <button type="button" class="hero-search__submit">Pretraži</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     RESULTS — cards rendered from the JOBS array at the bottom of this file.
+
+     Flat #F4F4F4 panel FLOATING on the dark band: .jobs-panel carries a 30px
+     margin on every side, so there is 30px of the hero visible above it and
+     30px down both edges of the viewport. No .panel-overlap — the two panels
+     must not touch, that gap is the whole point. rounded-[32px] is the same
+     radius every panel on the homepage carries.
+
+     Cards are the homepage "Najnovije pozicije" card, same markup and same
+     tokens (white, 12px radius, 28px padding, gold pin + city, ~26px title,
+     yellow "Prijavi se"), and now the same SIZE too: the inner container is
+     capped at 1312px, which is exactly what the homepage's
+     `max-w-[1440px] px-16` measures out to, so a row of four lands on the same
+     ~313px card instead of stretching to the panel's full width.
+     What differs is only the reveal: .job-card fades up 60px, ONCE per card
+     (the observer unobserves on first hit), because .opening-card's replaying
+     380px cascade is tuned for a single row of four, not a full grid of 16.
+============================================================================ -->
+<section class="relative z-10 jobs-panel rounded-[32px]">
+  <div class="max-w-[1312px] mx-auto">
+
+    <!-- Toolbar: live result count on the left, sort control on the right. -->
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+      <p id="results-count" class="text-brand-dark font-bold text-lg"></p>
+
+      <!-- No "Sortiraj" caption above the value: the field is a lone control,
+           not one cell of a labelled bar, and the option text ("Najnovije")
+           already says what it is. aria-label carries it for screen readers. -->
+      <div class="jf-sort" id="jobs-sort">
+        <div class="jf-field jf-field--solid jf-field--nolabel" data-filter="sort">
+          <button type="button" class="jf-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Sortiraj">
+            <span class="jf-value"></span>
+          </button>
+          <div class="jf-menu" hidden></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="jobs-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+
+    <!-- Shown instead of the grid when a filter combination matches nothing -->
+    <div id="jobs-empty" class="hidden text-center py-16">
+      <p class="text-brand-dark font-bold text-xl">Nema pozicija za izabrane filtere.</p>
+      <p class="text-brand-dark/60 mt-3">Probaj drugu lokaciju ili poziciju — nove pozicije otvaramo redovno.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     FOOTER CTA — closing call-to-action + site navigation + socials
+
+     ⚠ SHARED BLOCK — same rule as the header above: this exact markup is
+     duplicated BYTE-FOR-BYTE in listanje.html and oglas-primer.html.
+     index.html is the source of truth; edit here, then copy this comment and
+     the whole footer element across unchanged.
+============================================================================ -->
+<footer class="relative z-20 panel-overlap section-panel rounded-[32px] pt-20 pb-10">
+  <div class="max-w-[1440px] mx-auto px-8 md:px-16">
+
+    <!-- Two media CTAs opening the footer — lokali / centrala. Both slots used
+         to be one photo + one "Postani deo našeg tima?" text box; they are now
+         a matched pair of links (see .footer-cta in styles.css for the yellow
+         swing-up hover). The visuals deliberately reuse what already stands for
+         each track in the ŽIVOT mosaic: the lokal photo and the centrala clip
+         (same src, so the video costs no extra download). -->
+    <div class="reveal grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <a href="listanje.html" class="footer-cta">
+        <img class="footer-cta__media" src="assets/bb-zivot/storage-profili.png" alt="Balkan Bet lokal">
+        <div class="footer-cta__scrim"></div>
+        <div class="footer-cta__face"></div>
+        <div class="footer-cta__body">
+          <h2 class="footer-cta__title">Poslovi u lokalima</h2>
+          <p class="footer-cta__sub">Pogledaj otvorene pozicije u Balkan Betu.</p>
+          <!-- The extra span is not decoration: .footer-cta__pillwrap animates
+               grid-template-rows 0fr -> 1fr and the span is the row that has to
+               clip while collapsed. -->
+          <div class="footer-cta__pillwrap"><span>
+            <span class="footer-cta__pill">Pogledaj pozicije</span>
+          </span></div>
+        </div>
+      </a>
+
+      <a href="#" class="footer-cta">
+        <video class="footer-cta__media" src="assets/bb-zivot/8141231-uhd_2160_3840_25fps.mp4"
+               autoplay muted loop playsinline preload="metadata"></video>
+        <div class="footer-cta__scrim"></div>
+        <div class="footer-cta__face"></div>
+        <div class="footer-cta__body">
+          <h2 class="footer-cta__title">Posao u centrali</h2>
+          <p class="footer-cta__sub">Postani deo našeg tima</p>
+          <div class="footer-cta__pillwrap"><span>
+            <span class="footer-cta__pill">Pogledaj pozicije</span>
+          </span></div>
+        </div>
+      </a>
+    </div>
+
+    <div class="reveal grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Column: corporate site -->
+      <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
+        <h3 class="text-white font-bold uppercase tracking-wide mb-4">Pun pogodak</h3>
+        <p class="text-white/85">
+          Poseti naš sajt i saznaj više o Balkan Betu — o ponudi, lokalima širom Srbije i svemu što radimo.
+        </p>
+        <!-- border-b-2 + solid white: same underline weight as the
+             "Pogledaj sve pozicije" link in #openings, so the two text CTAs
+             read as one style. -->
+        <a href="#" class="inline-flex items-center gap-2 mt-10 text-white font-bold uppercase tracking-wide border-b-2 border-white pb-1 hover:text-brand-dark hover:border-brand-dark transition-colors cursor-pointer">
+          <svg width="10" height="12" viewBox="0 0 10 12" fill="none"><path d="M1 1L9 6L1 11V1Z" fill="currentColor"/></svg>
+          balkanbet.rs
+        </a>
+      </div>
+
+      <!-- Column: site navigation -->
+      <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
+        <h3 class="text-white font-bold uppercase tracking-wide mb-6">Navigacija</h3>
+        <nav class="flex flex-col gap-4 text-white/90 font-bold">
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Poslovi u lokalima</a>
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Posao u centrali</a>
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">O nama</a>
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Život u Balkan Betu</a>
+          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Kontakt</a>
+        </nav>
+      </div>
+
+      <!-- Column: social -->
+      <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
+        <h3 class="text-white font-bold uppercase tracking-wide mb-6">Prati nas</h3>
+        <div class="flex items-center gap-4">
+          <a href="#" aria-label="LinkedIn" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer font-bold text-sm">in</a>
+          <a href="#" aria-label="Instagram" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="1.2" fill="currentColor"/></svg>
+          </a>
+          <a href="#" aria-label="Facebook" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer font-bold">f</a>
+          <a href="#" aria-label="YouTube" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" stroke-width="2"/><path d="M10 9L15 12L10 15V9Z" fill="currentColor"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Three slots, so "Nazad na vrh" is centred against the FOOTER, not
+         against whatever the two side texts happen to measure — hence a
+         3-column grid rather than justify-between. -->
+    <div class="reveal grid grid-cols-1 sm:grid-cols-3 items-center gap-4 mt-10 pt-8 border-t border-white/20 text-white/80 text-sm text-center sm:text-left">
+      <p class="sm:justify-self-start">&copy;2026 Balkan Bet. Sva prava zadržana.</p>
+      <a href="#top" class="sm:justify-self-center hover:text-white transition-colors">Nazad na vrh</a>
+      <span class="sm:justify-self-end inline-flex items-center gap-2">
+        Dizajn i razvoj
+        <!-- smartweb-logo.svg is already all-white (fill="#fff"), so it needs no
+             filter here. Height is in em so it tracks this row's font size. -->
+        <img src="assets/logo/smartweb-logo.svg" alt="Smartweb" class="h-[1.15em] w-auto">
+      </span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================================
+     SCRIPTS
+============================================================================ -->
+<script src="job-filter.js"></script>
+<script>
+  /* ==========================================================================
+     OPEN POSITIONS
+
+     Static data — there is no backend anywhere in this mockup, so the filter
+     below works against this array and the cards it renders. Every card links
+     to the same oglas-primer.html for now; once the real ads exist, each entry
+     gets its own `url` and only the href line changes.
+
+     `vrsta` splits the two career tracks the search bar's first tab offers.
+     Only lokal positions exist as data today, so picking "Posao u centrali"
+     lands on the empty state — deliberately, not a bug.
+     `category` feeds the card's first meta row, matching the homepage card.
+  ========================================================================== */
+  const JOBS = [
+    { title: 'Operater u lokalu',   city: 'Beograd',      category: 'Operativa',      vrsta: 'lokali', nocv: true  },
+    { title: 'Konobar',             city: 'Novi Sad',     category: 'Ugostiteljstvo', vrsta: 'lokali', nocv: true  },
+    { title: 'Operater u lokalu',   city: 'Niš',          category: 'Operativa',      vrsta: 'lokali', nocv: true  },
+    { title: 'Operater u lokalu',   city: 'Jagodina',     category: 'Operativa',      vrsta: 'lokali', nocv: true  },
+    { title: 'Operater u lokalu',   city: 'Paraćin',      category: 'Operativa',      vrsta: 'lokali', nocv: true  },
+    { title: 'Operater u lokalu',   city: 'Kruševac',     category: 'Operativa',      vrsta: 'lokali', nocv: true  },
+    { title: 'Konobar',             city: 'Kragujevac',   category: 'Ugostiteljstvo', vrsta: 'lokali', nocv: true  },
+    { title: 'Higijeničar',         city: 'Čačak',        category: 'Održavanje',     vrsta: 'lokali', nocv: true  },
+    { title: 'Radnik obezbeđenja',  city: 'Zlatibor',     category: 'Obezbeđenje',    vrsta: 'lokali', nocv: false },
+    { title: 'Operater u lokalu',   city: 'Pirot',        category: 'Operativa',      vrsta: 'lokali', nocv: true  },
+    { title: 'Konobar',             city: 'Novi Banovci', category: 'Ugostiteljstvo', vrsta: 'lokali', nocv: true  },
+    { title: 'Higijeničar',         city: 'Batajnica',    category: 'Održavanje',     vrsta: 'lokali', nocv: true  },
+    { title: 'Radnik obezbeđenja',  city: 'Subotica',     category: 'Obezbeđenje',    vrsta: 'lokali', nocv: false },
+    { title: 'Operater u lokalu',   city: 'Ruma',         category: 'Operativa',      vrsta: 'lokali', nocv: true  },
+    { title: 'Konobar',             city: 'Šabac',        category: 'Ugostiteljstvo', vrsta: 'lokali', nocv: true  },
+    { title: 'Higijeničar',         city: 'Nova Pazova',  category: 'Održavanje',     vrsta: 'lokali', nocv: true  },
+  ];
+
+  const VRSTE = [
+    { value: 'lokali',   label: 'Poslovi u lokalima' },
+    { value: 'centrala', label: 'Posao u centrali' },
+  ];
+
+  const PIN_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-7.58 8-13A8 8 0 0 0 4 9c0 5.42 8 13 8 13z"/><circle cx="12" cy="9" r="2.5"/></svg>`;
+  const BELL_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>`;
+  const CLOCK_ICON = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`;
+
+  const grid = document.getElementById('jobs-grid');
+  const emptyState = document.getElementById('jobs-empty');
+  const countEl = document.getElementById('results-count');
+
+  /* Card markup is the homepage "Najnovije pozicije" card, field for field:
+     gold pin + city, ~26px title, two meta rows, and the CTA pinned to the
+     bottom edge by mt-auto so the buttons line up across a row even when the
+     titles run to different line counts. Only the outer class differs
+     (.job-card instead of .opening-card) — see the CSS note, the box is the
+     same and only the reveal is retuned for a full grid. */
+  grid.innerHTML = JOBS.map((job, i) => `
+    <article class="job-card" data-i="${i}"
+             data-city="${job.city}" data-title="${job.title}"
+             data-vrsta="${job.vrsta}" data-nocv="${job.nocv}"
+             style="--stagger-delay:${(i % 4) * 110}ms">
+      <div class="flex items-center gap-1.5 text-[13px] font-bold text-brand-gold">
+        ${PIN_ICON}<span>${job.city}</span>
+      </div>
+
+      <h3 class="font-bold text-brand-dark mt-3.5" style="font-size: clamp(1.375rem, 1.85vw, 1.625rem); line-height: 1.12;">${job.title}</h3>
+
+      <div class="flex flex-col gap-2 text-[13px] font-medium text-brand-dark/50 mt-6">
+        <div class="flex items-center gap-2">${BELL_ICON}<span>${job.category}</span></div>
+        <div class="flex items-center gap-2">${CLOCK_ICON}<span>Full time</span></div>
+      </div>
+
+      <div class="mt-auto pt-7">
+        <a href="oglas-primer.html" class="inline-flex items-center justify-center bg-brand-yellow text-white rounded-full px-6 py-2 font-bold text-[13px] hover:brightness-95 transition cursor-pointer">
+          Prijavi se
+        </a>
+      </div>
+    </article>
+  `).join('');
+
+  const cards = Array.from(grid.querySelectorAll('.job-card'));
+
+  /* Cards reveal as they scroll in — one observer for all of them, but the
+     entries arrive per card, so a 16-card grid doesn't fire the whole cascade
+     the moment its first row appears.
+
+     ONCE PER CARD, then unobserve: a card that has played its entrance stays
+     put for the rest of the visit. This is the opposite of the homepage row,
+     which re-arms every time it leaves the viewport — that row is four cards
+     seen as one gesture, while this is a 16-card grid the reader scrolls up and
+     down through, and replaying the fade on every pass reads as flicker.
+     Unobserving (rather than just gating on a flag) also means the filter can
+     hide and re-show a card with `display` without the observer firing again. */
+  const cardObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-revealed');
+      cardObserver.unobserve(entry.target);
+    });
+  }, { rootMargin: '0px 0px -60px 0px', threshold: 0 });
+  cards.forEach((card) => cardObserver.observe(card));
+
+  /* ==========================================================================
+     LIVE FILTERING — runs on every dropdown/checkbox change, no submit needed.
+     "Pretraži" is kept because the reference has it and users expect it; it
+     just re-applies the same filter and scrolls the results into view.
+  ========================================================================== */
+  const uniq = (values) => Array.from(new Set(values)).sort((a, b) => a.localeCompare(b, 'sr'));
+
+  const jobsFor = (vrsta) => JOBS.filter((j) => j.vrsta === vrsta);
+
+  const locationsFor = (vrsta) => [{ value: 'sve', label: 'Sve lokacije' }]
+    .concat(uniq(jobsFor(vrsta).map((j) => j.city)).map((c) => ({ value: c, label: c })));
+
+  const positionsFor = (vrsta) => [{ value: 'sve', label: 'Sve pozicije' }]
+    .concat(uniq(jobsFor(vrsta).map((j) => j.title)).map((t) => ({ value: t, label: t })));
+
+  /* Sort runs on the visible set, not on JOBS, so it composes with the filter
+     instead of fighting it. "Najnovije" is the array's own order — with no
+     dates in the mockup data that is the newest-first list as authored. */
+  const SORTS = [
+    { value: 'najnovije', label: 'Najnovije' },
+    { value: 'lokacija',  label: 'Lokacija (A-Š)' },
+    { value: 'pozicija',  label: 'Pozicija (A-Š)' },
+  ];
+
+  let sortMode = 'najnovije';
+
+  function applySort() {
+    const order = cards.slice().sort((a, b) => {
+      if (sortMode === 'lokacija') {
+        return a.dataset.city.localeCompare(b.dataset.city, 'sr') ||
+               Number(a.dataset.i) - Number(b.dataset.i);
+      }
+      if (sortMode === 'pozicija') {
+        return a.dataset.title.localeCompare(b.dataset.title, 'sr') ||
+               Number(a.dataset.i) - Number(b.dataset.i);
+      }
+      return Number(a.dataset.i) - Number(b.dataset.i);
+    });
+    // Re-appending a node that is already a child MOVES it, so this reorders
+    // the grid in place without re-creating a single card (and without
+    // restarting any reveal that has already run).
+    order.forEach((card) => grid.appendChild(card));
+  }
+
+  function apply(values) {
+    let shown = 0;
+
+    cards.forEach((card) => {
+      const matches =
+        card.dataset.vrsta === values.vrsta &&
+        (values.lokacija === 'sve' || card.dataset.city === values.lokacija) &&
+        (values.pozicija === 'sve' || card.dataset.title === values.pozicija) &&
+        (!values.nocv || card.dataset.nocv === 'true');
+
+      card.style.display = matches ? '' : 'none';
+      if (matches) shown += 1;
+    });
+
+    countEl.textContent = shown === 0
+      ? 'Nema rezultata'
+      : `Pronašli smo ${shown} ${BBFilter.plural(shown, ['poziciju', 'pozicije', 'pozicija'])}`;
+
+    grid.classList.toggle('hidden', shown === 0);
+    emptyState.classList.toggle('hidden', shown !== 0);
+  }
+
+  /* The search bar. Same three tabs as the homepage, and the first one drives
+     the other two for the same reason it does there: leaving a shop-floor
+     position list under "Posao u centrali" would contradict the choice just
+     made. `refill` swaps their option lists and resets both to "Sve ...",
+     since the previously picked value usually doesn't exist in the new list. */
+  /* Both declared BEFORE initBar: it fires onChange once synchronously to
+     publish the initial state, and that callback reads them. */
+  let lastVrsta = 'lokali';
+  let bar = null;
+
+  bar = BBFilter.initBar(document.getElementById('job-filter'), {
+    skin: 'hero',
+    fields: {
+      vrsta: VRSTE,
+      lokacija: locationsFor('lokali'),
+      pozicija: positionsFor('lokali'),
+    },
+    onChange: (values) => {
+      if (bar && values.vrsta !== lastVrsta) {
+        lastVrsta = values.vrsta;
+        bar.refill('lokacija', locationsFor(values.vrsta));
+        bar.refill('pozicija', positionsFor(values.vrsta));
+        values = bar.values();
+      }
+      apply(values);
+    },
+    onSubmit: (values) => {
+      apply(values);
+      grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    },
+  });
+
+  // Single-field bar, reused for the sort control: same dropdown mechanic,
+  // 'jf' skin, no checkbox and no submit button in its markup.
+  BBFilter.initBar(document.getElementById('jobs-sort'), {
+    fields: { sort: SORTS },
+    onChange: (values) => {
+      sortMode = values.sort;
+      applySort();
+    },
+  });
+
+  /* Arriving from a search bar elsewhere on the site (the homepage hero, or
+     the small bar on the ad page) pre-selects what was picked there instead of
+     dropping the visitor on an unfiltered list. Order matters: `vrsta` first,
+     because setting it rebuilds the other two lists. */
+  const params = new URLSearchParams(location.search);
+  if (params.get('vrsta')) bar.set('vrsta', params.get('vrsta'));
+  if (params.get('lokacija')) bar.set('lokacija', params.get('lokacija'));
+  if (params.get('pozicija')) bar.set('pozicija', params.get('pozicija'));
+  if (params.get('nocv')) {
+    const box = document.querySelector('#job-filter .hero-search__check input');
+    box.checked = true;
+    box.dispatchEvent(new Event('change'));
+  }
+
+  /* Shared .reveal fade-in, same as the homepage. */
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
+</script>
+</body>
+</html>
