@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="sr">
 <head>
 <meta charset="UTF-8">
@@ -29,7 +29,13 @@
 </div>
 
 <!-- ============================================================================
-     HEADER — floating pill nav, fixed across the whole page.
+     HEADER — full-bleed bar, fixed to the very top of the viewport.
+
+     Was a floating pill (top-6, max-w-[1300px], rounded-full, border all round)
+     until the client asked for edge-to-edge with no radius. The glass fill and
+     backdrop blur stay — it still has to sit over the hero video — but the ring
+     border is now a bottom hairline only: on a full-bleed bar the left/right/top
+     edges of a full border land on the screen edges and read as an artefact.
 
      ⚠ SHARED BLOCK — this exact markup is duplicated BYTE-FOR-BYTE in
      listanje.html and oglas-primer.html (no build step here, and a static
@@ -48,14 +54,17 @@
        Život u Balkan Betu    -> zivot-u-balkan-betu.html
        Kontakt                -> kontakt.html
 ============================================================================ -->
-<header class="fixed top-6 inset-x-0 z-50 flex justify-center px-4">
-  <div class="w-full max-w-[1300px] flex items-center justify-between gap-5
-              bg-brand-dark/40 backdrop-blur-md border border-white/25
-              rounded-full pl-[30px] pr-[30px] py-3">
+<header class="fixed top-0 inset-x-0 z-50">
+  <div class="w-full flex items-center justify-between gap-5
+              bg-brand-dark/40 backdrop-blur-md border-b border-white/20
+              pl-[30px] pr-[30px] py-3">
 
-    <!-- Logo (2x original size, then reduced 20% -> h-16 * 0.8 = h-[51.2px]) -->
+    <!-- Logo — 60px tall, asked for directly (it was 51.2px: 2x the original,
+         then reduced 20%). The bar has no fixed height of its own: it is the
+         logo plus the wrapper's py-3, so raising the logo is what raises the
+         header, from ~76px to ~85px. -->
     <a href="index.html" class="flex items-center shrink-0" aria-label="Balkan Bet početna">
-      <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[51.2px] w-auto">
+      <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[60px] w-auto">
     </a>
 
     <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case -->
@@ -72,7 +81,7 @@
          CTA on the page that is NOT set uppercase.
          This is one of the entry points into the listing page (together with
          every "Pretraži" / "Pogledaj sve pozicije" on the site). -->
-    <a href="listanje.html" class="bg-brand-yellow shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
+    <a href="listanje.html" class="bg-brand-cta shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
       Pronađi posao
     </a>
   </div>
@@ -90,7 +99,7 @@
         Sve otvorene pozicije
       </a>
 
-      <h1 class="uppercase font-extrabold tracking-tight text-white"
+      <h1 class="uppercase font-medium tracking-tight text-white"
           style="font-size: clamp(1.75rem, 4.4vw, 3.5rem); line-height: 1.05;">
         Operater u lokalu
       </h1>
@@ -149,7 +158,7 @@
       učiniti još boljim!
     </p>
 
-    <h2 class="reveal uppercase font-extrabold tracking-tight text-brand-dark text-center mt-16"
+    <h2 class="reveal uppercase font-medium tracking-tight text-brand-dark text-center mt-16"
         style="font-size: clamp(1.25rem, 2.4vw, 1.75rem);">
       Operater/ka u kladionici i automat klubu
     </h2>
@@ -229,7 +238,7 @@
         Prijava
       </span>
 
-      <h2 class="uppercase font-extrabold tracking-tight text-white mt-6"
+      <h2 class="uppercase font-medium tracking-tight text-white mt-6"
           style="font-size: clamp(1.5rem, 3.4vw, 2.5rem); line-height: 1.1;">
         Prijavi se za 1 minut — bez CV-ja!
       </h2>
@@ -343,7 +352,7 @@
       <div class="w-16 h-16 rounded-full bg-brand-yellow mx-auto flex items-center justify-center">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#231F20" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
       </div>
-      <h3 class="text-white uppercase font-extrabold mt-6" style="font-size: clamp(1.25rem, 2.6vw, 1.875rem);">
+      <h3 class="text-white uppercase font-medium mt-6" style="font-size: clamp(1.25rem, 2.6vw, 1.875rem);">
         Hvala, javićemo ti se uskoro!
       </h3>
       <p class="text-white/75 mt-4 text-lg">
@@ -366,7 +375,7 @@
   <div class="max-w-[1000px] mx-auto px-8 md:px-16">
 
     <div class="text-center mb-10">
-      <h2 class="uppercase font-extrabold tracking-tight text-brand-dark"
+      <h2 class="uppercase font-medium tracking-tight text-brand-dark"
           style="font-size: clamp(1.5rem, 3vw, 2.25rem);">
         Pretraži druge pozicije
       </h2>
@@ -406,7 +415,7 @@
 <section class="relative z-20 pt-24 pb-24">
   <div class="max-w-[1440px] mx-auto px-8 md:px-16">
 
-    <h2 class="reveal uppercase font-extrabold tracking-tight text-white text-center mb-14"
+    <h2 class="reveal uppercase font-medium tracking-tight text-white text-center mb-14"
         style="font-size: clamp(1.5rem, 3vw, 2.25rem);">
       Saznaj više o nama
     </h2>

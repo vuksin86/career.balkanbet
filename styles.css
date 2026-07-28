@@ -110,6 +110,52 @@
     opacity: 0.35;
     animation: aurora-float-3 13s ease-in-out infinite alternate;
   }
+  /* ------------------------------------------------------------------
+     DITHER — kills the concentric rings in the blobs.
+
+     Those rings are not a blur artefact that can be blurred away: they are
+     8-bit BANDING. A hard-edged circle blurred by 110px becomes a very gradual
+     ramp spread over hundreds of pixels, so consecutive steps of the ramp are
+     often less than one 8-bit level apart. The GPU rounds them to the same
+     value, and every place where the rounding flips draws a visible contour
+     line. It shows worst on the dark theme, where the whole ramp lives in a
+     handful of levels near black.
+
+     The fix is dithering: a fine, static grain laid over the layer, which
+     pushes pixels randomly across the rounding boundary so the step edges stop
+     lining up into rings. It has to sit ABOVE the blobs — it is the last child
+     of .animated-bg and neither it nor the blobs set z-index, so document order
+     already puts it there.
+
+     ⚠ THE FILTER CHAIN IS THE WHOLE TRICK — a bare feTurbulence does NOT work
+     here, and that was the first attempt at this. Raw turbulence outputs noise
+     in the ALPHA channel too, so most of the texture is transparent and only a
+     minority of pixels get nudged at all; the contours simply stayed. Two extra
+     filter primitives fix it:
+       feColorMatrix saturate 0 — turbulence is colour noise, which at any
+         useful strength shows up as red/blue speckle on a near-black page.
+         Desaturated it is pure luminance noise, which is what dithering wants.
+       feFuncA linear slope=0 intercept=1 — forces alpha to 1 EVERYWHERE, so
+         the layer is fully opaque grey grain and every single pixel is
+         perturbed. This is the part that makes it actually dither.
+     Strength is then set solely by `opacity` on the layer.
+
+     .06 puts the per-pixel deviation at roughly ±2 of 255, which is exactly the
+     amplitude needed to straddle a 1-level step; below ~.04 the contours come
+     back, past ~.09 it starts reading as deliberate film grain. It also lifts
+     the page by ~6 levels overall, which is invisible (there is no unlifted
+     reference anywhere on screen) — do not "fix" that by darkening --dk-bg.
+  ------------------------------------------------------------------ */
+  .animated-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .06;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0' intercept='1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+  }
+
   @keyframes aurora-float-1 {
     0%   { transform: translate(0, 0) scale(1); }
     100% { transform: translate(35vw, 25vh) scale(1.15); }
@@ -206,7 +252,9 @@
   .zivot-tile {
     position: relative;
     overflow: hidden;
-    border-radius: 18px;
+    /* 12px = the .opening-card / .job-card radius (Tailwind rounded-xl), asked
+       for so the mosaic and the job cards read as one radius family. Was 18px. */
+    border-radius: 12px;
     display: block;
     /* Pre-reveal state; .is-revealed (set by the observer) is the rest state. */
     opacity: 0;
@@ -427,7 +475,7 @@
     margin-top: 20px;
     max-width: 15rem;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: 500;   /* bilo 700 — traženo da benefiti ne budu bold */
     line-height: 1.3;
     color: #231F20;
   }
@@ -457,6 +505,57 @@
     margin-left: 30px;
     margin-right: 30px;
     overflow: hidden;
+  }
+
+  /* ========================================================================
+     HEADER — transparent while the hero owns the screen
+
+     On the HOMEPAGE ONLY the bar starts with no fill, no border and no blur:
+     just the logo, links and CTA floating straight on the video. It picks its
+     glass up the moment the hero unit starts leaving (P4), which is when the
+     page behind it starts being real content that the nav has to stay legible
+     against. updateHero() adds/removes `.is-solid` on the header.
+
+     TWO THINGS ARE LOAD-BEARING HERE:
+
+     1. The scope is `body:has(#hero-spacer)` — that element only exists on
+        index.html. The header markup is byte-identical across all three pages
+        and must stay that way, so the homepage-only behaviour cannot be a class
+        in the markup; it has to be inferred from what else is on the page.
+        listanje.html and oglas-primer.html never match, so their header keeps
+        the solid glass at all times, which is what they want.
+
+     2. It is written as `:not(.is-solid)` — an override that REMOVES the fill —
+        rather than as a rule that paints it on. The solid state therefore stays
+        exactly the Tailwind utilities in the markup (bg-brand-dark/40,
+        backdrop-blur-md, border-white/20) and there is no second copy of those
+        values here to drift. It also means the FIRST PAINT is transparent,
+        before any script has run, so there is no flash of a solid bar.
+
+     backdrop-filter is not transitioned — none -> blur() does not interpolate,
+     it cuts. That cut lands exactly when the video is sliding up at speed, so
+     it is not something the eye can catch. Do not try to fade it.
+  ======================================================================== */
+  body:has(#hero-spacer) header > div {
+    transition: background-color .35s ease, border-color .35s ease;
+  }
+  body:has(#hero-spacer) header:not(.is-solid) > div {
+    background-color: transparent;
+    border-color: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    /* NOT decoration — this is what keeps the bar legible once the fill is gone.
+       Two things are behind it in this state and neither can be relied on:
+         - the light theme's orange aurora, against which the logo's YELLOW
+           "BET" wordmark all but disappears (it was previously reading against
+           the dark glass, not against the page);
+         - the video, whose brightness changes frame to frame.
+       A soft dark drop-shadow fixes both without putting a background back, so
+       the "no fill, no border" the bar was asked for still holds. It applies to
+       the rendered content as a whole, so the links and the CTA pill get the
+       same separation. If the logo is ever supplied in an all-white variant for
+       this state, this can go. */
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,.28)) drop-shadow(0 4px 14px rgba(0,0,0,.34));
   }
 
   /* ========================================================================
@@ -527,17 +626,19 @@
 
      With the t-term gone the gap is just (130 - |margin|), held steady for
      the entire exit. |margin| is the FULL 130vh, which zeroes that term too,
-     so the only thing left between the video's bottom edge and the section's
-     top edge is the media box's own 30px bottom inset — a constant 30px at
-     every viewport height, never a fraction of vh.
+     so the gap between the video's bottom edge and the section's top edge is
+     ZERO at every viewport height — the section rides directly on the video's
+     lower edge and reads as being pushed up by it.
 
-     That constant is what makes the requested 200px video→title gap
-     expressible in px at all: it is the section's 170px top padding plus
-     those 30px. Anything less than 130vh here leaves a (130 - |margin|)vh
-     remainder that gets added on top, and the gap goes back to growing with
-     the viewport (at 122vh it measured 188px on a 780px-tall screen and
-     ~216px on a 1120px one). Anything MORE would push the section up over
-     the video's bottom edge.
+     It used to be a constant 30px, the media box's own bottom inset, back when
+     the box stopped short of the viewport edge; the video now goes full-bleed
+     at max size, so that inset is gone. The whole video→title gap therefore
+     lives in the section's own top padding (see the derivation above #openings
+     in index.html, where the 30px was moved onto it). Anything less than 130vh
+     here leaves a (130 - |margin|)vh remainder that gets added on top, and the
+     gap goes back to growing with the viewport (at 122vh it measured 188px on a
+     780px-tall screen and ~216px on a 1120px one). Anything MORE would push the
+     section up over the video's bottom edge.
 
      If P4's budget or HERO_EXIT_TRAVEL changes, re-derive from the formula
      above — the two must stay equal or the gap starts growing again.
@@ -634,10 +735,17 @@
      frame as the box grows from its small starting size to full. */
   .hero-media-fade {
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 42%;
+    /* Deliberately hangs 1px PAST the left/right/bottom edges of the media box.
+       updateHero() sizes that box to fractional pixel values (it lerps), so the
+       box and this child round their painted rects independently — and at some
+       heights the wash lands a pixel short of the bottom, leaving a full-width
+       sliver of un-darkened video along the edge. It reads as the overlay
+       "jumping up by 1px". Overhanging cannot be seen: the parent is
+       overflow:hidden, so the extra is clipped away at every size. */
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    height: calc(42% + 1px);
     pointer-events: none;
     /* Pure black, not brand-dark. Every dark overlay on the site (this, the
        mosaic scrims, the footer CTA scrim) is #000 on request — brand-dark
@@ -1331,15 +1439,22 @@
      height and pushes step 03 straight out the bottom of the stage. .5em ≈ the
      digits' real ink height, so the row is as tall as what you can actually
      see. If the numeral size changes, re-check this. */
+  /* The three sizes below (numeral, label, arrow width) were all scaled DOWN by
+     the same 0.85 on request — 18.2/3.64/8.2cqw before. Scaling them together
+     is what keeps `stroke-width: 4.3` on the arrows valid without recomputing:
+     that number is a ratio between the numeral's pen weight and the arrow's own
+     viewBox unit, so it survives any change that moves both by the same factor.
+     Change one of the three alone and the arrows stop matching the hand — redo
+     the division documented on .proc-arrow path. */
   .proc-step__num {
     font-family: 'LumieraHandwriting', cursive;
-    font-size: 18.2cqw;
+    font-size: 15.5cqw;
     line-height: .5;
     color: #231F20;
   }
   .proc-step__label {
     font-family: 'PatrickHand', cursive;
-    font-size: 3.64cqw;
+    font-size: 3.1cqw;
     line-height: 1.08;
     letter-spacing: .01em;
     text-transform: uppercase;
@@ -1351,7 +1466,7 @@
     position: absolute;
     left: var(--x);
     top: var(--y);
-    width: 8.2cqw;
+    width: 7cqw;             /* 8.2 * 0.85 — see the note on .proc-step__num */
     height: auto;
     overflow: visible;
   }
@@ -1486,7 +1601,10 @@
   }
   .footer-cta__title {
     font-size: clamp(1.6rem, 3vw, 2.4rem);
-    font-weight: 800;
+    /* 500 like every other display heading on the site — these are <h2>s and
+       were the only ones carrying their weight from CSS instead of a Tailwind
+       class, so they would have been left behind at 800 by the sweep. */
+    font-weight: 500;
     line-height: 1.1;
     text-transform: uppercase;
     color: #FFFFFF;

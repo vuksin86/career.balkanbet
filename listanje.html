@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="sr">
 <head>
 <meta charset="UTF-8">
@@ -28,7 +28,13 @@
 </div>
 
 <!-- ============================================================================
-     HEADER — floating pill nav, fixed across the whole page.
+     HEADER — full-bleed bar, fixed to the very top of the viewport.
+
+     Was a floating pill (top-6, max-w-[1300px], rounded-full, border all round)
+     until the client asked for edge-to-edge with no radius. The glass fill and
+     backdrop blur stay — it still has to sit over the hero video — but the ring
+     border is now a bottom hairline only: on a full-bleed bar the left/right/top
+     edges of a full border land on the screen edges and read as an artefact.
 
      ⚠ SHARED BLOCK — this exact markup is duplicated BYTE-FOR-BYTE in
      listanje.html and oglas-primer.html (no build step here, and a static
@@ -47,14 +53,17 @@
        Život u Balkan Betu    -> zivot-u-balkan-betu.html
        Kontakt                -> kontakt.html
 ============================================================================ -->
-<header class="fixed top-6 inset-x-0 z-50 flex justify-center px-4">
-  <div class="w-full max-w-[1300px] flex items-center justify-between gap-5
-              bg-brand-dark/40 backdrop-blur-md border border-white/25
-              rounded-full pl-[30px] pr-[30px] py-3">
+<header class="fixed top-0 inset-x-0 z-50">
+  <div class="w-full flex items-center justify-between gap-5
+              bg-brand-dark/40 backdrop-blur-md border-b border-white/20
+              pl-[30px] pr-[30px] py-3">
 
-    <!-- Logo (2x original size, then reduced 20% -> h-16 * 0.8 = h-[51.2px]) -->
+    <!-- Logo — 60px tall, asked for directly (it was 51.2px: 2x the original,
+         then reduced 20%). The bar has no fixed height of its own: it is the
+         logo plus the wrapper's py-3, so raising the logo is what raises the
+         header, from ~76px to ~85px. -->
     <a href="index.html" class="flex items-center shrink-0" aria-label="Balkan Bet početna">
-      <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[51.2px] w-auto">
+      <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[60px] w-auto">
     </a>
 
     <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case -->
@@ -71,7 +80,7 @@
          CTA on the page that is NOT set uppercase.
          This is one of the entry points into the listing page (together with
          every "Pretraži" / "Pogledaj sve pozicije" on the site). -->
-    <a href="listanje.html" class="bg-brand-yellow shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
+    <a href="listanje.html" class="bg-brand-cta shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
       Pronađi posao
     </a>
   </div>
@@ -92,12 +101,12 @@
      background-image rather than the overflow-clipped ::after used elsewhere,
      and z-30 keeps an open panel above the results panel below.
 
-     pt-[190px] clears the fixed header (which floats 24px from the top and is
-     ~78px tall) and still leaves the title breathing room.
+     pt-[190px] clears the fixed header (pinned to top:0, ~85px tall since the
+     logo went to 60px) and still leaves the title breathing room.
 ============================================================================ -->
 <section class="page-hero page-hero--flush relative z-30 pt-[190px] pb-16">
   <div class="max-w-[1200px] mx-auto px-8 md:px-16 text-center">
-    <h1 class="uppercase font-extrabold tracking-tight text-white"
+    <h1 class="uppercase font-medium tracking-tight text-white"
         style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
       Pronađi svoj posao
     </h1>
@@ -416,7 +425,7 @@
       </div>
 
       <div class="mt-auto pt-7">
-        <a href="oglas-primer.html" class="inline-flex items-center justify-center bg-brand-yellow text-white rounded-full px-6 py-2 font-bold text-[13px] hover:brightness-95 transition cursor-pointer">
+        <a href="oglas-primer.html" class="inline-flex items-center justify-center bg-brand-cta text-white rounded-full px-6 py-2 font-bold text-[13px] hover:brightness-95 transition cursor-pointer">
           Prijavi se
         </a>
       </div>

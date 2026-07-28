@@ -22,6 +22,10 @@ kaže drugačije.
   blok). Stoji u root-u NAMERNO - url() putanje do fontova su relativne 
   (assets/fonts/...), pa bi premeštanje u podfolder polomilo fontove. CSS više NIJE 
   inline u index.html
+- **theme-dark.css** - TAMNA VARIJANTA NASLOVNE, aditivni sloj i **PODRAZUMEVANA tema**. 
+  Učitava se SAMO u index.html, posle styles.css. Pravila važe dok `<html>` ima 
+  `data-theme="dark"`, a taj atribut sada stoji ZAKUCAN u markupu. Videti sekciju 
+  "Tamna varijanta naslovne" niže
 - **brand-setup.js** - Tailwind (Play CDN) config sa brend tokenima, učitava se odmah 
   posle CDN skripte na sve tri stranice
 - **job-filter.js** - custom dropdown-i za filter barove + srpska množina za brojive 
@@ -55,6 +59,12 @@ izmene.
 ## Brend - Balkan Bet
 ### Boje
 - #FDB813, #FDB913, #FAA61A - nijanse žute/narandžaste (primarni brend akcenti)
+- **#ffbb1a - CTA žuta.** Popuna SVAKOG dugmeta sa žutom pozadinom: header "Pronađi posao", 
+  "Prijavi se" na karticama pozicija (i na naslovnoj i na listanju - to je isti komponent), 
+  i žuti hover stanja tamne pilule "Saznaj više o nama". Živi kao ZASEBAN token 
+  `brand.cta` u brand-setup.js, NE kao izmena `brand.yellow` - ta i dalje boji tekst, 
+  ikonice i marker sweep, što nije bilo deo zahteva. Razlika je mala (253,184,19 vs 
+  255,187,26); ako dugme ikad deluje neusklađeno pored ikonice, to je razlog
 - #231F20 - tamna (zamenjuje sve stare tamne/braon boje)
 - #FFFFFF - bela
 - Animirana pozadina (.animated-bg) koristi #FAA61A (dominantna) i #FFCB05 (blob-ovi, 
@@ -62,7 +72,12 @@ izmene.
 
 ### Font
 NeoSansW1G, 4 težine (fajlovi u assets/fonts/ ili gde su postavljeni):
-- Bold - naslovi
+- **Medium (500) - SVI DISPLAY NASLOVI**, h1/h2/h3 na sve tri stranice. Traženo tako; 
+  ranije su bili `font-extrabold` (800, što je NeoSans ionako vraćao na Bold 700). U 
+  markupu je to Tailwindova klasa `font-medium`; JEDINI naslovi koji težinu dobijaju iz 
+  CSS-a su `.footer-cta__title` (font-weight: 500 u styles.css) - njih zamena klasa ne 
+  hvata, pa se moraju menjati posebno
+- Bold - podnaslovi kartica, nazivi pozicija, sitniji bold akcenti
 - Medium - nav linkovi, CTA dugmad, isticanja
 - Regular - običan tekst
 - Light - sitniji tekst
@@ -81,7 +96,33 @@ font-size bi nacrtao brojeve upola manje od reference (izmereno canvas TextMetri
 BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK" tekst
 
 ## Struktura HOMEPAGE-a (index.html, redosled sekcija)
-1. Header - fiksiran, BalkanBetLogo (2x uvećan pa smanjen 20% = trenutna finalna veličina), 
+1. Header - fiksiran, FULL-BLEED: `top-0 inset-x-0`, puna širina od ivice do ivice, BEZ 
+   radijusa i BEZ max-width-a. Ranije je bio plutajuća pilula (`top-6`, `max-w-[1300px]`, 
+   `rounded-full`, okvir sa sve četiri strane) - UKLONJENO na eksplicitan zahtev, ne 
+   vraćati. Staklena podloga (`bg-brand-dark/40` + `backdrop-blur-md`) OSTAJE jer header 
+   stoji preko hero videa; okvir je sada SAMO donji (`border-b`) - na traci koja ide od 
+   ivice do ivice, levi/desni/gornji rub punog okvira padaju na ivice ekrana i čitaju kao 
+   greška.
+   ⚠ NA NASLOVNOJ traka STARTUJE BEZ IČEGA - bez pozadine, bez okvira, bez blura, samo 
+   logo/linkovi/CTA lebde preko videa. Staklo dobija tek kad hero POČNE DA IZLAZI (prag je 
+   HERO_PHASE.p3End, kraj snap pauze); updateHero dodaje/skida `.is-solid` na header. 
+   Mehanika je u styles.css, sekcija "HEADER - transparent while the hero owns the screen":
+   - opseg je `body:has(#hero-spacer)` - taj element postoji SAMO na index.html. Header 
+     markup mora ostati byte-identičan na sve tri stranice, pa se ponašanje samo naslovne 
+     ne sme pisati kao klasa u markupu nego se zaključuje iz onoga što je još na stranici. 
+     Podstranice nikad ne matchuju i traka im je uvek puna, što tamo i treba
+   - pravilo je pisano kao `:not(.is-solid)`, dakle SKIDA fill umesto da ga crta. Zato puno 
+     stanje ostaje tačno ono što piše u markupu (bg-brand-dark/40, backdrop-blur-md, 
+     border-white/20) i nema druge kopije tih vrednosti koja bi odlutala. Usput, PRVI PAINT 
+     je providan, pre nego što ijedan skript odradi - nema blesak pune trake
+   - backdrop-filter se NE tranzicionira (none → blur ne interpolira, seče). Taj rez pada 
+     tačno kad video klizi gore punom brzinom, pa se ne vidi. Ne pokušavati fade
+   - dok je providna, sadržaj trake nosi `filter: drop-shadow(...)`. NIJE dekoracija: žuti 
+     "BET" u logotipu se bez tamnog stakla iza sebe gubi na narandžastoj aurori (ranije je 
+     čitao naspram stakla, ne naspram stranice), a preko videa se svetlina menja iz kadra u 
+     kadar. Ako logo ikad stigne u potpuno beloj varijanti za ovo stanje, senka može da ode
+   BalkanBetLogo je visok 60px (ranije 51.2px). Traka NEMA svoju fiksnu visinu - ona je logo 
+   + py-3 wrappera, pa dizanje logotipa je ono što diže header, sa ~76px na ~85px. 
    nav linkovi (Poslovi u lokalima, Posao u centrali, O nama, Život u Balkan Betu, Kontakt) 
    - caps-lock, 16px, Medium, letter-spacing -0.06em, padding 30px levo/desno na celom 
    nav baru; CTA dugme "Pronađi posao" desno - bold, puna žuta #FDB813 sa BELIM slovima 
@@ -94,11 +135,19 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      ispred gornja 2 reda (z-index skok)
    - h1 se lagano smanjuje (scale down) dok video ulazi
    - kad video počne da prekriva h1, h1 nastavlja gore uz fade-out opacity
-   - video se širi do max veličine: 30px paddinga LEVO, DESNO i DOLE, a gornja ivica ide 
-     do POLOVINE VISINE navigacije (čita se iz headera preko heroNavMid, ne hardkodovano). 
-     Pošto gornji i donji inset nisu isti, box se ne centrira prosto - boxCentreOffset ga 
-     spušta za pola razlike. NE praviti ovo fullscreen/edge-to-edge (probano, odbijeno)
-   - corner radius je KONSTANTAN 32px kroz celu animaciju - ne animirati ga
+   - video se širi do max veličine = CEO EKRAN, edge-to-edge (maxBoxW = vw, maxBoxH = vh), 
+     i prolazi ISPOD fiksiranog headera - zato header i jeste providna staklena traka. 
+     Ranije je stajao 30px od leve, desne i donje ivice, a gornjom ivicom na polovini 
+     visine navigacije (heroNavMid, čitano iz headera). Sve to je UKLONJENO na eksplicitan 
+     zahtev; raniji zapis je govorio suprotno ("NE praviti fullscreen, probano, odbijeno") 
+     - klijent je posle tražio baš fullscreen. Dve posledice, obe već sprovedene:
+       * box je opet simetričan oko centra ekrana, pa je boxCentreOffset (koji je 
+         nadoknađivao nejednake gornji/donji inset) identički nula i OBRISAN je
+       * heroNavMid i merenje headera u measureHero() više ne postoje - ništa ne zavisi 
+         od geometrije navigacije
+   - corner radius se ANIMIRA lerp(32 → 0) po revealT, tj. sleti na 0 tačno kad box dostigne 
+     punu veličinu. Bio je konstantnih 32px dok video nikad nije išao preko celog ekrana; na 
+     fullscreen-u bi ta zaobljenja isekla četiri zareza na uglovima samog ekrana
    - #hero-scroll-ball - mala loptica (gradijent iz logotipa preko .cta-gradient klase) 
      koja skakuće, horizontalno centrirana, bottom: 8vh. Zamenjuje klasičnu "scroll down" 
      strelicu. Izlazi iz ekrana po ISTOM headT kao h1 (isti opacity i isti pomeraj gore). 
@@ -121,7 +170,12 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      drugo). SVI tamni overlay-i na sajtu su #000 (ovaj, scrim-ovi mozaika, scrim CTA 
      kartica u futeru) - eksplicitan zahtev, ne prevoditi ih na brand-dark. 
      Stoji UNUTAR #hero-media-box da nasledi njegov overflow clip i zaobljene ivice i da 
-     putuje sa njim; visina mu je u procentima da zadrži isti odnos dok box raste
+     putuje sa njim; visina mu je u procentima da zadrži isti odnos dok box raste.
+     ⚠ NAMERNO PRELAZI 1px preko leve, desne i donje ivice box-a (left/right/bottom: -1px, 
+     height: calc(42% + 1px)). updateHero box-u daje razlomljene piksele (lerp), pa box i 
+     ovaj sloj nezavisno zaokružuju svoje pravougaonike - na nekim visinama overlay padne 
+     piksel kraće i na dnu videa se pojavi svetla linija punom širinom, kao da je overlay 
+     "pobegao gore za 1px". Prelaz se ne vidi jer je roditelj overflow:hidden
    - search blok je SPUŠTEN DOLE (CSS bottom: 96px, NIJE više top:50%). Zato updateHero 
      za njega koristi samo translateX(-50%) - ne vraćati vertikalni -50%, vratio bi ga 
      na sredinu videa
@@ -170,16 +224,19 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    otkriva pri izlasku. Zato ONA nosi margin-top: -130vh (vezano za tajming izlaska 
    videa, videti tačku 2) - to pravilo pripada "prvom slotu posle heroja", ne konkretnoj 
    sekciji; ako se redosled opet menja, margina se seli sa slotom. Margina je PUNIH 130vh 
-   (koliko i HERO_EXIT_TRAVEL) namerno: tako između donje ivice videa i vrha sekcije 
-   ostaje samo 30px donjeg inseta media box-a, konstantnih na svakoj visini ekrana. 
-   Zbog toga sekcija ima ASIMETRIČAN padding - 89px gore i 140px dole (do belog 
+   (koliko i HERO_EXIT_TRAVEL) namerno: tako je razmak između donje ivice videa i vrha 
+   sekcije NULA na svakoj visini ekrana - sekcija jaše na donjoj ivici videa i čita se kao 
+   da je video gura gore. Ranije je tu ostajalo 30px donjeg inseta media box-a; otkad je 
+   video fullscreen (videti tačku 2), tog inseta nema. 
+   Zbog toga sekcija ima ASIMETRIČAN padding - 119px gore i 140px dole (do belog 
    #impact panela); oba razmaka ČITAJU se kao 140px (raniji 200px, stegnut za 30%). 
-   Gornjih 89px je izvedeno: traženih 140px se meri od ivice videa do 
-   VRHA SLOVA naslova, a ne do vrha njegovog box-a, pa se oduzima 30px inseta videa i 
+   Gornjih 119px je izvedeno: traženih 140px se meri od ivice videa do 
+   VRHA SLOVA naslova, a ne do vrha njegovog box-a, pa se oduzima 
    21px sopstvenog leading-a naslova (84px line-height na 56px fontu = 7px half-leading, 
    plus 14px koliko ascender fonta prelazi visinu verzala; mereno iz font metrike). 
-   140 - 30 - 21 = 89 važi SAMO za ovaj font-size/line-height - ako se naslov menja, 
-   premeriti. Unutrašnji razmaci su takođe stegnuti za 20%: naslov→kartice 51px 
+   140 - 21 = 119 važi SAMO za ovaj font-size/line-height - ako se naslov menja, 
+   premeriti. Bilo je 89px dok se oduzimalo i 30px inseta videa; kad je video otišao u 
+   fullscreen, tih 30px se vratilo na padding, pa razmak koji se vidi nije promenjen. Unutrašnji razmaci su takođe stegnuti za 20%: naslov→kartice 51px 
    (mb-[51px]), kartice→link 45px (mt-[45px]). Ako se margina smanji, ostatak (130 - |margina|)vh se dodaje na razmak i 
    on opet počne da raste sa visinom ekrana. 
    Sekcija NEMA pozadinu 
@@ -208,6 +265,10 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      document.fonts.ready) - blok koji renderuje kartice pozicija stoji ISPOD IMPACT 
      bloka, pa je prvo merenje ~300px kraće od stvarnog
    - MOZAIK multimedijalnih kartica (#zivot-mosaic, renderuje JS iz ZIVOT_TILES niza). 
+     RADIJUS KARTICA JE 12px, isti kao .opening-card/.job-card (Tailwind rounded-xl) - 
+     traženo da mozaik i kartice pozicija čitaju kao ista porodica radijusa; bio je 18px. 
+     Tamni 'stat' blokovi u tamnoj temi NEMAJU okvir (imali su --dk-line-2, uklonjen na 
+     zahtev) - od panela ih odvaja samo razlika u svetlini. 
      Tri kolone kao flex stack-ovi, svaka kartica nosi svoj aspect-ratio - visine kolona 
      su NAMERNO nejednake, srednja kreće niže (lg:mt-10); to je ceo "masonry" efekat, 
      bez biblioteke. Tipovi kartica: slika, video (muted/loop/autoplay), 'stat' 
@@ -282,6 +343,7 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      clamp od h2, clamp(1.5rem, 3.2vw, 2.5rem)) + 5 benefita u redu (2 kolone na 
      telefonu, 3 na tabletu, 5 na desktopu), svaki = ikonica u krugu 96px + naslov 
      benefita. BEZ NUMERACIJE - sivi broj 01-05 iznad naslova je UKLONJEN, ne vraćati.
+     Naslovi benefita su Medium (500), NE bold - traženo tako.
      Ikonice su KLIJENTOVE: assets/bb-zivot/benefiti.png je iskrojen na pet kvadratnih 
      PNG-ova (benefit-01..05.png), po jedan tesno oko svog žutog kruga. Krop nosi bele/
      sive uglove originala, pa .benefit-item__disc MORA ostati border-radius:999px + 
@@ -291,10 +353,17 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      sa glifom koji mu odgovara - premeštanje stavki ćutke spari pogrešnu ikonicu sa 
      pogrešnim tekstom. Stavke nose .reveal, ali ih shared revealObserver NE hvata sam 
      (markup nastaje posle njegovog prolaza) - eksplicitno se observe-uju posle rendera
-   - Na dnu CTA dugme "Saznaj više o nama" - TAMNO (bg-brand-dark, beo tekst, hover u 
-     žuto) i NIJE caps-lock, ista eksplicitna izuzetak-grupa kao header CTA i "Prijavi 
-     se" na karticama. Ranije je bilo "O nama" sa .cta-gradient pozadinom i uppercase - 
-     ne vraćati. Razmaci mozaik→gore i CTA→gore su mt-16 (stari mt-20, -20%)
+   - Na dnu "Saznaj više o nama" - VIŠE NIJE DUGME nego ISTI podvučeni tekst link kao 
+     "POGLEDAJ SVE POZICIJE" u #openings (border-b-2, Medium, uppercase). Traženo da budu 
+     isti. Time je IZAŠAO iz izuzetak-grupe koja nije caps-lock: ta grupa se ticala CTA 
+     DUGMADI, a ovo je sada tekst link, a svi tekst linkovi na sajtu su caps. Ranije je 
+     bio tamna pilula (bg-brand-dark, beo tekst, hover u žuto), a pre toga "O nama" sa 
+     .cta-gradient pozadinom - ne vraćati ni jedno.
+     ⚠ JEDINO što ne kopira od "Pogledaj sve pozicije" je BOJA: taj je beo jer stoji na 
+     aurori, a ovaj je unutar #impact panela koji je u svetloj temi BEO - belo na belom. 
+     Zato je ovde taman (text-brand-dark + border-brand-dark), a u tamnoj temi je žut, 
+     gde se dva linka tek onda poklapaju u potpunosti.
+     Razmaci mozaik→gore i CTA→gore su mt-16 (stari mt-20, -20%)
 5. **"PROCES ZAPOŠLJAVANJA"** (#proces) - rekonstrukcija klijentskog crteža, ispisuje se 
    na scroll. Zamenila slider sa ikonicom u žutom krugu + dots navigacijom i 5 koraka; 
    crtež ima ČETIRI koraka i podnaslov ih broji ("4 koraka do karijere u Balkan Bet-u") - 
@@ -307,6 +376,15 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      kicker ima leading-tight a naslov leading-[1.05] + mt-3 (rezultat: 26px od baseline 
      kickera do verzala naslova, ranije 37px). Naslov→koraci je mt-6 md:mt-8 
      (51px od baseline naslova do prvog tuša, prvobitno 120px)
+   - VELIČINE su smanjene za 0.85 (broj 18.2→15.5cqw, labela 3.64→3.1cqw, širina strelice 
+     8.2→7cqw) i koraci su RAZMAKNUTI po X: svaki komad, u redosledu ispisivanja, nosi 
+     jedan procenat stage-a više od prethodnog (s1 +0, a1 +1, s2 +2 ... s4 +6), a prvi 
+     korak je povučen 1% ka levoj ivici. Kompozicija sad ide 1.2% → ~98% umesto 2.2% → 92%. 
+     --y cik-cak nije diran.
+     ⚠ Sve TRI veličine skaliraju ZAJEDNO - to je jedino što drži `stroke-width: 4.3` na 
+     strelicama i dalje tačnim bez preračunavanja (taj broj je odnos Lumierinog pera i 
+     viewBox jedinice strelice, pa preživi svaku promenu koja pomera oba za isti faktor). 
+     Ako se menja samo jedna, ponoviti deljenje opisano niže
    - GEOMETRIJA: #proces-stage je box fiksnog aspect-ratio 1380/320 sa container-type: 
      inline-size. Svaki --x/--y u markupu je PROCENAT tog box-a, uzet sa crteža 
      (koordinatni početak u gornjem levom uglu pojasa koraka). Sve veličine tipografije 
@@ -335,14 +413,17 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      280..520), ~450px na 900px ekranu za svih 15 komada - namerno kratko (klijent je 
      tražio da 4 koraka ne traju dugo) i dovoljno kratko da se, iako počinje na prvi 
      piksel, završi dok je kompozicija još cela u kadru (na 900px: stage na y 380-629)
-   - PADDING sekcije je ASIMETRIČAN (pt-[138px] / pb-[49px]) da bi VIZUELNO bio simetričan 
-     na 96px (py-24 ritam ostatka sajta), mereno od ivice suseda do IVICE TUŠA: gore se 
+   - PADDING sekcije je ASIMETRIČAN (pt-[192px] / pb-[103px]) da bi VIZUELNO bio simetričan 
+     na 150px. Sekcija je na ranijem cilju od 96px (py-24 ritam ostatka sajta) delovala 
+     zgusnuto, pa je cilj podignut; bilo je pt-[138px] / pb-[49px]. Mereno od ivice suseda 
+     do IVICE TUŠA: gore se 
      dodaje 42px jer .panel-overlap je već pojeo 48px a box prvog reda (sada kickera) 
      počinje ~6px iznad linije verzala; dole se oduzima 47px jer ispod ne sledi ivica 
      pozadine nego footer, koji nosi svoj -48px overlap i 80px pt-20, plus ~15px 
-     neiskorišćene visine stage-a ispod najnižeg koraka. Oba broja važe SAMO za ove 
-     veličine tipografije i ovaj ratio stage-a - ako se menja, PREMERITI dva zazora, ne 
-     prepisivati ove vrednosti
+     neiskorišćene visine stage-a ispod najnižeg koraka. 
+     Te dve KOREKCIJE (+42 / -47) su svojstvo suseda i tipografije, NE cilja - ako se 150 
+     kasnije diže ili spušta, oba broja se pomeraju za isti iznos, ne izvode se ispočetka. 
+     Važe SAMO za ove veličine tipografije i ovaj ratio stage-a
    - Ispod ~700px cik-cak se gasi: stage postaje običan stack, strelice display:none i 
      ISPADAJU iz sekvence (measureProcess filtrira po offsetParent), inače bi njihovi 
      slotovi bili mrtve pauze između koraka
@@ -494,10 +575,110 @@ kartice "Saznaj više o nama" → footer.
   (tako traži brief), a listing prikazuje 16 različitih gradova - proveriti sa klijentom
 
 ## Animirana pozadina (globalna)
+⚠ `.animated-bg::after` je DITHER sloj i NE SME se brisati. Blobovi su tvrdi krugovi 
+zamućeni za 110px, pa je nastali gradijent toliko blag da susedni koraci padaju u isti 
+8-bitni nivo - svako mesto gde zaokruživanje preskoči crta vidljivu konturu, i u blobovima 
+se ocrtavaju koncentrični prstenovi (najgore na tamnoj temi, gde ceo prelaz živi u par 
+nivoa iznad crne). Sloj je fini statični šum (inline SVG feTurbulence) na opacity .06 koji 
+te korake razbija. Nije dekoracija - bez njega se prstenovi vrate. Preko ~.09 počinje da 
+se čita kao namerna zrnasta tekstura.
+⚠ FILTER LANAC U TOM SVG-u JE NOSEĆI, ne ukras. Gola feTurbulence NE radi posao - ona 
+šumi i ALFA kanal, pa je veći deo teksture providan i samo deo piksela uopšte biva 
+pomeren. Dva dodatna primitiva to rešavaju: `feColorMatrix saturate 0` (turbulence je 
+inače šum u boji, koji se na skoro crnoj stranici vidi kao crveno/plavo zrno) i 
+`feFuncA slope=0 intercept=1`, koji alfu forsira na 1 svuda, pa je sloj pun i SVAKI 
+piksel dobija pomeraj. Jačina se posle podešava isključivo preko `opacity`.
+IZMERENO na rezu od 700px kroz gornji levi sjaj (tamna tema): bez sloja 22 promene 
+vrednosti i najduža ravna traka od 356px; sa slojem 540 promena i najduža traka 5px. 
+Ako neko ikad prijavi da se prstenovi vide, PRVO proveriti da li browser servira keširan 
+styles.css (Ctrl+Shift+R) - dither je merljivo ispravan.
+
 .animated-bg - position: fixed, iza celog sadržaja, 3 blob-a (radial gradient, blur 110px, 
 manje dimenzije ~25vw/25vw/20vw radi vidljivosti pokreta, brže animacije ~16s/19s/13s), 
 boje #FAA61A/#FFCB05. Sekcije sa čvrstom pozadinom (bela/#ECECEC) prekrivaju je normalno; 
 orange sekcije je puštaju da se vidi kroz njih.
+
+## Tamna varijanta naslovne (theme-dark.css)
+⚠ **TAMNA JE PODRAZUMEVANA.** Naslovna se otvara tamna; svetla i dalje postoji cela i do 
+nje se stiže prekidačem ili preko `?tema=light`. Obe varijante žive na ISTOM fajlu.
+Nije napravljen drugi `index-dark.html` NAMERNO: header i footer moraju ostati na tri 
+byte-identične kopije, a duplikat bi ih digao na četiri i svaku buduću ispravku 
+udvostručio. Markup index.html-a se za temu NE dira uopšte osim `<html>` taga i `<head>`-a.
+- Uključuje je atribut `data-theme="dark"` na `<html>`, koji STOJI ZAKUCAN U MARKUPU. Tako 
+  važi od prvog pixela - pre nego što se izvrši ijedna linija JS-a, i onda kad JS ne radi. 
+  Ranije ga je postavljao boot skript, pa je postojao rizik od bleska svetle teme
+- Boot skript u `<head>`-u (odmah posle `<link>`-a) radi OBRNUTO od ranijeg: on je samo 
+  IZLAZ iz tamne, tj. SKIDA atribut kad je tražena svetla (`?tema=light` ili localStorage 
+  ključ `bb-tema`). MORA ostati u `<head>`-u - skidanje kasnije daje blesak tamne pre svetle
+- URL parametar pobeđuje zapamćeni izbor, da se varijanta može poslati kao link
+- Prekidač (`.theme-toggle`, KRUŽNO dugme 44px dole desno, SAMO IKONICA) PRAVI JS na dnu 
+  index.html, ne stoji u markupu. Tekstualna oznaka ("Svetla varijanta") je uklonjena na 
+  zahtev, pa značenje nosi samo glif - `aria-label` i `title` su jedini tekst i moraju se 
+  održavati uz ikonicu. Dimenzije su fiksne, ne padding: bez teksta unutra pilula bi se 
+  stegla na širinu glifa i ispala ovalna umesto okrugla. Njegov CSS je u theme-dark.css ali IZVAN `[data-theme]` opsega - mora se videti 
+  i u svetloj temi. To je DEMO kontrola, ne deo dizajna sajta
+- Specifičnost: `[data-theme="dark"] .opening-card` (0,2,0) pobeđuje Tailwindovu 
+  `.bg-white` (0,1,0), pa !important nigde ne treba OSIM kod stat blokova mozaika - njima 
+  JS piše boju u inline style, a to se bez !important ne može nadjačati. Dva tona se 
+  razdvajaju preko `:has(.text-brand-yellow)` jer markup ne daje različitu klasu
+- Žute (#FDB813/#FDB913) se NE menjaju ni u jednoj varijanti - one su akcenat i na tamnoj 
+  rade bolje nego na narandžastoj. Podloge: stranica #131011 (--dk-bg), tekst #F5F1EC 
+  (--dk-ink, topla bela a ne čisto #FFF), pune kartice #241F20 (--dk-card).
+  ⚠ PANEL #impact I KARTICE POZICIJA (.opening-card) SU PROVIDNI: --dk-glass, tj. 
+  **#0e0d0e na 0.6 alfe**, traženo tako. Alfa je deo BOJE, ne opacity na elementu - 
+  opacity bi oborila i tekst i slike unutra; ovako se providi samo podloga i aurora se 
+  nazire kroz nju. Raniji puni --dk-panel #1B1718 je uklonjen zajedno sa tokenom.
+  Stat blokovi mozaika su NAMERNO ostali puni - providni bi propuštali istu auroru kao 
+  panel na kome stoje i prestali bi da se čitaju kao kartica
+- Šta je SAMO u tamnoj drugačije po boji, a nije samo podloga:
+  - hero h1 je RAZDVOJEN po rečenicama: prva ("Uskoči u igru.") je ŽUTA (#FDB813), druga 
+    ("Budi deo Balkan Bet tima.") je BELA. Zato u markupu prva rečenica ima svoj 
+    `<span class="hero-heading__lead">` - ostatak nasleđuje text-white iz h1 i isti je u 
+    obe varijante. Kratko je ceo naslov bio žut; ne vraćati
+  - TEKST U SVIM ŽUTIM CTA DUGMADIMA je TAMAN (u svetloj je beo) - i "Pronađi posao" u 
+    navigaciji i "Prijavi se" na karticama pozicija. Žuta pilula na skoro crnoj stranici, 
+    belo na žutom bi bio najslabiji kontrast na ekranu
+  - ŽUTA DUGMAD IMAJU SVOJ HOVER: u svetloj temi je `hover:brightness-95`, dakle 
+    potamnjenje, što na tamnoj stranici deluje kao da se dugme gasi. Ovde ide obrnuto - 
+    brightness(1.07) + meki žuti halo (box-shadow 4px na .16 alfe), pa dugme zasvetli. 
+    Selektor je specifičniji od Tailwindove hover klase, pa se markup ne dira
+  - TRI KARTICE U FUTERU nose istu podlogu i okvir kao kartice pozicija (--dk-glass + 
+    --dk-line). Ranije su bile rgba(255,255,255,.05), tj. svetle staklene pločice - drugi 
+    materijal na istoj stranici
+  - linkovi "POGLEDAJ SVE POZICIJE" (#openings) i "SAZNAJ VIŠE O NAMA" (#impact) su ŽUTI 
+    zajedno sa svojim border-b-2 podvlakama, hover im se vraća u belo - isto rešenje kao 
+    balkanbet.rs u futeru
+  - u futeru su ŽUTI i glifovi društvenih mreža i link balkanbet.rs (taj zajedno sa svojom 
+    border-b-2 podvlakom - da je požuteo samo tekst, bela linija bi ostala da visi). 
+    Hover balkanbet.rs se vraća u BELO, jer opšte pravilo `hover:text-brand-dark` → žuto 
+    na već žutom linku ne bi dalo nikakav odziv
+  - senka loptice je ŽUTA i tražena je kao ODRAZ, ne kao senka - loptica koja svetli 
+    ostavlja mrvicu svog svetla na podu. Zato ima SVOJ keyframe set 
+    (`hero-ball-reflection`), alfe ~40% od svetle teme (.02-.07): alfe do .17 bi kao žuta 
+    bile jarka mrlja. ⚠ Stopovi (0/12/50/88/100), easing po stopu i trajanje 1.15s MORAJU 
+    ostati identični sa hero-ball-bounce, isto pravilo kao u svetloj temi
+  - u sekciji Proces se koraci i strelice RAZILAZE: brojevi i labeli su ŽUTI, strelice 
+    ostaju BELE. Žuto nosi sadržaj, belo samo veze, pa se čita redosled a ne jedna žuta 
+    masa. Kratko su oboje bili beli - ne vraćati
+- SEARCH BAR NEMA tamni skin - stilski je IDENTIČAN u obe varijante (žuti okvir, BELI 
+  tabovi, crno dugme "Pretraži", beli meni). Imao ga je (tamne pločice + svetlo dugme); 
+  uklonjen na eksplicitan zahtev, ne vraćati
+- Aurora ostaje sa istom geometrijom i animacijama, samo prigušena (.18/.14/.11) i u 
+  #FAA61A umesto #FFCB05 - hladnija žuta na crnom čita zelenkasto
+- ⚠ `hover:text-brand-dark` / `hover:border-brand-dark` je kroz naslovnu hover-potamnjenje; 
+  na tamnoj podlozi bi link na hover NESTAO, pa se globalno prevodi u žutu. Izuzetak je CTA 
+  "Saznaj više o nama", koji na hover menja i podlogu - njegovo pravilo je specifičnije
+- Proces zapošljavanja: tuš (#231F20) ide u #F5F1EC, pa rukopis čita kao kreda. Debljina 
+  strelica se NE dira - uparena je sa Lumierinim perom i ne zavisi od boje
+- ⚠ OPSEG JE SAMO NASLOVNA, i to je sada VIDLJIV NESKLAD, a ne više samo ograničenje 
+  pregleda: otkad je tamna podrazumevana, klik na bilo koji CTA vodi na listanje.html ili 
+  oglas-primer.html, koje ovaj fajl ne učitavaju i ostaju SVETLE. Dok se tema ne raširi, 
+  to je podrazumevani put kroz sajt, ne opcioni. Za širenje treba: dodati pravila za 
+  `.jf-*`, `.job-card`, `.page-hero`, `.jobs-panel`, `.info-card`, `.fld-*` (namerno ih 
+  sada NEMA) i kopirati `<link>` + boot skript + `data-theme` na `<html>` u te dve stranice
+- KAD SE VARIJANTA ZAKLJUČA: tamna → pravila se presipaju u styles.css, a theme-dark.css, 
+  boot skript i prekidač nestaju; svetla → briše se theme-dark.css, `<link>`, boot skript, 
+  `data-theme` sa `<html>` i blok prekidača na dnu index.html
 
 ## Pravila za dalji rad
 1. Pre bilo koje vizuelne izmene, PROVERI trenutno stanje u index.html (ne pretpostavljaj 

@@ -1,0 +1,363 @@
+  /* ##########################################################################
+     TAMNA VARIJANTA NASLOVNE — dodatni sloj preko styles.css
+
+     Učitava se SAMO na index.html, odmah posle styles.css, i ne radi ništa dok
+     <html> ne dobije data-theme="dark" (postavlja ga boot skript u <head>-u iz
+     ?tema=dark ili iz localStorage-a). Zato je svetla verzija netaknuta: ako se
+     atribut ne postavi, nijedno pravilo odavde se ne primenjuje.
+
+     ZAŠTO OVAKO, A NE DRUGI index-dark.html:
+     header i footer su po pravilu projekta BYTE-IDENTIČNI na sve tri stranice.
+     Duplikat naslovne bi ta dva bloka digao sa 3 na 4 kopije i svaku buduću
+     ispravku udvostručio. Ovde se markup NE dira uopšte.
+
+     ZAŠTO SELEKTORI POBEĐUJU TAILWIND:
+     `[data-theme="dark"] .opening-card` je specifičnosti (0,2,0), a Tailwindova
+     `.bg-white` (0,1,0) — pa nigde ne treba !important. Jedini izuzetak su stat
+     blokovi mozaika, kojima JS piše boju u INLINE style (videti ZIVOT_TILES
+     render u index.html); inline stil se bez !important ne može nadjačati.
+
+     OPSEG: samo naslovna. Klase podstranica (.jf-*, .job-card, .page-hero,
+     .jobs-panel, .info-card, .fld-*) namerno NISU ovde — listanje.html i
+     oglas-primer.html ovaj fajl ne učitavaju.
+  ########################################################################## */
+
+  /* ========================================================================
+     TOKENI
+
+     Lestvica je namerno "sve tamnije od panela ka pozadini": stranica je
+     najtamnija, veliki panel je za nijansu podignut, kartice još jednu. To je
+     ono što na tamnoj podlozi zamenjuje senke — bez razlike u svetlini kartica
+     bi se stopila sa panelom na kome stoji.
+
+     Žute (#FDB813 / #FDB913) se NE menjaju: one su brend akcenat i na tamnoj
+     podlozi rade bolje nego na narandžastoj.
+  ======================================================================== */
+  :root[data-theme="dark"] {
+    --dk-bg:     #131011;             /* stranica + baza aurore */
+    /* PROVIDNA podloga, tražena vrednost: #0e0d0e na 0.6 alfe. Nosi je i veliki
+       panel (#impact) i kartice pozicija. Alfa je deo boje, NE opacity na
+       elementu — opacity bi obarala i tekst i slike unutra; ovako se providi
+       samo podloga, a aurora se nazire kroz nju. */
+    --dk-glass:  rgba(14, 13, 14, .6);
+    --dk-card:   #241F20;             /* pune kartice (stat blokovi, pilule) */
+    --dk-line:   rgba(255,255,255,.10);
+    --dk-line-2: rgba(255,255,255,.16);
+    --dk-ink:    #F5F1EC;             /* primarni tekst — topla bela, ne čisto #FFF */
+    --dk-ink-2:  rgba(245,241,236,.68);
+    --dk-ink-3:  rgba(245,241,236,.45);
+  }
+
+  /* body nosi Tailwindovu `text-brand-dark` kao nasleđenu boju teksta; sve što
+     nema svoju eksplicitnu boju bi bez ovoga ostalo tamno na tamnom. */
+  [data-theme="dark"] body { color: var(--dk-ink); }
+
+  /* ========================================================================
+     ANIMIRANA POZADINA — ista mehanika, noćna paleta
+
+     Blobovi ostaju (to je potpis sekcije), samo se gase: na skoro crnoj podlozi
+     zadržane .6/.45/.35 bi nacrtale tri jarko narandžaste mrlje umesto tinjanja.
+     Boja ide sa #FFCB05 na #FAA61A — hladnija žuta na crnom čita zelenkasto.
+     Geometrija, blur i sve tri animacije se NE diraju.
+  ======================================================================== */
+  [data-theme="dark"] .animated-bg { background: var(--dk-bg); }
+  [data-theme="dark"] .animated-bg__blob { background: #FAA61A; }
+  [data-theme="dark"] .animated-bg__blob--1 { opacity: .18; }
+  [data-theme="dark"] .animated-bg__blob--2 { opacity: .14; }
+  [data-theme="dark"] .animated-bg__blob--3 { opacity: .11; }
+
+  /* ========================================================================
+     HERO
+  ======================================================================== */
+  /* Naslov heroja je RAZDVOJEN po rečenicama: prva ("Uskoči u igru.") ide u
+     brend žutu, druga ("Budi deo Balkan Bet tima.") OSTAJE BELA. Zato se boji
+     samo .hero-heading__lead, a ne ceo #hero-heading — ostatak nasleđuje
+     Tailwindovu text-white iz markupa i tako je isti u obe varijante.
+     Kratko je ceo naslov bio žut; ne vraćati. */
+  [data-theme="dark"] .hero-heading__lead { color: #FDB813; }
+
+  /* CTA u navigaciji je žuta pilula sa BELIM slovima (eksplicitan izbor za
+     svetlu temu). U tamnoj tekst ide u tamno — na žutoj podlozi koja u ovoj
+     varijanti stoji na skoro crnoj stranici, belo na žutom je najslabiji
+     kontrast na celom ekranu. */
+  [data-theme="dark"] header a.bg-brand-cta { color: #231F20; }
+
+  /* HOVER NA SVIM ŽUTIM DUGMADIMA (nav "Pronađi posao" + "Prijavi se" na
+     karticama). U svetloj temi je to `hover:brightness-95`, dakle POTAMNJENJE —
+     na tamnoj stranici žuta pilula koja na hover potamni deluje kao da se gasi,
+     a i razlika se jedva vidi. Ovde ide obrnuto: mrvicu svetlija plus meki žuti
+     halo, pa dugme na hover izgleda kao da zasvetli.
+     Selektor je (0,3,1) i nadjačava Tailwindovu `.hover\:brightness-95:hover`
+     (0,2,0), pa filter iz markupa ne treba dirati. */
+  [data-theme="dark"] a.bg-brand-cta {
+    transition: filter .2s ease, box-shadow .2s ease;
+  }
+  [data-theme="dark"] a.bg-brand-cta:hover {
+    filter: brightness(1.07);
+    box-shadow: 0 0 0 4px rgba(255,187,26,.16);
+  }
+
+  /* --- Senka loptice ----------------------------------------------------
+     U svetloj temi je to prava bačena senka: #231F20 na .05–.17 alfe, tj.
+     zatamnjenje narandžastog poda. Na #131011 nema šta da se zatamni, pa je
+     ovde ŽUTA i tražena je kao ODRAZ, a ne kao senka — loptica koja svetli
+     ostavlja mrvicu svog svetla na podu ispod sebe.
+
+     Zato ne ide samo promena boje nego i SVOJ set keyframe-ova: alfe iz svetle
+     teme (do .17) bi kao žuta bile jarka mrlja. Ove su oko 40% od njih.
+     ⚠ Stopovi (0/12/50/88/100), easing po stopu i trajanje 1.15s MORAJU ostati
+     identični sa hero-ball-bounce — to je jedino što drži odraz zaključan za
+     loptu umesto da kuca po svom ritmu. Ako se menja jedno, menja se i drugo.
+  --------------------------------------------------------------------- */
+  [data-theme="dark"] .hero-scroll-ball__shadow {
+    background: #FDB813;
+    animation-name: hero-ball-reflection;
+  }
+  @keyframes hero-ball-reflection {
+    0%   { transform: translateX(-50%) scale(0.70); opacity: .02; animation-timing-function: ease-out; }
+    12%  { transform: translateX(-50%) scale(0.80); opacity: .03; animation-timing-function: ease-out; }
+    50%  { transform: translateX(-50%) scale(1.30); opacity: .07; animation-timing-function: ease-in; }
+    88%  { transform: translateX(-50%) scale(0.80); opacity: .03; animation-timing-function: ease-in; }
+    100% { transform: translateX(-50%) scale(0.70); opacity: .02; }
+  }
+
+  /* SEARCH BAR NEMA NIJEDNO PRAVILO OVDE, NAMERNO — tražen je stilski identičan
+     u obe varijante (žuti okvir, BELI tabovi, crno dugme "Pretraži", beli meni).
+     Ranije je imao svoj tamni skin (tamne pločice + svetlo dugme); uklonjen je
+     na eksplicitan zahtev, ne vraćati. */
+
+  /* ========================================================================
+     NAJNOVIJE POZICIJE
+
+     Sekcija nema svoju pozadinu, pa kartice stoje direktno na aurori. Podloga
+     im je --dk-glass, dakle PROVIDNA: kartica potamnjuje ono što je iza nje
+     umesto da ga prekrije, pa se aurora nazire kroz nju. Hairline okvir je zato
+     ovde još važniji nego kad su bile pune — on jedini crta ivicu kartice.
+
+  ======================================================================== */
+  [data-theme="dark"] .opening-card {
+    background: var(--dk-glass);
+    border: 1px solid var(--dk-line);
+  }
+  [data-theme="dark"] .opening-card h3 { color: var(--dk-ink); }
+  /* Escape-ovana Tailwind klasa `text-brand-dark/50` — kosa crta u imenu klase
+     mora biti \/ u selektoru. */
+  [data-theme="dark"] .opening-card .text-brand-dark\/50 { color: var(--dk-ink-3); }
+  /* "Prijavi se" — tekst u tamno, isto pravilo kao CTA u navigaciji: žuta pilula
+     na tamnoj stranici, belo na žutom bi bio najslabiji kontrast u kartici.
+     U svetloj temi ostaje belo (to je i dalje eksplicitan izbor za tu varijantu). */
+  [data-theme="dark"] .opening-card a.bg-brand-cta { color: #231F20; }
+
+  /* "Pogledaj sve pozicije" — jedini link sa border-b-2 u ovoj sekciji. Žuti
+     zajedno sa podvlakom; da je požuteo samo tekst, bela linija bi ostala da
+     visi. Hover u belo, jer opšte pravilo prevodi hover u žutu, a žuto→žuto na
+     već žutom linku ne bi dalo nikakav odziv. Isto rešenje kao balkanbet.rs. */
+  [data-theme="dark"] #openings a.border-b-2 {
+    color: #FDB813;
+    border-color: #FDB813;
+  }
+  [data-theme="dark"] #openings a.border-b-2:hover {
+    color: var(--dk-ink);
+    border-color: var(--dk-ink);
+  }
+
+  /* ========================================================================
+     ŽIVOT U BALKAN BET-U — beli panel postaje tamni
+  ======================================================================== */
+  /* Panel pokriva OBA dela — i "Život u Balkan Bet-u" i "Balkan Bet benefiti"
+     (benefiti su poslednji deo istog #impact panela, ne zasebna sekcija), pa
+     jedno pravilo pokriva oba. */
+  [data-theme="dark"] #impact {
+    background: var(--dk-glass);
+    border: 1px solid var(--dk-line);
+  }
+  [data-theme="dark"] #impact > div h2,
+  [data-theme="dark"] #impact > div h3 { color: var(--dk-ink); }
+
+  /* Scroll-scrubbani podnaslov: reči kreću prigušene i pune se u svetlo,
+     tačno obrnuto od svetle teme. */
+  [data-theme="dark"] .impact-word { color: rgba(245,241,236,.22); }
+  [data-theme="dark"] .impact-word.is-active { color: var(--dk-ink); }
+  /* Poslednja rečenica dobija ŽUTI marker preko sebe — svetao tekst na žutom se
+     ne čita, pa se ta reč (i samo ona, i tek kad marker krene) vraća u tamno.
+     Delay je isti --hl-delay koji nosi i sweep markera, da boja i traka stignu
+     zajedno umesto da tekst potamni pre nego što ispod njega ima žutog. */
+  [data-theme="dark"] .impact-word--hl.is-marked {
+    color: #231F20;
+    transition: color .45s ease var(--hl-delay, 0ms);
+  }
+
+  /* --- Mozaik -----------------------------------------------------------
+     Slike, video, scrimovi i quote slajder ostaju kakvi jesu: već su svetao
+     tekst na tamnom mediju. Menjaju se samo dva 'stat' bloka.
+
+     ⚠ !important je OVDE NEOPHODAN, ne nemar: boju stat blokova upisuje JS u
+     inline style (`background:${tone === 'dark' ? '#231F20' : '#FDB813'}` u
+     render petlji), a inline stil nadjačava svaki selektor bez !important.
+
+     :has() razdvaja dva tona — markup im ne daje različitu klasu, ali tamni
+     blok ima žut broj (.text-brand-yellow), a žuti tamni. Tamni #231F20 bi se
+     na panelu ispod sebe jedva video, pa se podiže na --dk-card.
+     Ovaj blok je NAMERNO pun, a ne --dk-glass kao panel na kome stoji: providan
+     bi propuštao istu auroru kao i podloga i prestao bi da se čita kao kartica.
+     BEZ OKVIRA — imao ga je (--dk-line-2), uklonjen na zahtev; blok se sada
+     odvaja samo razlikom u svetlini od panela.
+     Žuti blok se NE dira — on je jedina puna boja u mozaiku i tu i treba da
+     ostane najjača tačka.
+  --------------------------------------------------------------------- */
+  [data-theme="dark"] .zivot-tile--stat:has(.text-brand-yellow) {
+    background: var(--dk-card) !important;
+  }
+
+  /* --- Benefiti ---------------------------------------------------------
+     Diskovi su klijentski PNG-ovi (žuti krugovi), rade na tamnom bez izmene —
+     border-radius + overflow:hidden i dalje odsecaju bele uglove kropa. */
+  [data-theme="dark"] .benefit-item__title { color: var(--dk-ink); }
+
+  /* "Saznaj više o nama" — više NIJE pilula nego isti podvučeni tekst link kao
+     "Pogledaj sve pozicije", pa dobija i isto tretiranje boje. U svetloj temi je
+     taman (stoji na belom panelu); ovde su oba linka žuta i tek tu se poklapaju
+     u potpunosti. Ranija pravila za `a.bg-brand-dark` i `a.hover:bg-brand-cta`
+     su obrisana zajedno sa pilulom. */
+  [data-theme="dark"] #impact a.border-b-2 {
+    color: #FDB813;
+    border-color: #FDB813;
+  }
+  [data-theme="dark"] #impact a.border-b-2:hover {
+    color: var(--dk-ink);
+    border-color: var(--dk-ink);
+  }
+
+  /* ========================================================================
+     PROCES ZAPOŠLJAVANJA — tuš se okreće u kredu
+
+     Brojevi, labeli i strelice su #231F20 direktno na pozadini; na tamnoj bi
+     bili nevidljivi.
+
+     KORACI I STRELICE SE OVDE RAZILAZE, i to je traženo: koraci (brojevi +
+     labeli) idu u ŽUTU, strelice ostaju BELE. Efekat je da žuto nosi sadržaj a
+     belo samo veze između njih, pa se čita redosled a ne jedna žuta masa.
+     Kratko su oboje bili beli — ne vraćati na to.
+
+     Debljina strelica (stroke-width 4.3) se NE dira — uparena je sa Lumierinim
+     perom i ne zavisi od boje.
+  ======================================================================== */
+  [data-theme="dark"] .proc-step__num,
+  [data-theme="dark"] .proc-step__label { color: #FDB813; }
+  [data-theme="dark"] .proc-arrow path { stroke: var(--dk-ink); }
+
+  /* ========================================================================
+     FOOTER
+
+     .footer-cta kartice (medij + crni scrim + žuti hover panel) rade na tamnom
+     bez ijedne izmene — zato ih ovde nema.
+  ======================================================================== */
+  /* Tri kolone futera nose ISTU podlogu i ISTI okvir kao kartice pozicija —
+     --dk-glass (#0e0d0e na .6) + --dk-line. Traženo tako, da se sve kartice na
+     stranici čitaju kao jedan materijal. Ranije su bile rgba(255,255,255,.05),
+     dakle svetle staklene pločice, što je bio drugi materijal. */
+  [data-theme="dark"] footer .bg-white\/10 { background: var(--dk-glass); }
+  [data-theme="dark"] footer .border-white\/25 { border-color: var(--dk-line); }
+
+  /* Krugovi društvenih mreža su pune bele pločice — na tamnoj stranici su
+     najsvetlija stvar u futeru i vuku pogled sa CTA kartica iznad. Postaju
+     staklene, a SAM GLIF je ŽUT. Hover ostaje inverzija (pun žuti krug, taman
+     glif) — u svetloj temi je hover tamna pilula, koja bi ovde nestala. */
+  [data-theme="dark"] footer a.bg-white {
+    background: rgba(255,255,255,.08);
+    border: 1px solid var(--dk-line);
+  }
+  [data-theme="dark"] footer a.bg-white.text-brand-dark { color: #FDB813; }
+  [data-theme="dark"] footer a.bg-white:hover {
+    background: #FDB813;
+    border-color: #FDB813;
+  }
+  [data-theme="dark"] footer a.bg-white.hover\:text-white:hover { color: #231F20; }
+
+  /* balkanbet.rs — jedini link u futeru sa border-b-2 podvlakom, pa je selektor
+     jednoznačan. Ide u žuto ZAJEDNO SA PODVLAKOM; da je samo tekst požuteo,
+     bela linija ispod bi ostala da visi.
+     Hover mu se OVDE vraća u belo, ne u žuto: opšte pravilo niže prevodi
+     `hover:text-brand-dark` u žutu, a link koji je već žut tako na hover ne bi
+     davao nikakav odziv. */
+  [data-theme="dark"] footer a.border-b-2 {
+    color: #FDB813;
+    border-color: #FDB813;
+  }
+  [data-theme="dark"] footer a.border-b-2:hover {
+    color: var(--dk-ink);
+    border-color: var(--dk-ink);
+  }
+
+  /* ========================================================================
+     HOVER NA TAMNO → HOVER NA ŽUTO (globalno za temu)
+
+     Kroz naslovnu ide više linkova sa `hover:text-brand-dark` /
+     `hover:border-brand-dark` ("Pogledaj sve pozicije", balkanbet.rs, cela
+     Navigacija u futeru). Na narandžastoj podlozi je taj hover potamnjivanje;
+     na tamnoj bi bio tekst iste boje kao podloga, tj. link koji na hover
+     NESTANE. Žuta je jedini smisleni ekvivalent.
+
+     Izuzetak je CTA "Saznaj više o nama" — on na hover menja i podlogu; njegovo
+     pravilo gore je specifičnije i pobeđuje ovo.
+  ======================================================================== */
+  [data-theme="dark"] .hover\:text-brand-dark:hover { color: #FDB813; }
+  [data-theme="dark"] .hover\:border-brand-dark:hover { border-color: #FDB813; }
+
+  /* ##########################################################################
+     PREKIDAČ TEME — demo kontrola, NIJE deo dizajna sajta
+
+     Namerno je IZVAN [data-theme="dark"] opsega: mora se videti i u svetloj
+     varijanti, inače nema čime da se uđe u tamnu. Markup mu pravi boot skript u
+     index.html, pa u HTML-u stranice ne stoji ništa.
+
+     Kad klijent izabere varijantu, briše se i ovaj blok i skript — sajt ostaje
+     bez ijednog traga prekidača.
+  ########################################################################## */
+  .theme-toggle {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    z-index: 60;                 /* iznad headera (50) */
+    /* Kružno dugme, SAMO ikonica — tekstualna oznaka je uklonjena na zahtev.
+       Fiksne dimenzije umesto paddinga: bez teksta unutra pilula bi se stegla
+       na širinu glifa i ispala kao ovalčić, a ne krug. */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid rgba(255,255,255,.28);
+    border-radius: 999px;
+    background: rgba(35,31,32,.55);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease, transform .2s ease;
+  }
+  .theme-toggle:hover {
+    background: rgba(35,31,32,.78);
+    border-color: rgba(255,255,255,.45);
+    transform: translateY(-2px);
+  }
+  .theme-toggle svg { flex: 0 0 auto; }
+  /* Ista pilula na tamnoj stranici mora da bude svetlija od podloge, a ne
+     tamnija — inače se stopi sa dnom stranice. */
+  [data-theme="dark"] .theme-toggle {
+    background: rgba(255,255,255,.10);
+    border-color: rgba(255,255,255,.22);
+  }
+  [data-theme="dark"] .theme-toggle:hover { background: rgba(255,255,255,.18); }
+
+  @media (max-width: 640px) {
+    .theme-toggle { right: 14px; bottom: 14px; width: 40px; height: 40px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle { transition: none; }
+    .theme-toggle:hover { transform: none; }
+  }

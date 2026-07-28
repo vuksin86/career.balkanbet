@@ -1,5 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<!-- data-theme="dark" stoji U MARKUPU, ne postavlja ga skript: tamna je sada
+     PODRAZUMEVANA varijanta, pa mora da važi od prvog pixela — pre nego što se
+     izvrši ijedna linija JS-a, i onda kad JS ne radi uopšte. Skript u <head>-u
+     ispod je sada samo izlaz iz nje (?tema=light ili zapamćen izbor). -->
+<html lang="sr" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,6 +26,41 @@
 
 <!-- Shared brand stylesheet — same file on all three pages. -->
 <link rel="stylesheet" href="styles.css">
+
+<!-- ==========================================================================
+     TAMNA VARIJANTA — PODRAZUMEVANA tema ove stranice.
+
+     Fajl je i dalje aditivni sloj preko styles.css, ne zamena za njega: sva
+     pravila su pod [data-theme="dark"], a taj atribut sada stoji zakucan na
+     <html>. Skinuti atribut = svetla varijanta, koja i dalje postoji cela i
+     dostupna je preko prekidača dole desno i preko ?tema=light.
+
+     Zašto tema a ne drugi HTML fajl: markup stranice se ne dira uopšte, a
+     header i footer ostaju na tri byte-identične kopije umesto da odu na četiri.
+
+     OPSEG: samo naslovna. listanje.html i oglas-primer.html ovaj fajl ne
+     učitavaju i ostaju svetle — videti napomenu u CLAUDE.md.
+========================================================================== -->
+<link rel="stylesheet" href="theme-dark.css">
+<script>
+  /* IZLAZ iz podrazumevane teme. Radi obrnuto od ranije verzije: tamna se više
+     ne pali odavde (za to je atribut u markupu, koji važi i pre JS-a i bez
+     njega), nego se ovde SKIDA kada je tražena svetla.
+
+     Mora ostati u <head>-u i pre <body>-ja: skidanje atributa kasnije, npr. na
+     DOMContentLoaded, daje vidljiv blesak tamne teme pre svetle.
+
+     Prioritet: ?tema= iz URL-a pobeđuje zapamćeni izbor, da se varijanta može
+     nekome poslati kao link koji uvek otvara ono što u njemu piše. */
+  (function () {
+    var url = new URLSearchParams(location.search).get('tema');
+    var saved = null;
+    try { saved = localStorage.getItem('bb-tema'); } catch (e) { /* privatni režim */ }
+    var theme = url || saved;
+    if (theme === 'light') document.documentElement.removeAttribute('data-theme');
+    if (url) { try { localStorage.setItem('bb-tema', url); } catch (e) {} }
+  })();
+</script>
 </head>
 
 <body class="font-sans text-brand-dark antialiased overflow-x-hidden">
@@ -38,7 +77,13 @@
 </div>
 
 <!-- ============================================================================
-     HEADER — floating pill nav, fixed across the whole page.
+     HEADER — full-bleed bar, fixed to the very top of the viewport.
+
+     Was a floating pill (top-6, max-w-[1300px], rounded-full, border all round)
+     until the client asked for edge-to-edge with no radius. The glass fill and
+     backdrop blur stay — it still has to sit over the hero video — but the ring
+     border is now a bottom hairline only: on a full-bleed bar the left/right/top
+     edges of a full border land on the screen edges and read as an artefact.
 
      ⚠ SHARED BLOCK — this exact markup is duplicated BYTE-FOR-BYTE in
      listanje.html and oglas-primer.html (no build step here, and a static
@@ -57,14 +102,17 @@
        Život u Balkan Betu    -> zivot-u-balkan-betu.html
        Kontakt                -> kontakt.html
 ============================================================================ -->
-<header class="fixed top-6 inset-x-0 z-50 flex justify-center px-4">
-  <div class="w-full max-w-[1300px] flex items-center justify-between gap-5
-              bg-brand-dark/40 backdrop-blur-md border border-white/25
-              rounded-full pl-[30px] pr-[30px] py-3">
+<header class="fixed top-0 inset-x-0 z-50">
+  <div class="w-full flex items-center justify-between gap-5
+              bg-brand-dark/40 backdrop-blur-md border-b border-white/20
+              pl-[30px] pr-[30px] py-3">
 
-    <!-- Logo (2x original size, then reduced 20% -> h-16 * 0.8 = h-[51.2px]) -->
+    <!-- Logo — 60px tall, asked for directly (it was 51.2px: 2x the original,
+         then reduced 20%). The bar has no fixed height of its own: it is the
+         logo plus the wrapper's py-3, so raising the logo is what raises the
+         header, from ~76px to ~85px. -->
     <a href="index.html" class="flex items-center shrink-0" aria-label="Balkan Bet početna">
-      <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[51.2px] w-auto">
+      <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[60px] w-auto">
     </a>
 
     <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case -->
@@ -81,7 +129,7 @@
          CTA on the page that is NOT set uppercase.
          This is one of the entry points into the listing page (together with
          every "Pretraži" / "Pogledaj sve pozicije" on the site). -->
-    <a href="listanje.html" class="bg-brand-yellow shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
+    <a href="listanje.html" class="bg-brand-cta shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
       Pronađi posao
     </a>
   </div>
@@ -102,9 +150,13 @@
     <!-- Headline layer -->
     <div id="hero-heading-wrap" class="flex items-center justify-center text-center px-6">
       <h1 id="hero-heading"
-          class="uppercase font-extrabold text-white"
+          class="uppercase font-medium text-white"
           style="font-size: 100px; line-height: 90px; letter-spacing: -6px;">
-        Uskoči u igru.<br>Budi deo Balkan<br>Bet tima.
+        <!-- Only the FIRST sentence is wrapped. The rest keeps the h1's own
+             text-white and so needs no span: in the light theme the whole
+             headline is white, and in the dark one only this lead goes yellow
+             (see .hero-heading__lead in theme-dark.css). -->
+        <span class="hero-heading__lead">Uskoči u igru.</span><br>Budi deo Balkan<br>Bet tima.
       </h1>
     </div>
 
@@ -218,30 +270,32 @@
 <!-- Padding is asymmetric ON PURPOSE — both gaps still READ as 140px
      (the old 200px, tightened by the requested 30%):
 
-     top = 89px. The 140px is measured from the video's bottom edge to the
+     top = 119px. The 140px is measured from the video's bottom edge to the
        TOP OF THE TITLE'S LETTERS, which is not where the H2's box starts.
-       Two things sit in between and both have to be subtracted:
-         30px — the media box's own bottom inset (see "HERO → FIRST SECTION
-                OVERLAP"; that gap is a px constant, not a vh fraction)
+       Only ONE thing now sits in between:
          21px — the H2's own leading: 84px line-height on a 56px font leaves
                 7px of half-leading, and the font's ascender clears its cap
                 height by another 14px. Measured off the font metrics, not
                 guessed — if the title's font-size or line-height changes,
-                re-measure and re-derive, because 140 - 30 - 21 = 89 only
-                holds for THIS type setting.
+                re-measure and re-derive, because 140 - 21 = 119 only holds
+                for THIS type setting.
+       This was 89px while the media box stopped 30px short of the viewport's
+       bottom edge and that inset had to be subtracted too. The video now goes
+       FULL-BLEED at max size, so the inset is zero and the 30px came back onto
+       the padding — the gap the reader sees is unchanged.
        Note the header still carries .reveal, so for the ~0.7s of its
        translateY(24px) fade-in the gap reads up to 164px before settling.
 
      bottom = the full 140px, measured from the last thing in the section
        (now the "Pogledaj sve pozicije" link, which sits under the card row)
        to the white panel's edge — two hard edges, nothing to compensate for. -->
-<section id="openings" class="relative z-10 pt-[89px] pb-[140px]">
+<section id="openings" class="relative z-10 pt-[119px] pb-[140px]">
   <div class="max-w-[1440px] mx-auto px-8 md:px-16">
 
     <!-- Header: title only, centered. mb/mt below the row are the old
          64px/56px tightened by the requested 20%. -->
     <div class="reveal text-center mb-[51px]">
-      <h2 class="uppercase font-extrabold tracking-tight text-white"
+      <h2 class="uppercase font-medium tracking-tight text-white"
           style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
         Najnovije pozicije
       </h2>
@@ -277,7 +331,7 @@
   <div class="max-w-[1200px] mx-auto px-8 md:px-16 text-center">
     <!-- Same type scale as the "Najnovije pozicije" heading — the two section
          titles are meant to read as one level, so keep these clamps in sync. -->
-    <h2 class="reveal uppercase font-extrabold tracking-tight text-brand-dark"
+    <h2 class="reveal uppercase font-medium tracking-tight text-brand-dark"
         style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
       Život u Balkan Bet-u
     </h2>
@@ -305,7 +359,7 @@
        that used to sit above each label was dropped on request.
   ========================================================================== -->
   <div class="max-w-[1200px] mx-auto px-8 md:px-16 mt-20 text-center">
-    <h3 class="reveal uppercase font-extrabold tracking-tight text-brand-dark"
+    <h3 class="reveal uppercase font-medium tracking-tight text-brand-dark"
         style="font-size: clamp(1.5rem, 3.2vw, 2.5rem);">
       Balkan Bet benefiti
     </h3>
@@ -315,11 +369,22 @@
     <div id="benefits-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-12 mt-14"></div>
   </div>
 
-  <!-- Dark pill, sentence case on purpose — same explicit exception as the
-       header CTA and the "Prijavi se" card buttons. Was a .cta-gradient
-       uppercase "O nama"; do not put that back. -->
+  <!-- Same component as "Pogledaj sve pozicije" in #openings, asked for
+       directly: underlined text link (border-b-2), Medium, uppercase — not the
+       dark pill it used to be.
+
+       It is UPPERCASE now, which reverses the earlier "this CTA is deliberately
+       not caps-lock" note. That exception was about CTA BUTTONS; this is no
+       longer a button but a text link, and every text link on the site
+       ("POGLEDAJ SVE POZICIJE", "BALKANBET.RS") is set caps.
+
+       The one thing it CANNOT copy is the colour. "Pogledaj sve pozicije" is
+       white because it sits on the aurora; this one sits inside the #impact
+       panel, which is white in the light theme — white on white. So it is dark
+       here, and theme-dark.css turns it yellow, where the two then match
+       exactly. -->
   <div class="text-center">
-    <a href="#" class="reveal inline-block mt-16 bg-brand-dark text-white rounded-full px-8 py-3.5 text-base font-bold hover:bg-brand-yellow hover:text-brand-dark transition-colors cursor-pointer">
+    <a href="#" class="reveal inline-block mt-16 font-medium uppercase text-brand-dark text-base border-b-2 border-brand-dark pb-0.5 hover:text-brand-gold hover:border-brand-gold transition-colors cursor-pointer">
       Saznaj više o nama
     </a>
   </div>
@@ -343,19 +408,21 @@
      second label line, then the arrow that leads to the next step). Reordering
      these nodes reorders the animation.
 ============================================================================ -->
-<!-- Padding is ASYMMETRIC to come out visually SYMMETRIC at 96px (the site's
-     py-24 section rhythm), measured edge-of-neighbour to edge-of-INK:
-       top    96 + 42 = 138  — .panel-overlap has already eaten 48px, and the
-                              first line is now the SUBTITLE, whose box starts
-                              ~6px above its cap line (it was the h2 at 10px
-                              before the two were swapped)
-       bottom 96 - 47 =  49  — what follows is not a background edge but the
-                              footer, which brings its own -48px overlap and
-                              80px of pt-20, plus ~15px of unused stage height
-                              under the lowest step
-     Both numbers are only valid for these type sizes and this stage ratio; if
-     either changes, re-measure the two gaps rather than copying these. -->
-<section id="proces" class="relative z-20 panel-overlap section-panel pt-[138px] pb-[49px]">
+<!-- Padding is ASYMMETRIC to come out visually SYMMETRIC — the section read as
+     cramped at the site's usual 96px py-24 rhythm, so its own target was raised
+     to 150px top and bottom. Measured edge-of-neighbour to edge-of-INK:
+       top    150 + 42 = 192  — .panel-overlap has already eaten 48px, and the
+                               first line is the SUBTITLE, whose box starts
+                               ~6px above its cap line
+       bottom 150 - 47 = 103  — what follows is not a background edge but the
+                               footer, which brings its own -48px overlap and
+                               80px of pt-20, plus ~15px of unused stage height
+                               under the lowest step
+     The two CORRECTIONS (+42 / -47) are properties of the neighbours and the
+     type, not of the target, so raising or lowering the 150 later means moving
+     both numbers by the same amount — do not re-derive them from scratch.
+     They are only valid for these type sizes and this stage ratio. -->
+<section id="proces" class="relative z-20 panel-overlap section-panel pt-[192px] pb-[103px]">
   <!-- Subtitle ABOVE the heading (it reads as a kicker) — the reference artwork
        had them the other way round, this order was asked for afterwards. -->
   <div class="max-w-[1200px] mx-auto px-8 md:px-16 text-center">
@@ -366,7 +433,7 @@
     <p class="reveal text-white font-bold leading-tight" style="font-size: clamp(1.05rem, 1.9vw, 1.6rem);">
       4 koraka do karijere u Balkan Bet-u
     </p>
-    <h2 class="reveal text-white uppercase font-extrabold tracking-tight leading-[1.05] mt-3"
+    <h2 class="reveal text-white uppercase font-medium tracking-tight leading-[1.05] mt-3"
         style="font-size: clamp(2rem, 4.5vw, 3.5rem);">
       Proces zapošljavanja
     </h2>
@@ -375,35 +442,42 @@
   <div class="max-w-[1200px] mx-auto px-8 md:px-16 mt-6 md:mt-8">
     <div id="proces-stage">
 
+      <!-- The --x values were spread out along with the 0.85 size reduction:
+           each piece, in writing order, carries one more percent of the stage
+           than the one before it (s1 +0, a1 +1, s2 +2 … s4 +6), and the first
+           step was pulled 1% closer to the left edge. Shrinking the type freed
+           roughly 13% of the stage's width and this is where it went — the
+           composition now runs 1.2% → ~98% instead of 2.2% → 92%.
+           The --y zigzag is untouched. -->
       <!-- 01 -->
-      <div class="proc-step" style="--x:2.2%; --y:31.3%">
+      <div class="proc-step" style="--x:1.2%; --y:31.3%">
         <span class="proc-step__num proc-ink">01</span>
         <span class="proc-step__label"><span class="proc-ink">Pronađi</span><span class="proc-ink">poziciju</span></span>
       </div>
-      <svg class="proc-arrow proc-ink" viewBox="0 0 96 72" style="--x:26.4%; --y:43.1%" aria-hidden="true">
+      <svg class="proc-arrow proc-ink" viewBox="0 0 96 72" style="--x:27.4%; --y:43.1%" aria-hidden="true">
         <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
       </svg>
 
       <!-- 02 -->
-      <div class="proc-step" style="--x:28.6%; --y:4.7%">
+      <div class="proc-step" style="--x:30.6%; --y:4.7%">
         <span class="proc-step__num proc-ink">02</span>
         <span class="proc-step__label"><span class="proc-ink">Prijavi se</span><span class="proc-ink">online</span></span>
       </div>
-      <svg class="proc-arrow proc-arrow--down proc-ink" viewBox="0 0 96 72" style="--x:51.4%; --y:23.4%" aria-hidden="true">
+      <svg class="proc-arrow proc-arrow--down proc-ink" viewBox="0 0 96 72" style="--x:54.4%; --y:23.4%" aria-hidden="true">
         <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
       </svg>
 
       <!-- 03 -->
-      <div class="proc-step" style="--x:49.3%; --y:54.7%">
+      <div class="proc-step" style="--x:53.3%; --y:54.7%">
         <span class="proc-step__num proc-ink">03</span>
         <span class="proc-step__label"><span class="proc-ink">Razgovor</span><span class="proc-ink">sa timom</span></span>
       </div>
-      <svg class="proc-arrow proc-ink" viewBox="0 0 96 72" style="--x:76.1%; --y:48.4%" aria-hidden="true">
+      <svg class="proc-arrow proc-ink" viewBox="0 0 96 72" style="--x:81.1%; --y:48.4%" aria-hidden="true">
         <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
       </svg>
 
       <!-- 04 -->
-      <div class="proc-step" style="--x:71.7%; --y:6.3%">
+      <div class="proc-step" style="--x:77.7%; --y:6.3%">
         <span class="proc-step__num proc-ink">04</span>
         <span class="proc-step__label"><span class="proc-ink">Ponuda</span><span class="proc-ink">za posao</span></span>
       </div>
@@ -616,19 +690,16 @@
   // hands us, which keeps it cheap enough to run every single scroll tick.
   let heroOffsetTop = 0;
   let heroScrollable = 1;
-  // Viewport-y of the nav pill's vertical midpoint — where the media's top
-  // edge lands at max size. Read from the header itself (rather than
-  // hardcoding top-6 + its padding) so restyling the nav can't silently
-  // desync the two. The header is `position: fixed`, so its rect doesn't
-  // move with scroll and measuring it once per resize is enough.
-  let heroNavMid = 0;
+  // The header's GEOMETRY is no longer measured (heroNavMid — the nav pill's
+  // vertical midline — used to be where the media's top edge parked at max
+  // size; the media now grows to the full viewport and runs under the bar).
+  // The element itself is still needed, but only to toggle `.is-solid` on it
+  // from updateHero — no rect is ever read.
   const siteHeader = document.querySelector('header');
 
   function measureHero() {
     heroOffsetTop = heroSpacer.offsetTop;
     heroScrollable = heroSpacer.offsetHeight - window.innerHeight;
-    const navRect = siteHeader.getBoundingClientRect();
-    heroNavMid = navRect.top + navRect.height / 2;
   }
 
   function updateHero(scrollY) {
@@ -657,35 +728,46 @@
     // Sizes are computed in px (not vw/vh) so the max phase can land on exact
     // pixel insets regardless of viewport size.
     const revealT = clamp((growEased - p1Frac) / (1 - p1Frac), 0, 1);
-    // Max size at the P3 snap-hold: 30px of orange left showing down both
-    // sides and along the bottom, while the TOP edge runs further up, to the
-    // vertical middle of the floating nav pill (heroNavMid), so the media
-    // tucks in behind the nav instead of stopping short of it.
-    const HERO_MAX_INSET = 30;
-    const maxBoxW = vw - HERO_MAX_INSET * 2;
-    const maxBoxH = (vh - HERO_MAX_INSET) - heroNavMid;
+    // Max size at the P3 snap-hold: the FULL VIEWPORT, edge to edge. It used to
+    // stop 30px short down both sides and along the bottom, with its top edge
+    // parked on the nav pill's midline (heroNavMid), so a frame of orange stayed
+    // visible all the way round; the client asked for full-bleed instead.
+    //
+    // Two things fall out of that and neither is cosmetic:
+    //   - the box is symmetric about the viewport centre again, so the
+    //     boxCentreOffset that used to compensate for unequal top/bottom insets
+    //     is now identically zero and is gone with it;
+    //   - heroNavMid is no longer read at all. The media runs UNDER the fixed
+    //     header rather than tucking below it, which is the whole point of the
+    //     header being a translucent glass bar.
+    const maxBoxW = vw;
+    const maxBoxH = vh;
     const boxW = lerp(vw * 0.56, maxBoxW, revealT);
     const boxH = lerp(vh * 0.42, maxBoxH, revealT);
-    // Because the top and bottom insets differ, the box is no longer
-    // symmetric about the viewport's middle, so `top: 50%` + translate(-50%)
-    // alone would sit it too high. This nudges its centre down by exactly
-    // half the inset difference, which puts the two edges where they belong:
-    //   top    = vh/2 + offset - boxH/2 = heroNavMid
-    //   bottom = vh/2 + offset + boxH/2 = vh - HERO_MAX_INSET
-    const boxCentreOffset = lerp(0, (heroNavMid - HERO_MAX_INSET) / 2, revealT);
-    // Constant — the media keeps the same rounded corners the whole way
-    // through; it never goes full-bleed, so there is nothing to square off.
-    const boxRadius = 32;
+    // Squares off ON THE WAY to max, landing at exactly 0 on the same revealT
+    // that lands the box at full size. It was a constant 32px before, which was
+    // right while the box never went full-bleed — at full screen those corners
+    // would cut four notches out of the viewport's own corners.
+    const boxRadius = lerp(32, 0, revealT);
 
     // ---- Phase 4: media + search block travel up together and exit
     const exitT = clamp((p - HERO_PHASE.p3End) / (HERO_PHASE.p4End - HERO_PHASE.p3End), 0, 1);
     const exitY = lerp(0, -vh * HERO_EXIT_TRAVEL, exitT);
 
+    // Header glass follows the exit: bare over the video, solid once the hero
+    // unit starts clearing out and real content comes up behind the bar. The
+    // threshold is p3End — the END of the snap-hold, i.e. the exact frame the
+    // media starts moving — so the two read as one event. See "HEADER —
+    // transparent while the hero owns the screen" in styles.css for why the
+    // painted state lives in the markup's utilities and only its REMOVAL is a
+    // rule. classList.toggle is idempotent, so this is safe to run every tick.
+    siteHeader.classList.toggle('is-solid', p >= HERO_PHASE.p3End);
+
     // Media box: position, size, and the discrete (non-transitioned) z-index flip
     heroMediaBox.style.width = `${boxW}px`;
     heroMediaBox.style.height = `${boxH}px`;
     heroMediaBox.style.borderRadius = `${boxRadius}px`;
-    heroMediaBox.style.transform = `translate(-50%, -50%) translateY(${enterY + exitY + boxCentreOffset}px)`;
+    heroMediaBox.style.transform = `translate(-50%, -50%) translateY(${enterY + exitY}px)`;
     heroMediaBox.style.zIndex = p < HERO_PHASE.zFlip ? 5 : 20;
 
     // Heading: shrinks, fades, and translates up together, all fully done
@@ -1012,7 +1094,7 @@
       </div>
 
       <div class="mt-auto pt-7">
-        <a href="oglas-primer.html" class="inline-flex items-center justify-center bg-brand-yellow text-white rounded-full px-6 py-2 font-bold text-[13px] hover:brightness-95 transition cursor-pointer">
+        <a href="oglas-primer.html" class="inline-flex items-center justify-center bg-brand-cta text-white rounded-full px-6 py-2 font-bold text-[13px] hover:brightness-95 transition cursor-pointer">
           Prijavi se
         </a>
       </div>
@@ -1544,6 +1626,50 @@
   remeasureAll();
   window.addEventListener('load', remeasureAll);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasureAll);
+
+  /* ==========================================================================
+     PREKIDAČ TEME — demo kontrola za prikaz klijentu, nije deo dizajna sajta.
+
+     Dugme se PRAVI ovde umesto da stoji u markupu, iz istog razloga iz kog je
+     tamna tema poseban CSS fajl: telo stranice ostaje netaknuto, pa se ceo
+     mehanizam uklanja brisanjem ovog bloka, <link>-a i skripta iz <head>-a i
+     fajla theme-dark.css — bez ijedne izmene u samoj stranici.
+
+     Ne dira nijednu izmerenu vrednost (measureImpact / measureProcess): menja
+     samo boje, ne i geometriju, pa remeasure posle prebacivanja nije potreban.
+  ========================================================================== */
+  (function () {
+    var root = document.documentElement;
+    var SUN = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2.5M12 20v2.5M3.5 12H1M23 12h-2.5M5.6 5.6L3.8 3.8M20.2 20.2l-1.8-1.8M18.4 5.6l1.8-1.8M3.8 20.2l1.8-1.8"/></svg>';
+    var MOON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.3A8.6 8.6 0 019.7 3.5a8.8 8.8 0 102.8 17.2 8.8 8.8 0 008-6.4z"/></svg>';
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'theme-toggle';
+
+    function paint() {
+      var dark = root.getAttribute('data-theme') === 'dark';
+      // SAMO IKONICA — tekstualna oznaka ("Svetla varijanta") je uklonjena na
+      // zahtev. Dugme i dalje nudi ONU DRUGU varijantu, ne imenuje trenutnu.
+      // Značenje sada nosi samo glif, pa aria-label (za čitače ekrana) i title
+      // (tooltip mišem) ostaju jedini tekst i moraju se održavati.
+      btn.innerHTML = dark ? SUN : MOON;
+      var label = 'Prebaci na ' + (dark ? 'svetlu' : 'tamnu') + ' varijantu';
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('title', label);
+    }
+
+    btn.addEventListener('click', function () {
+      var dark = root.getAttribute('data-theme') === 'dark';
+      if (dark) root.removeAttribute('data-theme');
+      else root.setAttribute('data-theme', 'dark');
+      try { localStorage.setItem('bb-tema', dark ? 'light' : 'dark'); } catch (e) {}
+      paint();
+    });
+
+    paint();
+    document.body.appendChild(btn);
+  })();
 
 </script>
 </body>
