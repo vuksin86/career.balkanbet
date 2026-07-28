@@ -694,10 +694,22 @@
 
   #hero-stage { height: 100vh; }
 
+  /* ⚠ pointer-events: none IS LOAD-BEARING. This layer is `inset: 0` at z-10,
+     so it covers the ENTIRE stage — including the scroll ball at the bottom,
+     which sits at z-3 underneath it. Without this, the wrapper silently eats
+     every click aimed at the ball and the button looks dead. (It did. The bug
+     was invisible to a scripted `ball.click()`, which skips hit-testing
+     altogether — only elementFromPoint at the ball's centre showed it.)
+
+     Nothing in here is interactive: it is a flex container holding the h1, so
+     there is nothing to lose by making it transparent to the pointer. Do NOT
+     fix this by raising the ball's z-index instead — that 3 is deliberate, it
+     has to stay BELOW the media box (z-5) so the rising video covers it. */
   #hero-heading-wrap {
     position: absolute;
     inset: 0;
     z-index: 10;
+    pointer-events: none;
   }
 
   /* ========================================================================
