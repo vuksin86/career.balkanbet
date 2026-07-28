@@ -77,6 +77,22 @@
 </div>
 
 <!-- ============================================================================
+     SCROLL PROGRESS — thin yellow rail across the very top of the viewport,
+     ABOVE the header (z-60 vs the header's z-50, so it draws over the bar's top
+     edge rather than being covered by it).
+
+     HOMEPAGE ONLY, on purpose: it is a reading indicator for the one page long
+     enough to need one — the hero alone is a 373vh spacer. It sits OUTSIDE the
+     header element, which must stay byte-identical across all three pages.
+
+     aria-hidden: it reports nothing a screen reader cannot already get from the
+     scroll position itself.
+============================================================================ -->
+<div class="scroll-progress" aria-hidden="true">
+  <span class="scroll-progress__fill"></span>
+</div>
+
+<!-- ============================================================================
      HEADER — full-bleed bar, fixed to the very top of the viewport.
 
      Was a floating pill (top-6, max-w-[1300px], rounded-full, border all round)
@@ -161,11 +177,17 @@
     </div>
 
     <!-- Scroll hint: the logo's ball, bouncing in place. Stands in for the
-         usual "scroll down" chevron. The outer div carries the scroll-driven
+         usual "scroll down" chevron. The outer element carries the scroll-driven
          exit (set in updateHero, tied to the same headT as the headline so
          the two leave together); the inner span owns the looping bounce, so
-         the CSS animation and the JS transform never fight over one element. -->
-    <div id="hero-scroll-ball" aria-hidden="true">
+         the CSS animation and the JS transform never fight over one element.
+
+         It is a real <button>, not a decorative div: clicking it jumps to the
+         snap-hold, the point where the video is fullscreen with the search bar
+         on it (see the handler at the bottom of this file). That makes it a
+         control, so it has to be reachable and announceable — hence the element
+         and the aria-label, and hence no aria-hidden. -->
+    <button type="button" id="hero-scroll-ball" aria-label="Pređi na pretragu poslova">
       <span class="hero-scroll-ball__shadow"></span>
       <!-- The ball is lifted verbatim out of BalkanBetLogo.svg: same circle
            path, same radialGradient stops AND the same gradientTransform, in
@@ -187,7 +209,7 @@
         <path d="M0 79.0146C0 122.652 35.376 158.027 79.0107 158.027C122.651 158.027 158.025 122.652 158.025 79.0146C158.025 35.376 122.651 0 79.0107 0C35.376 0 0 35.376 0 79.0146Z"
               fill="url(#heroBallGradient)"/>
       </svg>
-    </div>
+    </button>
 
     <!-- Media layer: single rectangle that rises, crosses the text, then grows to near-fullscreen -->
     <div id="hero-media-box">
@@ -516,7 +538,7 @@
                grid-template-rows 0fr -> 1fr and the span is the row that has to
                clip while collapsed. -->
           <div class="footer-cta__pillwrap"><span>
-            <span class="footer-cta__pill">Pogledaj pozicije</span>
+            <span class="footer-cta__pill">Saznaj više</span>
           </span></div>
         </div>
       </a>
@@ -530,7 +552,7 @@
           <h2 class="footer-cta__title">Posao u centrali</h2>
           <p class="footer-cta__sub">Postani deo našeg tima</p>
           <div class="footer-cta__pillwrap"><span>
-            <span class="footer-cta__pill">Pogledaj pozicije</span>
+            <span class="footer-cta__pill">Saznaj više</span>
           </span></div>
         </div>
       </a>
@@ -790,6 +812,12 @@
     // declaration overwrites.
     heroScrollBall.style.opacity = 1 - headT;
     heroScrollBall.style.transform = `translateX(-50%) translateY(${lerp(0, -vh * 0.18, headT)}px)`;
+    // Now that it is a button it must stop existing once it has faded out, not
+    // just stop being visible: an opacity-0 control still takes Tab, and it
+    // would still be sitting under the pointer over the video. Guarded so this
+    // is a write on the two frames it flips, not on every scroll tick.
+    const ballGone = headT >= 1;
+    if (heroScrollBall.hidden !== ballGone) heroScrollBall.hidden = ballGone;
 
     // Search block: enters in phase 2 (same timing as heading exit), exits in phase 4
     const searchEnterY = lerp(vh * 0.5, 0, revealT);
@@ -806,6 +834,22 @@
     updateHero(lenis.scroll);
   });
   updateHero(lenis.scroll);
+
+  /* Clicking the bouncing ball jumps to the SNAP-HOLD — the stretch where the
+     video is stretched across the whole screen with the search bar on it.
+
+     p2End is the exact frame it arrives there (p2End → p3End is the hold), so
+     it is the earliest scroll position that shows the finished picture; landing
+     any deeper would already be eating into the pause.
+
+     Derived from the same cached measurements updateHero runs on, and read at
+     click time rather than precomputed, so a resize in between needs nothing
+     kept in sync. Driven through lenis.scrollTo for the same reason every other
+     scroll read on this page goes through Lenis — a native scrollTo would jump
+     the smoothed value out from under the choreography. */
+  heroScrollBall.addEventListener('click', () => {
+    lenis.scrollTo(heroOffsetTop + HERO_PHASE.p2End * heroScrollable, { duration: 1.4 });
+  });
 
   /* ==========================================================================
      HERO SEARCH — three custom dropdowns; the job-type tab drives the rest
@@ -1608,6 +1652,41 @@
   });
 
   /* ==========================================================================
+     SCROLL PROGRESS RAIL
+
+     Reads its position from lenis.on('scroll') like everything else on this
+     page — NOT from window.scrollY. Mixing the two is the desync bug documented
+     on the hero: Lenis advances a smoothed value on its own rAF loop, so the
+     native scroll position is a different number on the same frame and the rail
+     would drift away from the animation it sits above.
+
+     The scrollable distance is MEASURED AND CACHED rather than read per frame:
+     scrollHeight forces a layout, and this runs on every scroll frame alongside
+     the hero, impact and process scrubbers. It is re-measured wherever those
+     are — resize, load, fonts — since anything that changes the page height
+     changes this number too.
+  ========================================================================== */
+  const progressFill = document.querySelector('.scroll-progress__fill');
+  let progressMax = 0;
+
+  function measureProgress() {
+    progressMax = document.documentElement.scrollHeight - window.innerHeight;
+  }
+
+  function updateProgress(scrollY) {
+    const p = progressMax > 0 ? clamp(scrollY / progressMax, 0, 1) : 0;
+    progressFill.style.transform = `scaleX(${p.toFixed(4)})`;
+  }
+
+  measureProgress();
+  updateProgress(lenis.scroll);
+  lenis.on('scroll', ({ scroll }) => updateProgress(scroll));
+  window.addEventListener('resize', () => {
+    measureProgress();
+    updateProgress(lenis.scroll);
+  });
+
+  /* ==========================================================================
      FINAL RE-MEASURE — measureImpact() runs inside the IMPACT block, which
      sits ABOVE the block that renders the job cards, so at that point the
      openings grid is still empty and every offset it reads is ~300px short.
@@ -1622,6 +1701,10 @@
     updateImpact(lenis.scroll);
     measureProcess();
     updateProcess(lenis.scroll);
+    // The rail's own measurement is the page height, which is exactly what
+    // these late-arriving cards and fonts change.
+    measureProgress();
+    updateProgress(lenis.scroll);
   }
   remeasureAll();
   window.addEventListener('load', remeasureAll);

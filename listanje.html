@@ -1,5 +1,11 @@
 ﻿<!DOCTYPE html>
-<html lang="sr">
+<!-- data-theme="dark" stoji U MARKUPU, ne postavlja ga skript: tamna je
+     PODRAZUMEVANA varijanta i ove stranice, pa mora da važi od prvog pixela —
+     pre nego što se izvrši ijedna linija JS-a, i onda kad JS ne radi uopšte.
+     Skript u <head>-u ispod je samo izlaz iz nje (?tema=light ili zapamćen
+     izbor). Isti mehanizam kao na index.html; ključ u localStorage-u je isti
+     (bb-tema), pa izbor prati posetioca kroz obe stranice. -->
+<html lang="sr" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +21,38 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="brand-setup.js"></script>
 <link rel="stylesheet" href="styles.css">
+
+<!-- ==========================================================================
+     TAMNA VARIJANTA — PODRAZUMEVANA tema i ove stranice.
+
+     Isti aditivni sloj koji učitava i naslovna, bez ijedne kopije: sva pravila
+     su pod [data-theme="dark"], a atribut stoji zakucan na <html> iznad.
+
+     ⚠ ŠTA OVAJ FAJL OVDE NE RADI: panel sa rezultatima (.jobs-panel) i kartice
+     (.job-card) OSTAJU SVETLI — traženo tako, i zato u theme-dark.css za njih
+     namerno nema nijednog pravila. Tamno je sve oko njih: aurora, hero traka
+     bez podloge, header i futer.
+========================================================================== -->
+<link rel="stylesheet" href="theme-dark.css">
+<script>
+  /* IZLAZ iz podrazumevane teme — byte-identičan skript kao u index.html.
+     Tamna se NE pali odavde (za to je atribut u markupu, koji važi i pre JS-a i
+     bez njega), nego se ovde SKIDA kada je tražena svetla.
+
+     Mora ostati u <head>-u i pre <body>-ja: skidanje atributa kasnije, npr. na
+     DOMContentLoaded, daje vidljiv blesak tamne teme pre svetle.
+
+     Prioritet: ?tema= iz URL-a pobeđuje zapamćeni izbor, da se varijanta može
+     nekome poslati kao link koji uvek otvara ono što u njemu piše. */
+  (function () {
+    var url = new URLSearchParams(location.search).get('tema');
+    var saved = null;
+    try { saved = localStorage.getItem('bb-tema'); } catch (e) { /* privatni režim */ }
+    var theme = url || saved;
+    if (theme === 'light') document.documentElement.removeAttribute('data-theme');
+    if (url) { try { localStorage.setItem('bb-tema', url); } catch (e) {} }
+  })();
+</script>
 </head>
 
 <body class="font-sans text-brand-dark antialiased overflow-x-hidden">
@@ -87,39 +125,52 @@
 </header>
 
 <!-- ============================================================================
-     HERO — dark band with the page title and the search bar.
+     HERO — page title, straight on the aurora.
+
+     NO DARK BAND ANY MORE. This section used to paint a #231F20 slab behind the
+     title and the search bar; it is now transparent (see .page-hero--flush in
+     styles.css) and the animated aurora shows through, exactly as it does
+     behind the homepage hero. Two things follow from that:
+       - the title reads as the page's own headline on the site's background,
+         not as a card from a different template;
+       - the search bar could leave this section to become sticky without
+         leaving a cut-off band edge behind it.
 
      FULL-BLEED and SQUARE on all four corners: no .section-panel inset, no top
-     margin and no radius, so the band runs edge to edge and the floating header
-     sits on top of it. The results panel below is the element that floats — it
-     is inset 30px on every side — so the band behind it stays a flat backdrop
-     rather than a rounded card of its own.
+     margin and no radius. The results panel below is the element that floats —
+     it is inset 30px on every side.
 
-     overflow is deliberately VISIBLE here (.page-hero--flush): the search
-     bar's dropdown panels open downwards and would otherwise be cut off at
-     the band's bottom edge. The corner glow is therefore painted as a
-     background-image rather than the overflow-clipped ::after used elsewhere,
-     and z-30 keeps an open panel above the results panel below.
+     .page-hero--flush is ALSO the marker the header keys off: it is what makes
+     the bar start transparent on this page (see the header block in
+     styles.css). Do not put the class on another page without meaning that.
 
-     pt-[190px] clears the fixed header (pinned to top:0, ~85px tall since the
-     logo went to 60px) and still leaves the title breathing room.
+     pt-[140px] clears the fixed header (pinned to top:0, ~85px tall since the
+     logo went to 60px) and leaves the title breathing room; it was 190px.
+     pb-9 (36px) plus the band's own 12px padding-top is the 48px that used to
+     be the bar's mt-12 — the gap down to the bar is unchanged.
 ============================================================================ -->
-<section class="page-hero page-hero--flush relative z-30 pt-[190px] pb-16">
+<section class="page-hero page-hero--flush relative z-30 pt-[140px] pb-9">
   <div class="max-w-[1200px] mx-auto px-8 md:px-16 text-center">
+    <!-- Uppercase comes from CSS, so the text here stays sentence case — the
+         site-wide rule, so the copy can be read and edited as written. -->
     <h1 class="uppercase font-medium tracking-tight text-white"
         style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
-      Pronađi svoj posao
+      Postani deo Balkan Bet tima
     </h1>
-    <p class="text-white/80 text-lg font-medium mt-5 max-w-2xl mx-auto">
+    <!-- No top margin: the two lines are one block, and the h1's own line-height
+         already leaves the gap. Removing mt-5 was asked for directly. -->
+    <p class="text-white/80 text-lg font-medium max-w-2xl mx-auto">
       Pridruži se timu od preko 1000 zaposlenih širom Srbije.
-      Pretraži otvorene pozicije u Balkan Betu.
     </p>
   </div>
+</section>
 
-  <!-- SEARCH BAR — the homepage hero bar reused as-is (.hero-search: yellow
-       frame, three white tabs, black submit), plus the one control this page
-       needs on top of it: the "Bez CV-ja" checkbox. Same custom dropdowns,
-       not <select>s — see the CSS note on .hero-search.
+  <!-- SEARCH BAR — now byte-for-byte the homepage hero bar: yellow frame, three
+       white tabs, black submit, nothing else. The "Bez CV-ja" tile that used to
+       sit in here as a fourth element has moved down to the results toolbar and
+       become a switch (.nocv-toggle) — it is a view mode over the results, not
+       a fourth thing to pick before searching. Same custom dropdowns, not
+       <select>s — see the CSS note on .hero-search.
 
        .hero-search--down flips the panels to open DOWNWARDS. The homepage bar
        opens upward only because it sits 96px off the bottom of a clipped
@@ -134,9 +185,10 @@
        side padding is the same inset the results panel uses, which keeps the
        two aligned at every width, not just at the cap.
        The width matters now that every element in the bar is the same size:
-       at the old 1072px the five equal slots were too narrow for the default
+       at the old 1072px the equal slots were too narrow for the default
        "Poslovi u lokalima" and it truncated on load. -->
-  <div class="max-w-[1372px] mx-auto px-[30px] mt-12">
+  <div class="search-band">
+   <div class="max-w-[1372px] mx-auto px-[30px]">
     <div class="hero-search hero-search--down" id="job-filter">
 
       <div class="hero-search__tab" data-filter="vrsta">
@@ -178,57 +230,75 @@
         <div class="hero-search__menu" role="listbox" hidden></div>
       </div>
 
-      <!-- The extra control this bar has over the homepage one. Drawn as a
-           fourth white tile so it reads as part of the same frame; the native
-           box is hidden and redrawn because it cannot take the brand radius. -->
-      <label class="hero-search__check">
-        <input type="checkbox">
-        <span class="hero-search__box">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#231F20" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-        </span>
-        <span>Bez CV-ja</span>
-      </label>
-
       <button type="button" class="hero-search__submit">Pretraži</button>
     </div>
+   </div>
   </div>
-</section>
 
-<!-- ============================================================================
-     RESULTS — cards rendered from the JOBS array at the bottom of this file.
+  <!-- ==========================================================================
+       RESULTS — cards rendered from the JOBS array at the bottom of this file.
 
-     Flat #F4F4F4 panel FLOATING on the dark band: .jobs-panel carries a 30px
-     margin on every side, so there is 30px of the hero visible above it and
-     30px down both edges of the viewport. No .panel-overlap — the two panels
-     must not touch, that gap is the whole point. rounded-[32px] is the same
-     radius every panel on the homepage carries.
+       ⚠ THE PANEL AND THE CARDS STAY LIGHT IN THE DARK THEME. Requested
+       explicitly: everything around them goes dark (aurora, hero, header,
+       footer) and this stays the one lit surface on the page, so the results
+       read as the thing the page is actually for. That is why theme-dark.css
+       carries no rule for .jobs-panel or .job-card — the absence is the design,
+       not an oversight.
 
-     Cards are the homepage "Najnovije pozicije" card, same markup and same
-     tokens (white, 12px radius, 28px padding, gold pin + city, ~26px title,
-     yellow "Prijavi se"), and now the same SIZE too: the inner container is
-     capped at 1312px, which is exactly what the homepage's
-     `max-w-[1440px] px-16` measures out to, so a row of four lands on the same
-     ~313px card instead of stretching to the panel's full width.
-     What differs is only the reveal: .job-card fades up 60px, ONCE per card
-     (the observer unobserves on first hit), because .opening-card's replaying
-     380px cascade is tuned for a single row of four, not a full grid of 16.
-============================================================================ -->
-<section class="relative z-10 jobs-panel rounded-[32px]">
+       Flat #F4F4F4 panel FLOATING on the aurora: .jobs-panel carries a 30px
+       margin on every side, so there is background visible above it and 30px
+       down both edges of the viewport. No .panel-overlap — the two must not
+       touch, that gap is the whole point. rounded-[32px] is the same radius
+       every panel on the homepage carries.
+
+       Cards are the homepage "Najnovije pozicije" card, same markup and same
+       tokens (white, 12px radius, 28px padding, gold pin + city, ~26px title,
+       yellow "Prijavi se"), and now the same SIZE too: the inner container is
+       capped at 1312px, which is exactly what the homepage's
+       `max-w-[1440px] px-16` measures out to, so a row of four lands on the same
+       ~313px card instead of stretching to the panel's full width.
+       What differs is only the reveal: .job-card fades up 60px, ONCE per card
+       (the observer unobserves on first hit), because .opening-card's replaying
+       380px cascade is tuned for a single row of four, not a full grid of 16.
+  ========================================================================== -->
+  <section class="relative z-10 jobs-panel rounded-[32px]">
   <div class="max-w-[1312px] mx-auto">
 
-    <!-- Toolbar: live result count on the left, sort control on the right. -->
-    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+    <!-- Toolbar: live result count on the left, the two view controls on the
+         right. Back to a sm: row switch now that the switch's label is two
+         words rather than a full sentence — the three items fit a tablet row. -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-8 mb-6">
       <p id="results-count" class="text-brand-dark font-bold text-lg"></p>
 
-      <!-- No "Sortiraj" caption above the value: the field is a lone control,
-           not one cell of a labelled bar, and the option text ("Najnovije")
-           already says what it is. aria-label carries it for screen readers. -->
-      <div class="jf-sort" id="jobs-sort">
-        <div class="jf-field jf-field--solid jf-field--nolabel" data-filter="sort">
-          <button type="button" class="jf-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Sortiraj">
-            <span class="jf-value"></span>
-          </button>
-          <div class="jf-menu" hidden></div>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+        <!-- "Bez CV-a", moved out of the search bar and turned into a switch.
+             It filters the same `nocv` flag it always did, but it is not one of
+             the things you pick BEFORE searching — it narrows the list already
+             on screen, which is what a switch says and a checkbox does not.
+             The wiring is in the script at the bottom: the bar no longer
+             reports `nocv`, this control owns it.
+
+             ON BY DEFAULT (`checked` in the markup, not set by script, so it
+             holds before any JS runs): most listings here need no CV, and
+             leading with them is the friendlier first view. apply() reads the
+             input on its first run, so the count starts at the filtered
+             number rather than flashing the full 16. -->
+        <label class="nocv-toggle">
+          <input type="checkbox" id="nocv-toggle" checked>
+          <span class="nocv-toggle__track"><span class="nocv-toggle__knob"></span></span>
+          <span>Bez CV-a</span>
+        </label>
+
+        <!-- No "Sortiraj" caption above the value: the field is a lone control,
+             not one cell of a labelled bar, and the option text ("Najnovije")
+             already says what it is. aria-label carries it for screen readers. -->
+        <div class="jf-sort" id="jobs-sort">
+          <div class="jf-field jf-field--solid jf-field--nolabel" data-filter="sort">
+            <button type="button" class="jf-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Sortiraj">
+              <span class="jf-value"></span>
+            </button>
+            <div class="jf-menu" hidden></div>
+          </div>
         </div>
       </div>
     </div>
@@ -240,8 +310,27 @@
       <p class="text-brand-dark font-bold text-xl">Nema pozicija za izabrane filtere.</p>
       <p class="text-brand-dark/60 mt-3">Probaj drugu lokaciju ili poziciju — nove pozicije otvaramo redovno.</p>
     </div>
+
+    <!-- OTVORENA PRIJAVA — poslednja stvar u panelu, posle svih kartica.
+         Namerno TU: čita je tačno onaj ko je upravo prešao ceo spisak i nije
+         našao svoje. Ostaje vidljiva i kad grid nema rezultata — tada je i
+         najkorisnija. Videti .talent-cta u styles.css za obrazloženje izgleda.
+
+         NAPOMENA za dev: dugme vodi na formu na oglas-primer.html jer zasebna
+         stranica "otvorena prijava" još ne postoji. Kad se napravi, menja se
+         samo href — forma tamo treba da nosi polje za željenu poziciju/grad. -->
+    <div class="talent-cta">
+      <div class="talent-cta__body">
+        <h2 class="talent-cta__title">Nema tvoje pozicije?</h2>
+        <p class="talent-cta__sub">
+          Ostavi nam svoje podatke i reci šta tražiš. Čuvamo tvoju prijavu i
+          javljamo se prvi čim se otvori nešto po tvojoj meri.
+        </p>
+      </div>
+      <a href="oglas-primer.html#prijava" class="talent-cta__pill">Prijavi se unapred</a>
+    </div>
   </div>
-</section>
+  </section>
 
 <!-- ============================================================================
      FOOTER CTA — closing call-to-action + site navigation + socials
@@ -272,7 +361,7 @@
                grid-template-rows 0fr -> 1fr and the span is the row that has to
                clip while collapsed. -->
           <div class="footer-cta__pillwrap"><span>
-            <span class="footer-cta__pill">Pogledaj pozicije</span>
+            <span class="footer-cta__pill">Saznaj više</span>
           </span></div>
         </div>
       </a>
@@ -286,7 +375,7 @@
           <h2 class="footer-cta__title">Posao u centrali</h2>
           <p class="footer-cta__sub">Postani deo našeg tima</p>
           <div class="footer-cta__pillwrap"><span>
-            <span class="footer-cta__pill">Pogledaj pozicije</span>
+            <span class="footer-cta__pill">Saznaj više</span>
           </span></div>
         </div>
       </a>
@@ -425,7 +514,10 @@
       </div>
 
       <div class="mt-auto pt-7">
-        <a href="oglas-primer.html" class="inline-flex items-center justify-center bg-brand-cta text-white rounded-full px-6 py-2 font-bold text-[13px] hover:brightness-95 transition cursor-pointer">
+        <!-- TAMAN tekst na žutoj piluli, ne beo — traženo za ovu stranicu.
+             Kartica je bela u obe teme, pa se ne oslanja na theme-dark.css
+             (čije pravilo za tamna slova ionako gađa .opening-card, ne ovo). -->
+        <a href="oglas-primer.html" class="inline-flex items-center justify-center bg-brand-cta text-brand-dark rounded-full px-6 py-2 font-bold text-[13px] hover:brightness-95 transition cursor-pointer">
           Prijavi se
         </a>
       </div>
@@ -498,7 +590,23 @@
     order.forEach((card) => grid.appendChild(card));
   }
 
+  /* The "Bez CV-ja" switch is no longer part of the search bar, so its state
+     does not arrive in the bar's `values` — it lives down in the results
+     toolbar and apply() reads it straight off the input.
+
+     `lastValues` is what lets the switch filter without touching the bar: the
+     bar publishes its state on every change, we keep the last one, and a flip
+     of the switch simply re-runs it. Calling apply() with no argument means
+     "same query, re-evaluate" — that is the switch's entry point. */
+  const noCvBox = document.getElementById('nocv-toggle');
+  let lastValues = null;
+
   function apply(values) {
+    if (values) lastValues = values;
+    else values = lastValues;
+    if (!values) return;
+
+    const noCvOnly = noCvBox.checked;
     let shown = 0;
 
     cards.forEach((card) => {
@@ -506,7 +614,7 @@
         card.dataset.vrsta === values.vrsta &&
         (values.lokacija === 'sve' || card.dataset.city === values.lokacija) &&
         (values.pozicija === 'sve' || card.dataset.title === values.pozicija) &&
-        (!values.nocv || card.dataset.nocv === 'true');
+        (!noCvOnly || card.dataset.nocv === 'true');
 
       card.style.display = matches ? '' : 'none';
       if (matches) shown += 1;
@@ -519,6 +627,8 @@
     grid.classList.toggle('hidden', shown === 0);
     emptyState.classList.toggle('hidden', shown !== 0);
   }
+
+  noCvBox.addEventListener('change', () => apply());
 
   /* The search bar. Same three tabs as the homepage, and the first one drives
      the other two for the same reason it does there: leaving a shop-floor
@@ -570,10 +680,11 @@
   if (params.get('vrsta')) bar.set('vrsta', params.get('vrsta'));
   if (params.get('lokacija')) bar.set('lokacija', params.get('lokacija'));
   if (params.get('pozicija')) bar.set('pozicija', params.get('pozicija'));
+  // `nocv` now lands on the toolbar switch rather than on a tile inside the
+  // bar; the query-parameter contract with the other pages is unchanged.
   if (params.get('nocv')) {
-    const box = document.querySelector('#job-filter .hero-search__check input');
-    box.checked = true;
-    box.dispatchEvent(new Event('change'));
+    noCvBox.checked = true;
+    apply();
   }
 
   /* Shared .reveal fade-in, same as the homepage. */
@@ -586,6 +697,92 @@
     });
   }, { threshold: 0.15 });
   document.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
+
+  /* ==========================================================================
+     HEADER GLASS — the bar starts transparent on this page (the CSS keys that
+     off .page-hero--flush, see styles.css) and fills in on scroll.
+
+     THE TRIGGER IS THE RESULTS PANEL REACHING THE HEADER, not a fixed scroll
+     distance. That is the moment the nav stops floating over the page's own
+     opening — title on the aurora, then the search bar — and starts sitting on
+     real content it has to stay legible against, which is the same rule the
+     homepage applies at the end of its hero.
+
+     The search bar is deliberately NOT involved: it used to be sticky and to
+     flip this at the same instant, and that was rejected. Nothing pins here.
+
+     rAF-throttled and passive, so the read never blocks the scroll.
+  ========================================================================== */
+  (function () {
+    const header = document.querySelector('header');
+    const panel = document.querySelector('.jobs-panel');
+    let headerH = 0;
+
+    // The header has no fixed height of its own (it is the logo plus the
+    // wrapper's padding), so it is measured rather than hard-coded.
+    function measure() { headerH = header.offsetHeight; }
+
+    let queued = false;
+    function update() {
+      queued = false;
+      header.classList.toggle('is-solid', panel.getBoundingClientRect().top <= headerH);
+    }
+
+    function onScroll() {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(update);
+    }
+
+    measure();
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', () => { measure(); update(); });
+    // The header's height depends on the logo, an SVG that may not have laid
+    // out yet on first paint.
+    window.addEventListener('load', () => { measure(); update(); });
+  })();
+
+  /* ==========================================================================
+     PREKIDAČ TEME — demo kontrola za prikaz klijentu, nije deo dizajna sajta.
+
+     Isti blok kao na dnu index.html, i iz istog razloga stoji u skriptu a ne u
+     markupu: telo stranice ostaje netaknuto, pa se ceo mehanizam uklanja
+     brisanjem ovog bloka, <link>-a i skripta iz <head>-a i fajla theme-dark.css.
+
+     Ključ u localStorage-u je isti (bb-tema), pa izbor napravljen ovde važi i
+     na naslovnoj i obrnuto.
+  ========================================================================== */
+  (function () {
+    var root = document.documentElement;
+    var SUN = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2.5M12 20v2.5M3.5 12H1M23 12h-2.5M5.6 5.6L3.8 3.8M20.2 20.2l-1.8-1.8M18.4 5.6l1.8-1.8M3.8 20.2l1.8-1.8"/></svg>';
+    var MOON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.3A8.6 8.6 0 019.7 3.5a8.8 8.8 0 102.8 17.2 8.8 8.8 0 008-6.4z"/></svg>';
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'theme-toggle';
+
+    function paint() {
+      var dark = root.getAttribute('data-theme') === 'dark';
+      // SAMO IKONICA — dugme nudi ONU DRUGU varijantu, ne imenuje trenutnu.
+      // Značenje nosi glif, pa su aria-label i title jedini tekst.
+      btn.innerHTML = dark ? SUN : MOON;
+      var label = 'Prebaci na ' + (dark ? 'svetlu' : 'tamnu') + ' varijantu';
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('title', label);
+    }
+
+    btn.addEventListener('click', function () {
+      var dark = root.getAttribute('data-theme') === 'dark';
+      if (dark) root.removeAttribute('data-theme');
+      else root.setAttribute('data-theme', 'dark');
+      try { localStorage.setItem('bb-tema', dark ? 'light' : 'dark'); } catch (e) {}
+      paint();
+    });
+
+    paint();
+    document.body.appendChild(btn);
+  })();
 </script>
 </body>
 </html>

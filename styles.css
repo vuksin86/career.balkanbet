@@ -508,22 +508,67 @@
   }
 
   /* ========================================================================
-     HEADER — transparent while the hero owns the screen
+     SCROLL PROGRESS RAIL — index.html only (the markup lives there; nothing
+     else on the site draws this element).
 
-     On the HOMEPAGE ONLY the bar starts with no fill, no border and no blur:
-     just the logo, links and CTA floating straight on the video. It picks its
-     glass up the moment the hero unit starts leaving (P4), which is when the
-     page behind it starts being real content that the nav has to stay legible
-     against. updateHero() adds/removes `.is-solid` on the header.
+     A 2px track of brand yellow at 10% alpha that is present from the first
+     paint, with a full-strength yellow fill growing across it left to right as
+     the page is read. The track is not a border or a shadow: at 10% it is just
+     visible enough to read as an empty rail waiting to be filled, which is what
+     makes the fill legible as progress rather than as a stray line.
+
+     THE FILL IS SCALED, NOT RESIZED. It is laid out at full width once and
+     driven with transform: scaleX(), so every scroll frame is a compositor
+     change with no layout and no paint — the hero choreography is already
+     spending that budget on the same frames. transform-origin: left is what
+     makes it grow from the left edge.
+
+     z-60 puts it over the header (z-50). On the homepage the header starts
+     fully transparent, so at rest the rail reads as sitting on the page itself;
+     once the header takes its glass, the rail sits on its top edge.
+  ======================================================================== */
+  .scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    height: 2px;
+    background: rgba(253,184,19,.10);
+    pointer-events: none;
+  }
+  .scroll-progress__fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #FDB813;
+    transform: scaleX(0);
+    transform-origin: left center;
+    will-change: transform;
+  }
+
+  /* ========================================================================
+     HEADER — transparent while the page's own hero owns the screen
+
+     On the HOMEPAGE and THE LISTING the bar starts with no fill, no border and
+     no blur: just the logo, links and CTA floating straight on the video (or on
+     the aurora). It picks its glass up the moment that opening unit stops
+     owning the screen, which is when the page behind it starts being real
+     content the nav has to stay legible against. Who flips it differs per page,
+     but the class is the same: `.is-solid` on the header.
+       index.html   — updateHero(), at the end of the hero's snap pause (P4).
+       listanje.html — the moment the results panel reaches the header, i.e. when
+                       real content rather than the page's opening is behind it.
 
      TWO THINGS ARE LOAD-BEARING HERE:
 
-     1. The scope is `body:has(#hero-spacer)` — that element only exists on
-        index.html. The header markup is byte-identical across all three pages
-        and must stay that way, so the homepage-only behaviour cannot be a class
-        in the markup; it has to be inferred from what else is on the page.
-        listanje.html and oglas-primer.html never match, so their header keeps
-        the solid glass at all times, which is what they want.
+     1. The scope is a marker element unique to each page — `#hero-spacer` on
+        index.html, `.page-hero--flush` on listanje.html. The header markup is
+        byte-identical across all three pages and must stay that way, so the
+        per-page behaviour cannot be a class in the markup; it has to be
+        inferred from what else is on the page. oglas-primer.html carries a
+        plain `.page-hero` (no --flush) and so matches neither selector — its
+        header keeps the solid glass at all times, which is what it wants.
 
      2. It is written as `:not(.is-solid)` — an override that REMOVES the fill —
         rather than as a rule that paints it on. The solid state therefore stays
@@ -536,10 +581,12 @@
      it cuts. That cut lands exactly when the video is sliding up at speed, so
      it is not something the eye can catch. Do not try to fade it.
   ======================================================================== */
-  body:has(#hero-spacer) header > div {
+  body:has(#hero-spacer) header > div,
+  body:has(.page-hero--flush) header > div {
     transition: background-color .35s ease, border-color .35s ease;
   }
-  body:has(#hero-spacer) header:not(.is-solid) > div {
+  body:has(#hero-spacer) header:not(.is-solid) > div,
+  body:has(.page-hero--flush) header:not(.is-solid) > div {
     background-color: transparent;
     border-color: transparent;
     -webkit-backdrop-filter: none;
@@ -661,15 +708,39 @@
      passing over it is what lets the ball fade on exactly the headline's
      timing without ever appearing to float on top of the video.
   ======================================================================== */
+  /* It is a <button> — clicking it jumps to the snap-hold — so the browser's
+     own button chrome has to be reset before the layout below means anything.
+     It stays interactive (no `pointer-events: none`): while it is visible it is
+     the click target, and once the video has risen over it the media box's
+     higher z-index takes every click anyway. */
   #hero-scroll-ball {
     position: absolute;
     left: 50%;
     bottom: 8vh;
     transform: translateX(-50%);
     z-index: 3;
-    pointer-events: none;
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
     will-change: transform, opacity;
   }
+  /* Ring around the ball rather than a box: the element's own rect is the
+     30px dot, so a default outline would sit tight against it and read as a
+     hairline collar. */
+  #hero-scroll-ball:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 6px;
+    border-radius: 999px;
+  }
+  /* Faded out (past the headline's exit) it must stop taking clicks AND stop
+     taking Tab — an invisible button that still swallows a click over the video
+     is worse than no button. updateHero() sets this via inline style; the rule
+     here is the initial state only. */
+  #hero-scroll-ball[hidden] { display: none; }
   .hero-scroll-ball__dot {
     display: block;
     width: 30px;
@@ -790,8 +861,8 @@
      buttons, which the HERO SEARCH script block wires up.
   ======================================================================== */
   /* GRID, not flex, and that is the whole reason: every element in the bar has
-     to be exactly the same width — the three tabs, the checkbox and the submit
-     alike. `flex: 1 1 0` on all of them gets close but not there: the <button>
+     to be exactly the same width — the three tabs and the submit alike.
+     `flex: 1 1 0` on all of them gets close but not there: the <button>
      and the <label> settled ~32px and ~28px wider than a tab (their own
      left+right padding), because a flex item's size is resolved from its
      content box and buttons refuse to shrink the rest of the way. One
@@ -812,9 +883,9 @@
   /* min-width:0 so a long value ellipsises inside its track instead of forcing
      the track wider and unbalancing the row again. */
   .hero-search > * { box-sizing: border-box; min-width: 0; }
-  /* EVERY child of the bar is the same width — the three tabs, the checkbox and
-     the submit alike (see .hero-search__check and .hero-search__submit, which
-     carry the same `flex: 1 1 0`). Requested explicitly.
+  /* EVERY child of the bar is the same width — the three tabs and the submit
+     alike (see .hero-search__submit, which carries the same `flex: 1 1 0`).
+     Requested explicitly.
 
      The tabs used to be sized off their longest option instead (flex-grow
      1 / 1.15 / 1.5), because equal widths ellipsise the longest value a list
@@ -947,58 +1018,17 @@
     bottom: auto;
   }
 
-  /* "Bez CV-ja" — an extra control the listing bar carries and the homepage bar
-     does not. Drawn as a fourth white tile inside the same yellow frame, so it
-     reads as part of the bar rather than a checkbox floating next to it.
-     `flex: 1 1 0` like everything else in the bar: all elements share the row
-     equally, including this one and the submit. */
-  .hero-search__check {
-    flex: 1 1 0;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 0 14px;
-    border-radius: 7px;
-    background: #fff;
-    font-size: 15px;
-    font-weight: 500;
-    color: #231F20;
-    white-space: nowrap;
-    cursor: pointer;
-    user-select: none;
-  }
-  /* The native box cannot take the brand radius/colour, so it is hidden and
-     redrawn — same approach as .jf-check on the sub-page filter bar. */
-  .hero-search__check input { position: absolute; opacity: 0; pointer-events: none; }
-  .hero-search__box {
-    width: 22px;
-    height: 22px;
-    flex: 0 0 auto;
-    border-radius: 7px;
-    border: 2px solid rgba(35,31,32,.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background .18s ease, border-color .18s ease;
-  }
-  .hero-search__box svg { opacity: 0; transition: opacity .18s ease; }
-  .hero-search__check input:checked + .hero-search__box {
-    background: #FDB813;
-    border-color: #FDB813;
-  }
-  .hero-search__check input:checked + .hero-search__box svg { opacity: 1; }
-  .hero-search__check input:focus-visible + .hero-search__box {
-    outline: 2px solid #231F20;
-    outline-offset: 2px;
-  }
+  /* NOTE — the bar no longer carries a "Bez CV-ja" tile. It used to be drawn
+     here as a fourth white tile (.hero-search__check / .hero-search__box) so
+     that the listing bar could filter on it; the control moved out to the
+     results toolbar as a switch (.nocv-toggle) and the bar is now IDENTICAL on
+     the homepage and on listanje.html — three tabs and a submit, nothing else.
+     Do not add a page-specific tile back into it. */
 
   /* One full-width row per control. grid-auto-flow: row + auto rows, so each
      tile is as tall as it needs to be instead of sharing one track height. */
   @media (max-width: 860px) {
     .hero-search { grid-auto-flow: row; grid-auto-columns: auto; }
-    .hero-search__check { justify-content: flex-start; padding: 14px 18px; }
     .hero-search__submit { padding: 16px 40px; }
   }
 
@@ -1102,22 +1132,51 @@
   }
   .page-hero > * { position: relative; z-index: 1; }
 
-  /* Full-bleed variant — listanje.html. The band runs edge to edge at the top
-     and on both sides (no .section-panel inset, no top margin) and only its
-     BOTTOM corners are rounded, via rounded-b-[32px] in the markup.
+  /* Full-bleed variant — listanje.html ONLY. Doubles as the page marker the
+     header's transparent state keys off (see "HEADER — transparent while the
+     page's own hero owns the screen"), so do not put this class on a second
+     page without meaning that too.
 
-     overflow has to be VISIBLE: the search bar inside opens its dropdown
-     panels downwards and they would be sliced off at the band's bottom edge
-     otherwise. That means the glow can no longer be the ::after above, whose
-     negative offsets rely on being clipped — it becomes a background-image
-     instead, which the browser clips to the border radius for free. */
+     NO BACKGROUND OF ITS OWN — neither the #231F20 band nor the corner glow.
+     The band is gone on purpose: the listing now runs on the same living aurora
+     as the homepage, and the title sits straight on it exactly like the hero
+     headline does there. That also removes the seam problem the sticky search
+     bar would otherwise create: the bar leaves this section's box on scroll,
+     and a band that ended above it would have read as a cut-off panel.
+     The glow went with it — the aurora's blobs already do that job, and a
+     second static radial on top of them only muddied the corner.
+
+     overflow has to be VISIBLE: the title block is the last thing in here, but
+     the section still must not clip, since it is the header's marker element
+     and nothing about it should establish a clipping context. */
   .page-hero--flush {
     overflow: visible;
-    background-image: radial-gradient(closest-side circle at 86% 22%,
-                                      rgba(253,184,19,.22) 0%,
-                                      rgba(253,184,19,0) 100%);
+    background: none;
   }
   .page-hero--flush::after { content: none; }
+
+  /* ------------------------------------------------------------------
+     SEARCH BAND (listanje.html) — the row the search bar sits in.
+
+     ⚠ IT DOES NOT STICK. It was briefly `position: sticky` (pinning the bar
+     under the header, with a glass veil behind it); that was rejected on sight
+     — a bar riding along under the nav reads as heavy, and it fought the header
+     for the top of the screen. Do not reintroduce it.
+
+     It stays its own element outside .page-hero rather than being folded back
+     into it, because the hero has no background of its own any more: there is
+     no band for it to sit "inside", and keeping it separate is what lets the
+     spacing above and below be stated in one place.
+
+     z-40 puts it over the results panel (z-10) and under the header (z-50), so
+     an open dropdown covers the cards and nothing covers the nav.
+  ------------------------------------------------------------------ */
+  .search-band {
+    position: relative;
+    z-index: 40;
+    padding-top: 12px;
+    padding-bottom: 64px;   /* + the panel's own 30px margin = the old 94px gap */
+  }
 
   /* ------------------------------------------------------------------
      RESULTS PANEL (listanje.html) — flat light panel holding the card grid.
@@ -1236,6 +1295,64 @@
      grow to keep the same tile height as a labelled .jf-field. */
   .jf-field--nolabel { padding-top: 16px; padding-bottom: 16px; }
 
+  /* ------------------------------------------------------------------
+     "BEZ CV-JA" SWITCH (listanje.html) — sits in the results toolbar next to
+     the sort field, not in the search bar.
+
+     It used to be a fourth white tile inside the yellow frame. It moved out so
+     the search bar could go back to being byte-for-byte the homepage bar, and
+     it became a SWITCH rather than a checkbox because it is not one more field
+     to fill in — it is a view mode over the list that is already on screen,
+     which is what a switch means and a checkbox does not.
+
+     It lives on the light #F4F4F4 panel in BOTH themes (the results panel stays
+     light by design), so it is styled once and needs no dark-theme rule.
+  ------------------------------------------------------------------ */
+  .nocv-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #231F20;
+  }
+  /* Native box hidden and redrawn — same approach as every other control on the
+     site; it is kept in the DOM so the label, focus and keyboard toggling are
+     the browser's job rather than something to reimplement. */
+  .nocv-toggle input { position: absolute; opacity: 0; pointer-events: none; }
+  .nocv-toggle__track {
+    position: relative;
+    flex: 0 0 auto;
+    width: 46px;
+    height: 26px;
+    border-radius: 999px;
+    background: rgba(35,31,32,.20);
+    transition: background .22s ease;
+  }
+  .nocv-toggle__knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(35,31,32,.32);
+    transition: transform .22s cubic-bezier(.32,.72,.35,1);
+  }
+  .nocv-toggle input:checked + .nocv-toggle__track { background: #FDB813; }
+  /* 46 - 20 - 3 - 3 = 20px of travel, so the knob keeps its 3px inset at both ends. */
+  .nocv-toggle input:checked + .nocv-toggle__track .nocv-toggle__knob {
+    transform: translateX(20px);
+  }
+  .nocv-toggle input:focus-visible + .nocv-toggle__track {
+    outline: 2px solid #231F20;
+    outline-offset: 3px;
+  }
+
   /* Checkbox — the native box is hidden and redrawn, because the default
      control cannot take the brand's radius/colour. */
   .jf-check {
@@ -1322,6 +1439,86 @@
     color: rgba(35,31,32,.6);
   }
   .job-card__meta--city { color: #FAA61A; font-weight: 700; }
+
+  /* ------------------------------------------------------------------
+     OPEN-APPLICATION CTA — the last thing inside the results panel.
+
+     PLACEMENT IS THE POINT: it sits AFTER the grid, inside the same panel, so
+     it is read by exactly the person it is written for — someone who has just
+     scanned every card and found nothing. Put anywhere earlier it would be an
+     interruption; put in the footer it would be one more card competing with
+     the two that are already there.
+
+     It is DARK on the light #F4F4F4 panel — the one dark surface among sixteen
+     white cards, which is what makes it read as a different kind of offer
+     rather than a seventeenth position. A yellow block was the other option and
+     was not taken: sixteen yellow "Prijavi se" pills are already on screen, and
+     a yellow slab behind them flattens the whole panel into one colour.
+
+     Kept visible when the grid is empty, deliberately: "nothing matched your
+     filters" is precisely when leaving your details is the useful next step.
+  ------------------------------------------------------------------ */
+  .talent-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    margin-top: 30px;         /* same 30px rhythm as the panel's own padding */
+    padding: 44px 48px;
+    border-radius: 20px;
+    background: #231F20;
+    /* Same faint corner glow the dark hero band used to carry, so the block has
+       some depth instead of reading as a flat rectangle. closest-side for the
+       reason documented on .page-hero::after — the default sizes the circle
+       past the box and draws a hard seam at the edge. */
+    background-image: radial-gradient(closest-side circle at 88% 18%,
+                                      rgba(253,184,19,.20) 0%,
+                                      rgba(253,184,19,0) 100%);
+  }
+  .talent-cta__body { min-width: 0; flex: 1 1 460px; }
+  .talent-cta__title {
+    font-size: clamp(1.375rem, 2.4vw, 1.875rem);
+    font-weight: 500;         /* Medium — display headings are Medium site-wide */
+    line-height: 1.15;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  .talent-cta__sub {
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: rgba(255,255,255,.75);
+    max-width: 56ch;
+  }
+  /* Dark text on the yellow pill, matching the "Prijavi se" buttons on the
+     cards above it. Not uppercase — it belongs to the same exception group as
+     every other CTA BUTTON on the site (header CTA, "Prijavi se"). */
+  .talent-cta__pill {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 34px;
+    border-radius: 999px;
+    background: #ffbb1a;      /* brand.cta — the fill every yellow button uses */
+    font-size: 16px;
+    font-weight: 700;
+    color: #231F20;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: filter .2s ease, box-shadow .2s ease;
+  }
+  .talent-cta__pill:hover {
+    filter: brightness(1.06);
+    box-shadow: 0 0 0 4px rgba(255,187,26,.20);
+  }
+
+  @media (max-width: 640px) {
+    .talent-cta { padding: 32px 28px; gap: 22px; }
+    .talent-cta__pill { width: 100%; }
+  }
 
   /* ------------------------------------------------------------------
      FORM CONTROLS on the dark application panel. Inputs are drawn as
@@ -1680,6 +1877,10 @@
     .zivot-quote { transition: none !important; }
     .zivot-quote:not(.is-active) { opacity: 0 !important; }
     .benefit-item__disc { transition: none !important; }
+    /* The switch still switches — it just lands instead of sliding. */
+    .nocv-toggle__track,
+    .nocv-toggle__knob { transition: none !important; }
+    .talent-cta__pill { transition: none !important; }
     /* The hiring process is scroll-scrubbed, so updateProcess() already jumps
        every piece to --w:1 here; this is the belt-and-braces version in case
        the mask/dash vars are still at their initial 0. */

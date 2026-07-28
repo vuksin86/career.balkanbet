@@ -13,7 +13,8 @@
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git push *)",
-      "Bash(git ls-remote *)"
+      "Bash(git ls-remote *)",
+      "PowerShell(git -C \"C:\\\\Users\\\\Vukasin\\\\Desktop\\\\klijent-projekti\\\\careers-balkanbet\" status --short)"
     ]
   }
 }

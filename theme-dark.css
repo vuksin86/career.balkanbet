@@ -1,10 +1,11 @@
   /* ##########################################################################
-     TAMNA VARIJANTA NASLOVNE — dodatni sloj preko styles.css
+     TAMNA VARIJANTA — dodatni sloj preko styles.css
 
-     Učitava se SAMO na index.html, odmah posle styles.css, i ne radi ništa dok
-     <html> ne dobije data-theme="dark" (postavlja ga boot skript u <head>-u iz
-     ?tema=dark ili iz localStorage-a). Zato je svetla verzija netaknuta: ako se
-     atribut ne postavi, nijedno pravilo odavde se ne primenjuje.
+     Učitava se na index.html i listanje.html, odmah posle styles.css, i ne radi
+     ništa dok <html> ne nosi data-theme="dark" (atribut stoji ZAKUCAN u markupu
+     obe stranice; boot skript u <head>-u ga samo SKIDA kad je tražena svetla).
+     Zato je svetla verzija netaknuta: bez atributa se nijedno pravilo odavde ne
+     primenjuje.
 
      ZAŠTO OVAKO, A NE DRUGI index-dark.html:
      header i footer su po pravilu projekta BYTE-IDENTIČNI na sve tri stranice.
@@ -17,9 +18,17 @@
      blokovi mozaika, kojima JS piše boju u INLINE style (videti ZIVOT_TILES
      render u index.html); inline stil se bez !important ne može nadjačati.
 
-     OPSEG: samo naslovna. Klase podstranica (.jf-*, .job-card, .page-hero,
-     .jobs-panel, .info-card, .fld-*) namerno NISU ovde — listanje.html i
-     oglas-primer.html ovaj fajl ne učitavaju.
+     OPSEG: naslovna + listanje. oglas-primer.html ovaj fajl NE učitava i ostaje
+     svetla — za nju bi trebalo dopisati .fld-* i .info-card pravila.
+
+     ⚠ NAJVEĆI DEO LISTANJA NE TRAŽI NIJEDNO PRAVILO ODAVDE, i to je namerno:
+     aurora, header, futer i CTA dugmad su isti zajednički elementi kao na
+     naslovnoj, pa ih hvataju pravila koja već postoje niže. Ono što je stvarno
+     specifično za tu stranicu — `.page-hero--flush` bez podloge, `.search-band`
+     i `.talent-cta` — pisano je BEZ TEME, u styles.css, jer izgleda isto u obe
+     varijante. Panel sa karticama (.jobs-panel, #F4F4F4) i same kartice
+     (.job-card, bele) OSTAJU SVETLI u tamnoj temi, traženo tako — zato ovde
+     nema (i ne treba da bude) nijedno pravilo za njih.
   ########################################################################## */
 
   /* ========================================================================
@@ -95,6 +104,15 @@
   [data-theme="dark"] a.bg-brand-cta:hover {
     filter: brightness(1.07);
     box-shadow: 0 0 0 4px rgba(255,187,26,.16);
+  }
+  /* IZUZETAK — "Prijavi se" na listanju. Ta dugmad su jedina žuta CTA koja i u
+     tamnoj temi stoje na BELOJ kartici (panel sa rezultatima ostaje svetao),
+     pa im treba svetlotemski hover: potamnjenje, ne svetljenje. Halo bi se na
+     belom video kao prljav oreol, a posvetljenje na beloj podlozi ne čita kao
+     odziv. Selektor je (0,3,1) — specifičniji od pravila iznad. */
+  [data-theme="dark"] .job-card a.bg-brand-cta:hover {
+    filter: brightness(.95);
+    box-shadow: none;
   }
 
   /* --- Senka loptice ----------------------------------------------------
@@ -308,8 +326,8 @@
      PREKIDAČ TEME — demo kontrola, NIJE deo dizajna sajta
 
      Namerno je IZVAN [data-theme="dark"] opsega: mora se videti i u svetloj
-     varijanti, inače nema čime da se uđe u tamnu. Markup mu pravi boot skript u
-     index.html, pa u HTML-u stranice ne stoji ništa.
+     varijanti, inače nema čime da se uđe u tamnu. Markup mu pravi skript na dnu
+     index.html i listanje.html, pa u HTML-u stranica ne stoji ništa.
 
      Kad klijent izabere varijantu, briše se i ovaj blok i skript — sajt ostaje
      bez ijednog traga prekidača.

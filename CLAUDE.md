@@ -17,15 +17,15 @@ kaže drugačije.
   poslovi-u-lokalima.html
 - **oglas-primer.html** - template pojedinačnog oglasa + forma za prijavu
 - **styles.css** - JEDAN zajednički stylesheet za SVE tri stranice (@font-face, 
-  .animated-bg, hero, .hero-search, .zivot-tile, .opening-card, .page-hero, .jf-* filter 
-  bar, .jobs-panel, .job-card, .fld-* polja forme, .info-card, prefers-reduced-motion 
-  blok). Stoji u root-u NAMERNO - url() putanje do fontova su relativne 
+  .animated-bg, .scroll-progress, hero, .hero-search, .zivot-tile, .opening-card, 
+  .page-hero, .search-band, .jf-* filter bar, .nocv-toggle, .jobs-panel, .job-card, 
+  .talent-cta, .fld-* polja forme, .info-card, prefers-reduced-motion blok). Stoji u root-u NAMERNO - url() putanje do fontova su relativne 
   (assets/fonts/...), pa bi premeštanje u podfolder polomilo fontove. CSS više NIJE 
   inline u index.html
-- **theme-dark.css** - TAMNA VARIJANTA NASLOVNE, aditivni sloj i **PODRAZUMEVANA tema**. 
-  Učitava se SAMO u index.html, posle styles.css. Pravila važe dok `<html>` ima 
-  `data-theme="dark"`, a taj atribut sada stoji ZAKUCAN u markupu. Videti sekciju 
-  "Tamna varijanta naslovne" niže
+- **theme-dark.css** - TAMNA VARIJANTA, aditivni sloj i **PODRAZUMEVANA tema**. 
+  Učitava se u index.html **i u listanje.html**, posle styles.css. Pravila važe dok 
+  `<html>` ima `data-theme="dark"`, a taj atribut stoji ZAKUCAN u markupu obe stranice. 
+  oglas-primer.html ga NE učitava i ostaje svetla. Videti sekciju "Tamna varijanta" niže
 - **brand-setup.js** - Tailwind (Play CDN) config sa brend tokenima, učitava se odmah 
   posle CDN skripte na sve tri stranice
 - **job-filter.js** - custom dropdown-i za filter barove + srpska množina za brojive 
@@ -96,6 +96,21 @@ font-size bi nacrtao brojeve upola manje od reference (izmereno canvas TextMetri
 BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK" tekst
 
 ## Struktura HOMEPAGE-a (index.html, redosled sekcija)
+0. **SCROLL PROGRESS RAIL** (`.scroll-progress`) - tanka traka od 2px prikovana za sam vrh 
+   ekrana, IZNAD headera (z-60 naspram headerovih z-50, pa se crta preko gornje ivice 
+   trake). Podloga je brend žuta na 10% alfe i stoji tu od prvog paint-a; popuna 
+   (`.scroll-progress__fill`) je puna žuta #FDB813 i raste s leva na desno do 100% na dnu 
+   stranice. SAMO NA NASLOVNOJ - markup stoji u index.html, odmah posle .animated-bg i 
+   IZVAN `<header>`-a (koji mora ostati byte-identičan na sve tri stranice).
+   - popuna se SKALIRA, ne meri: `transform: scaleX()` na elementu koji je već pun širine, 
+     pa je svaki scroll frejm promena samo na kompozitoru, bez layout-a i bez paint-a. 
+     `transform-origin: left` je ono što je tera da raste s leva
+   - ⚠ progres se čita ISKLJUČIVO iz `lenis.on('scroll')`, kao i sve ostalo na stranici - 
+     NE iz window.scrollY (videti desync bag opisan u tački 2)
+   - dužina skrola (`scrollHeight - innerHeight`) se MERI I KEŠIRA, ne čita se po frejmu 
+     (scrollHeight forsira layout). measureProgress() je zato i u remeasureAll(), uz 
+     measureImpact/measureProcess - kartice i fontovi koji stignu kasno menjaju visinu 
+     stranice, a to je tačno taj broj
 1. Header - fiksiran, FULL-BLEED: `top-0 inset-x-0`, puna širina od ivice do ivice, BEZ 
    radijusa i BEZ max-width-a. Ranije je bio plutajuća pilula (`top-6`, `max-w-[1300px]`, 
    `rounded-full`, okvir sa sve četiri strane) - UKLONJENO na eksplicitan zahtev, ne 
@@ -107,10 +122,15 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    logo/linkovi/CTA lebde preko videa. Staklo dobija tek kad hero POČNE DA IZLAZI (prag je 
    HERO_PHASE.p3End, kraj snap pauze); updateHero dodaje/skida `.is-solid` na header. 
    Mehanika je u styles.css, sekcija "HEADER - transparent while the hero owns the screen":
-   - opseg je `body:has(#hero-spacer)` - taj element postoji SAMO na index.html. Header 
-     markup mora ostati byte-identičan na sve tri stranice, pa se ponašanje samo naslovne 
-     ne sme pisati kao klasa u markupu nego se zaključuje iz onoga što je još na stranici. 
-     Podstranice nikad ne matchuju i traka im je uvek puna, što tamo i treba
+   - opseg su DVA markera, po jedan za stranicu koja to ponašanje ima: 
+     `body:has(#hero-spacer)` (postoji samo na index.html) i `body:has(.page-hero--flush)` 
+     (postoji samo na listanje.html). Header markup mora ostati byte-identičan na sve tri 
+     stranice, pa se per-page ponašanje ne sme pisati kao klasa u markupu nego se 
+     zaključuje iz onoga što je još na stranici. oglas-primer.html nosi običan 
+     `.page-hero` bez `--flush`, ne matchuje nijedan selektor, i traka mu je uvek puna - 
+     što tamo i treba. Ko pali `.is-solid` se razlikuje: na naslovnoj updateHero() na 
+     kraju snap pauze, na listanju trenutak kad panel sa rezultatima stigne do headera 
+     (videti listanje.html niže) - ista klasa, dva različita okidača
    - pravilo je pisano kao `:not(.is-solid)`, dakle SKIDA fill umesto da ga crta. Zato puno 
      stanje ostaje tačno ono što piše u markupu (bg-brand-dark/40, backdrop-blur-md, 
      border-white/20) i nema druge kopije tih vrednosti koja bi odlutala. Usput, PRVI PAINT 
@@ -158,6 +178,18 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      (ista putanja, isti stopovi I isti gradientTransform, viewBox 0 0 158.03 158.03). 
      CSS radial-gradient ovde ne može - transform rotira gradijent za 72° i skalira ga 
      van centra, pa je svaki "circle at x% y%" samo aproksimacija. NE vraćati na .cta-gradient.
+     ⚠ LOPTICA JE `<button>`, NE div - KLIKABILNA JE. Klik skroluje na SNAP PAUZU, tj. na 
+     `HERO_PHASE.p2End`: to je tačan frejm kad video stigne preko celog ekrana sa search 
+     barom na sebi (p2End→p3End je pauza, pa bi dublje odredište već jelo pauzu). Cilj se 
+     računa iz istih keširanih mera na kojima radi updateHero (`heroOffsetTop + p2End * 
+     heroScrollable`) i čita se U TRENUTKU KLIKA, pa resize u međuvremenu ne traži ništa 
+     dodatno. Ide kroz `lenis.scrollTo(..., { duration: 1.4 })` - native scrollTo bi 
+     iskočio iz Lenisove izglađene vrednosti i razbio koreografiju.
+     Pošto je kontrola, a ne ukras: NEMA aria-hidden, ima aria-label, i CSS mora da resetuje 
+     browserov button chrome (padding/border/background) pre nego što raspored znači išta. 
+     Kad se ispari (headT >= 1), updateHero joj postavlja `hidden` - providno dugme bi i 
+     dalje hvatalo Tab i klik preko videa. Upis je čuvan (samo na dva frejma kad se menja), 
+     ne na svaki scroll tick.
      Loptica NEMA box-shadow; umesto toga ima zasebnu bačenu senku (.hero-scroll-ball__ 
      shadow) prikovanu za pod. I veličina I vidljivost prate udaljenost: daleko = široka 
      i malo prisutnija, blizu = uska i skoro nevidljiva. Ceo raspon opacity-ja je NAMERNO 
@@ -444,8 +476,12 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    0fr -> 1fr), pa potiskuje naslov i podnaslov gore i sva tri ostaju centrirana zajedno. 
    To je cela svrha tog wrappera - običan opacity fade bi ostavio tekst van centra kad se 
    dugme pojavi. :focus-visible pali isto stanje (dostupno sa tastature). Pilula 
-   "Pogledaj pozicije" NEMA strelicu i NIJE caps-lock (ista izuzetak-grupa kao header CTA, 
-   "Prijavi se" i "Saznaj više o nama") - ne vraćati ni jedno ni drugo.
+   **"Saznaj više"** (ranije "Pogledaj pozicije", promenjeno na zahtev) NEMA strelicu i 
+   NIJE caps-lock (ista izuzetak-grupa kao header CTA, "Prijavi se" i "Saznaj više o 
+   nama") - ne vraćati ni jedno ni drugo. ⚠ Tekst je isti u OBE kartice i, pošto je futer 
+   byte-identičan, na SVE TRI stranice - menja se na sva četiri mesta odjednom. 
+   Ne mešati sa `.zivot-tile__cta` u mozaiku, koje i dalje pišu "Pogledaj pozicije" - to 
+   je druga komponenta i nije bila deo zahteva.
    Ispod kartica kolone "Pun pogodak" (balkanbet.rs link ima border-b-2 punu belu 
    podvlaku, istu kao "POGLEDAJ SVE POZICIJE" u #openings), "Navigacija" (linkovi su 
    BOLD), "Prati nas".
@@ -466,33 +502,65 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
 - Ranije uklonjeno: "Naše poslovnice" (Leaflet mapa Srbije, zajedno sa Leaflet CDN-om)
 
 ## listanje.html (listing)
-Struktura: tamna hero traka (.page-hero) sa naslovom "Pronađi svoj posao" i search barom 
-→ svetli panel sa 16 kartica pozicija (4 u redu) → footer.
+**TAMNA JE PODRAZUMEVANA I OVDE** - stranica učitava theme-dark.css i nosi 
+`data-theme="dark"` zakucan na `<html>`, isto kao naslovna (videti "Tamna varijanta" niže).
+Struktura: hero BEZ PODLOGE (.page-hero--flush) sa naslovom "Postani deo Balkan Bet tima" → 
+search bar (.search-band) → svetli panel sa 16 kartica pozicija (4 u redu) + CTA za 
+otvorenu prijavu na dnu panela → footer.
+- naslov je `pt-[140px]` od vrha (bilo 190px), a podnaslov NEMA margin-top - h1 i pasus 
+  su jedan blok, razmak drži line-height naslova. Oboje traženo eksplicitno
+- HTML tekst naslova je "Postani deo Balkan Bet tima" u rečeničnom slučaju; verzali dolaze 
+  iz `uppercase` klase, po opštem pravilu sajta (ne menjati sam tekst u markupu)
 
-### Hero traka - FULL-BLEED, BEZ RADIJUSA
+### Hero traka - FULL-BLEED, BEZ RADIJUSA, BEZ PODLOGE
 `.page-hero.page-hero--flush` - NEMA .section-panel inset, NEMA mt-6 i NEMA zaobljene 
-uglove ni na jednoj strani: traka ide od ivice do ivice gore i sa OBE strane, a fiksirani 
-header lebdi preko nje kao i inače. Ranije je imala `rounded-b-[32px]` - UKLONJENO, ne 
-vraćati. Ono što "lebdi" na ovoj stranici je panel sa karticama ispod (odmaknut 30px sa 
-svih strana), pa traka iza njega treba da ostane ravna podloga, a ne još jedna 
-zaobljena kartica.
-- `.page-hero--flush` ima `overflow: visible` jer se dropdown paneli search bara otvaraju 
-  NADOLE i inače bi bili odsečeni na donjoj ivici trake. Zbog toga glow VIŠE NIJE 
-  `::after` (njegovi negativni offseti zavise od klipovanja) nego `background-image` na 
-  samom elementu - browser ga besplatno klipuje po border-radius-u. `::after` je ugašen 
-  sa `content: none`
-- z-30 na traci (a z-10 na panelu ispod) - inače otvoren dropdown završi ISPOD panela
+uglove ni na jednoj strani, a od skora NEMA NI POZADINU: ni tamnu #231F20 traku ni corner 
+glow. Naslov stoji direktno na animiranoj aurori, isto kao hero naslov na naslovnoj. 
+Ranije je imala `rounded-b-[32px]` - UKLONJENO, ne vraćati.
+- ZAŠTO JE TRAKA OTIŠLA: search bar je sada sticky i po skrolu IZLAZI iz ove sekcije. 
+  Traka koja bi se završavala iznad njega čitala bi se kao odsečen panel. Uz to, aurora 
+  ionako radi posao koji je glow radio, pa je i on obrisan (`background: none` gasi i 
+  boju i background-image; `::after` je i dalje `content: none`)
+- ⚠ `.page-hero--flush` je I MARKER po kome header zna da na ovoj stranici startuje 
+  providan (videti tačku 1 gore) - ne stavljati tu klasu na treću stranicu ako se ne misli 
+  i to
+- `overflow: visible` ostaje - sekcija ne sme ništa da klipuje
+- z-30 na traci (a z-10 na panelu ispod)
 
-### Search bar
-IDENTIČAN dizajn kao na naslovnoj - ista `.hero-search` komponenta (žuti #FDB913 okvir, 
-tri bela taba, crno dugme "Pretraži"), plus JEDNA stvar koje na naslovnoj nema: checkbox 
-**"Bez CV-ja"** (`.hero-search__check`, nacrtan kao četvrta bela pločica u istom okviru). 
-Raniji beli `.jf-bar` na ovoj stranici je UKLONJEN, kao i rečenica ispod njega ("Za većinu 
-pozicija u lokalima CV nije potreban...").
+### Search bar - u `.search-band`
+IDENTIČAN naslovnoj, sada bez ijedne razlike - ista `.hero-search` komponenta (žuti #FDB913 
+okvir, tri bela taba, crno dugme "Pretraži") i NIŠTA VIŠE. Checkbox "Bez CV-ja" koji je 
+ovde bio četvrta pločica je ISELJEN u toolbar sa rezultatima i pretvoren u prekidač 
+(videti niže); `.hero-search__check` / `.hero-search__box` CSS je OBRISAN iz styles.css. 
+Raniji beli `.jf-bar` na ovoj stranici je odavno UKLONJEN, kao i rečenica ispod njega.
 - `.hero-search--down` okreće panele da se otvaraju NADOLE. Na naslovnoj se otvaraju 
   nagore samo zato što bar tamo stoji 96px od dna klipovanog stage-a
-- SVIH PET elemenata (3 taba + checkbox + dugme) ima JEDNAKU širinu - isto pravilo i 
-  ista grid mehanika kao na naslovnoj, videti tačku 2 gore
+- SVA ČETIRI elementa (3 taba + dugme) imaju JEDNAKU širinu - isto pravilo i ista grid 
+  mehanika kao na naslovnoj, videti tačku 2 gore
+
+#### `.search-band` - red u kome bar stoji
+- ⚠ **BAR SE NE ZAKUCAVA. NE VRAĆATI STICKY.** Bio je kratko `position: sticky` (prikovan 
+  ispod headera, sa staklenim velom iza sebe) i ODBIJENO je na prvi pogled - traka koja 
+  se vozi ispod navigacije deluje teško i tuče se sa headerom oko vrha ekrana. Sa tim su 
+  otišli i `.listing` wrapper (postojao je samo kao containing block za sticky) i veo 
+  (`::before`) i `--hdr-h` varijabla
+- band ostaje ZASEBAN element izvan `.page-hero`, ne vraća se u nju: hero više nema svoju 
+  pozadinu, pa nema ni trake "unutar" koje bi bio, a ovako razmaci iznad i ispod stoje na 
+  jednom mestu
+- `padding-bottom: 64px` + 30px margine panela = 94px razmaka. Gore je `.page-hero` `pb-9` 
+  (36px) + 12px band paddinga = 48px (koliko je bio `mt-12` dok je bar bio u heroju). 
+  Razmaci na ekranu su NEPROMENJENI kroz sve ove izmene
+- z-40 (panel ispod je z-10) - inače otvoren dropdown završi ISPOD panela
+
+#### Header staklo
+Traka startuje providna (CSS to zaključuje iz `.page-hero--flush`, videti tačku 1 gore) i 
+puni se na scroll. **Okidač je PANEL SA REZULTATIMA koji stigne do headera**, ne fiksna 
+razdaljina: to je trenutak kad navigacija prestaje da lebdi nad uvodom stranice (naslov na 
+aurori, pa search bar) i počinje da stoji nad stvarnim sadržajem - isto pravilo koje 
+naslovna primenjuje na kraju heroja. Search bar u tome NE učestvuje.
+- scroll listener, rAF-throttled i `{ passive: true }`; visina headera se MERI (nema svoju 
+  fiksnu, ona je logo + padding), pa se remeri na resize i na load (logo je SVG koji možda 
+  nije izmeren na prvi paint)
 - Wrapper bara je `max-w-[1372px] mx-auto px-[30px]`, pa na ≥1372px bar meri tačno 
   1312px - ISTU širinu kao red kartica u panelu ispod, tako da bar i grid dele levu i 
   desnu ivicu. Onih 30px paddinga je isti inset koji nosi i panel, pa su poravnati na 
@@ -517,7 +585,11 @@ razmak od 30px je ceo efekat, dva panela ne smeju da se dodiruju.
 - Kartice su **4 U REDU** (`lg:grid-cols-4`, gap-5) i imaju IDENTIČAN dizajn kao kartice 
   "Najnovije pozicije" na naslovnoj - isti markup polje po polje (zlatni pin + grad, 
   ~26px naslov, kategorija + "Full time", žuto dugme "Prijavi se" prikovano za dno preko 
-  mt-auto) i isti box (belo, 12px radijus, 28px padding, min-height 290px)
+  mt-auto) i isti box (belo, 12px radijus, 28px padding, min-height 290px).
+  ⚠ JEDNA RAZLIKA: tekst u dugmetu "Prijavi se" je OVDE TAMAN (`text-brand-dark`), a na 
+  naslovnoj beo. Traženo za ovu stranicu. Piše u markupu, ne u temi - kartica je bela u 
+  obe varijante, pa se ne oslanja na theme-dark.css (čije pravilo za tamna slova ionako 
+  gađa `.opening-card`, ne `.job-card`)
 - I ISTU VELIČINU: unutrašnji kontejner je `max-w-[1312px] mx-auto`, a 1312px je tačno 
   ono što `max-w-[1440px] px-16` na naslovnoj izmeri. Zato red od četiri NE ide od ivice 
   do ivice panela nego stane na istih ~313px po kartici i centrira se. Ako se menja 
@@ -534,11 +606,42 @@ razmak od 30px je ceo efekat, dva panela ne smeju da se dodiruju.
   četiri kartice jedan gest, ovde je grid od 16 kroz koji se skroluje gore-dole, pa 
   ponavljanje fade-a čita kao treperenje. Unobserve (umesto obične zastavice) usput znači 
   i da filter može da sakrije i vrati karticu preko `display` a da se observer ne oglasi
-- Iznad grida je toolbar: levo brojač rezultata, desno dropdown za sortiranje (Najnovije 
-  / Lokacija A-Š / Pozicija A-Š). **BEZ labele "Sortiraj" iznad vrednosti** - polje je 
+- ⚠ PANEL I KARTICE OSTAJU SVETLI I U TAMNOJ TEMI - traženo eksplicitno. Sve oko njih ide 
+  u tamno (aurora, hero, header, futer), a ovo ostaje jedina osvetljena površina na 
+  stranici, pa se rezultati čitaju kao ono zbog čega stranica postoji. Zato u 
+  theme-dark.css NEMA nijednog pravila za `.jobs-panel` ni `.job-card` - to odsustvo je 
+  dizajn, ne propust. Jedini dark izuzetak je hover na "Prijavi se" (videti niže)
+- Iznad grida je toolbar: levo brojač rezultata, desno DVE kontrole prikaza - prekidač 
+  "Bez CV-ja" i dropdown za sortiranje (Najnovije / Lokacija A-Š / Pozicija A-Š). Red se 
+  lomi na `lg:`, a ne na `sm:`: labela prekidača je cela rečenica, pa na tabletu tri 
+  stavke traže svoje redove pre nego što toolbar počne da otima prostor brojaču.
+  **BEZ labele "Sortiraj" iznad vrednosti** - polje je 
   samostalna kontrola, a ne ćelija označenog bara, i sama vrednost ("Najnovije") kaže šta 
   je; labela živi kao `aria-label` na trigeru radi čitača ekrana. Zato nosi 
   `.jf-field--nolabel`, koji vraća visinu pločice kroz veći vertikalni padding.
+- **PREKIDAČ "Bez CV-a"** (`.nocv-toggle`) - bio je četvrta bela pločica u search baru. 
+  Iselio se da bi bar mogao da se vrati na tačno onu komponentu koja stoji na naslovnoj, i 
+  postao PREKIDAČ a ne checkbox jer nije još jedno polje koje se popunjava pre pretrage 
+  nego režim prikaza nad listom koja je već na ekranu - to je ono što prekidač znači.
+  - **UKLJUČEN JE PODRAZUMEVANO** (`checked` u markupu, ne postavlja ga skript - važi i 
+    pre nego što se JS izvrši). Većina pozicija ovde ne traži CV, pa je to prijateljskiji 
+    prvi pogled; `apply()` čita input u prvom prolazu, pa brojač odmah kreće od 14 umesto 
+    da blesne 16
+  - ⚠ LABELA JE "Bez CV-a", kako je traženo. Ostatak sajta (tag na oglas-primer.html) piše 
+    "Bez CV-ja" - ako se ikad ujednačava, menjaju se OBA mesta
+  - stoji na svetlom #F4F4F4 panelu u OBE teme, pa je stilizovan jednom i NE treba mu 
+    dark pravilo
+  - native box je sakriven i precrtan (kao i svaka druga kontrola na sajtu), ali OSTAJE u 
+    DOM-u da bi labela, fokus i tastatura bili posao browsera. Hod knoba je 20px 
+    (46 - 20 - 3 - 3), pa mu inset od 3px ostaje isti na oba kraja
+  - ⚠ BAR VIŠE NE PRIJAVLJUJE `nocv`. `job-filter.js` i dalje ima `check` u SKINS objektu 
+    (generički je), ali ga u ovom baru nema, pa `values().nocv` uvek stiže kao false - 
+    stanje drži prekidač, a `apply()` ga čita direktno sa inputa. Zbog toga postoji 
+    `lastValues`: bar objavi svoje stanje na svaku promenu, ono se zapamti, a klik na 
+    prekidač samo pozove `apply()` BEZ ARGUMENTA, što znači "isti upit, preračunaj". 
+    Filter i prekidač se tako slažu umesto da se tuku
+  - `?nocv=1` sa druge stranice sada pada na prekidač; ugovor query parametara je 
+    nepromenjen
   Stoji u istom 1312px kontejneru pa se poravnava sa redom kartica. Sortiranje radi na 
   VIDLJIVOM skupu pa se slaže sa filterom umesto da se tuku; `applySort()` samo 
   re-appenduje postojeće nodove (pomera ih, ne pravi nove)
@@ -546,11 +649,30 @@ razmak od 30px je ceo efekat, dva panela ne smeju da se dodiruju.
   nocv). Sva dugmad "Prijavi se" vode na isti oglas-primer.html - kad stignu pravi 
   oglasi, svaki dobija svoj url
 
+### CTA za otvorenu prijavu (`.talent-cta`) - poslednja stvar u panelu
+Tamni blok POSLE grida, unutar istog panela: naslov "Nema tvoje pozicije?", jedna rečenica 
+("Ostavi nam svoje podatke i reci šta tražiš. Čuvamo tvoju prijavu i javljamo se prvi čim 
+se otvori nešto po tvojoj meri.") i žuta pilula "Prijavi se unapred".
+- POZICIJA JE POENTA: čita ga tačno onaj ko je upravo prešao ceo spisak i nije našao svoje. 
+  Bilo gde ranije bio bi upad; u futeru bi bio treća kartica uz dve koje su već tamo
+- TAMAN je namerno - jedina tamna površina među 16 belih kartica, pa se čita kao druga 
+  vrsta ponude a ne kao sedamnaesta pozicija. Žuti blok je bio druga opcija i odbačen: 16 
+  žutih "Prijavi se" pilula je već na ekranu, pa bi žuta ploča iza njih spljoštila ceo panel
+- OSTAJE VIDLJIV i kad grid nema rezultata - "ništa ne odgovara filterima" je baš trenutak 
+  kad ostavljanje podataka ima smisla. Zato NIJE unutar `#jobs-grid` niti se skriva sa njim
+- ⚠ dugme vodi na `oglas-primer.html#prijava` jer zasebna stranica "otvorena prijava" ne 
+  postoji. Kad se napravi, menja se SAMO href - forma tamo treba da nosi i polje za željenu 
+  poziciju/grad, što je ceo smisao ovog CTA-a
+
 ### Uklonjeno sa listanja (NE vraćati bez eksplicitnog zahteva)
 - Sekcija sa dve tamne `.info-card` kartice **"Rad u lokalu" / "Rad u centrali"** (stajala 
   je između panela sa karticama i futera). `.info-card` CSS OSTAJE u styles.css - 
   oglas-primer.html ga i dalje koristi za tri kartice "Saznaj više o nama"
 - Beli `.jf-bar` filter bar i rečenica "Za većinu pozicija u lokalima CV nije potreban..."
+- Tamna podloga hero trake (#231F20) i njen corner glow - videti "Hero traka" gore
+- Checkbox "Bez CV-ja" IZ SEARCH BARA, zajedno sa `.hero-search__check` / 
+  `.hero-search__box` CSS-om. Nije nestao nego se preselio u toolbar kao `.nocv-toggle` - 
+  ne vraćati pločicu u bar, bar mora ostati identičan onom na naslovnoj
 
 ### Query parametri (dolazak sa druge stranice)
 Listanje čita `?vrsta=lokali|centrala`, `?lokacija=...`, `?pozicija=...`, `?nocv=1` i 
@@ -598,12 +720,22 @@ manje dimenzije ~25vw/25vw/20vw radi vidljivosti pokreta, brže animacije ~16s/1
 boje #FAA61A/#FFCB05. Sekcije sa čvrstom pozadinom (bela/#ECECEC) prekrivaju je normalno; 
 orange sekcije je puštaju da se vidi kroz njih.
 
-## Tamna varijanta naslovne (theme-dark.css)
-⚠ **TAMNA JE PODRAZUMEVANA.** Naslovna se otvara tamna; svetla i dalje postoji cela i do 
-nje se stiže prekidačem ili preko `?tema=light`. Obe varijante žive na ISTOM fajlu.
-Nije napravljen drugi `index-dark.html` NAMERNO: header i footer moraju ostati na tri 
-byte-identične kopije, a duplikat bi ih digao na četiri i svaku buduću ispravku 
-udvostručio. Markup index.html-a se za temu NE dira uopšte osim `<html>` taga i `<head>`-a.
+## Tamna varijanta (theme-dark.css)
+⚠ **TAMNA JE PODRAZUMEVANA.** Naslovna I LISTANJE se otvaraju tamni; svetla i dalje postoji 
+cela i do nje se stiže prekidačem ili preko `?tema=light`. Obe varijante žive na ISTIM 
+fajlovima. Nije napravljen drugi `index-dark.html` NAMERNO: header i footer moraju ostati 
+na tri byte-identične kopije, a duplikat bi ih digao na četiri i svaku buduću ispravku 
+udvostručio. Markup stranica se za temu NE dira uopšte osim `<html>` taga i `<head>`-a.
+
+⚠ NAJVEĆI DEO LISTANJA NE TRAŽI NIJEDNO PRAVILO IZ OVOG FAJLA, i to je namerno: aurora, 
+header, futer i žuta CTA dugmad su isti zajednički elementi kao na naslovnoj, pa ih hvataju 
+pravila koja tu već postoje. Ono što je stvarno specifično za listanje - `.page-hero--flush` 
+bez podloge i sticky `.search-dock` - pisano je BEZ TEME, u styles.css, jer izgleda isto u 
+obe varijante. Jedino stvarno novo pravilo je izuzetak za hover:
+- `[data-theme="dark"] .job-card a.bg-brand-cta:hover` vraća SVETLOTEMSKI hover 
+  (brightness .95, bez haloa). "Prijavi se" na listanju je jedina žuta CTA koja i u tamnoj 
+  temi stoji na BELOJ kartici, jer panel sa rezultatima ostaje svetao; opšte tamno pravilo 
+  (posvetljenje + žuti halo) bi joj na belom nacrtalo prljav oreol
 - Uključuje je atribut `data-theme="dark"` na `<html>`, koji STOJI ZAKUCAN U MARKUPU. Tako 
   važi od prvog pixela - pre nego što se izvrši ijedna linija JS-a, i onda kad JS ne radi. 
   Ranije ga je postavljao boot skript, pa je postojao rizik od bleska svetle teme
@@ -612,7 +744,7 @@ udvostručio. Markup index.html-a se za temu NE dira uopšte osim `<html>` taga 
   ključ `bb-tema`). MORA ostati u `<head>`-u - skidanje kasnije daje blesak tamne pre svetle
 - URL parametar pobeđuje zapamćeni izbor, da se varijanta može poslati kao link
 - Prekidač (`.theme-toggle`, KRUŽNO dugme 44px dole desno, SAMO IKONICA) PRAVI JS na dnu 
-  index.html, ne stoji u markupu. Tekstualna oznaka ("Svetla varijanta") je uklonjena na 
+  index.html I listanje.html, ne stoji u markupu. Tekstualna oznaka ("Svetla varijanta") je uklonjena na 
   zahtev, pa značenje nosi samo glif - `aria-label` i `title` su jedini tekst i moraju se 
   održavati uz ikonicu. Dimenzije su fiksne, ne padding: bez teksta unutra pilula bi se 
   stegla na širinu glifa i ispala ovalna umesto okrugla. Njegov CSS je u theme-dark.css ali IZVAN `[data-theme]` opsega - mora se videti 
@@ -670,12 +802,15 @@ udvostručio. Markup index.html-a se za temu NE dira uopšte osim `<html>` taga 
   "Saznaj više o nama", koji na hover menja i podlogu - njegovo pravilo je specifičnije
 - Proces zapošljavanja: tuš (#231F20) ide u #F5F1EC, pa rukopis čita kao kreda. Debljina 
   strelica se NE dira - uparena je sa Lumierinim perom i ne zavisi od boje
-- ⚠ OPSEG JE SAMO NASLOVNA, i to je sada VIDLJIV NESKLAD, a ne više samo ograničenje 
-  pregleda: otkad je tamna podrazumevana, klik na bilo koji CTA vodi na listanje.html ili 
-  oglas-primer.html, koje ovaj fajl ne učitavaju i ostaju SVETLE. Dok se tema ne raširi, 
-  to je podrazumevani put kroz sajt, ne opcioni. Za širenje treba: dodati pravila za 
-  `.jf-*`, `.job-card`, `.page-hero`, `.jobs-panel`, `.info-card`, `.fld-*` (namerno ih 
-  sada NEMA) i kopirati `<link>` + boot skript + `data-theme` na `<html>` u te dve stranice
+- ⚠ OPSEG JE NASLOVNA + LISTANJE. Ostaje SAMO `oglas-primer.html`, koja ovaj fajl ne 
+  učitava i otvara se svetla - vidljiv nesklad kad se sa tamnog listanja klikne "Prijavi 
+  se". Za širenje i na nju treba: kopirati `<link>` + boot skript + `data-theme` na 
+  `<html>`, dopisati pravila za `.fld-*` (forma) i `.info-card` (tri kartice "Saznaj više 
+  o nama"), i odlučiti da li njen `.page-hero` (bez `--flush`, dakle sa tamnom trakom) 
+  ostaje takav ili i on ide na auroru
+- ⚠ `?tema=` i localStorage ključ `bb-tema` su ZAJEDNIČKI za obe stranice, pa izbor 
+  napravljen na jednoj važi i na drugoj. Prekidač (`.theme-toggle`) pravi skript na dnu 
+  OBE stranice - ako se menja, menja se na oba mesta
 - KAD SE VARIJANTA ZAKLJUČA: tamna → pravila se presipaju u styles.css, a theme-dark.css, 
   boot skript i prekidač nestaju; svetla → briše se theme-dark.css, `<link>`, boot skript, 
   `data-theme` sa `<html>` i blok prekidača na dnu index.html
