@@ -275,7 +275,8 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    ni zaobljeni panel (aurora se vidi kroz nju), naslov i link su BELI: naslov centriran 
    iznad, a "POGLEDAJ SVE POZICIJE" (beo caps-lock tekst link sa belom podvlakom 
    border-b-2) je ISPOD reda kartica, ne ispod naslova. Ta podvlaka od 2px je referenca 
-   za balkanbet.rs link u futeru - držati ih usklađene. 4 kartice 
+   za "SAZNAJ VIŠE O NAMA" u #impact - držati ih usklađene (balkanbet.rs link u futeru, 
+   koji je ranije bio treći iz te grupe, više ne postoji). 4 kartice 
    pozicija (Beograd, Novi Sad, Niš, Kragujevac), bele: 12px radijus, 28px padding, 
    naslov ~26px, dugme "Prijavi se" (NIJE caps-lock, za razliku od ostalih CTA na sajtu 
    - eksplicitan zahtev). Stagger kaskada s leva na desno; PONAVLJA SE svaki put kad se 
@@ -445,21 +446,48 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      280..520), ~450px na 900px ekranu za svih 15 komada - namerno kratko (klijent je 
      tražio da 4 koraka ne traju dugo) i dovoljno kratko da se, iako počinje na prvi 
      piksel, završi dok je kompozicija još cela u kadru (na 900px: stage na y 380-629)
-   - PADDING sekcije je ASIMETRIČAN (pt-[192px] / pb-[103px]) da bi VIZUELNO bio simetričan 
+   - PADDING sekcije je ASIMETRIČAN (pt-[192px] / pb-[55px]) da bi VIZUELNO bio simetričan 
      na 150px. Sekcija je na ranijem cilju od 96px (py-24 ritam ostatka sajta) delovala 
      zgusnuto, pa je cilj podignut; bilo je pt-[138px] / pb-[49px]. Mereno od ivice suseda 
      do IVICE TUŠA: gore se 
      dodaje 42px jer .panel-overlap je već pojeo 48px a box prvog reda (sada kickera) 
-     počinje ~6px iznad linije verzala; dole se oduzima 47px jer ispod ne sledi ivica 
-     pozadine nego footer, koji nosi svoj -48px overlap i 80px pt-20, plus ~15px 
+     počinje ~6px iznad linije verzala; dole se oduzima 95px jer ispod ne sledi ivica 
+     pozadine nego footer, koji nosi 80px pt-20, plus ~15px 
      neiskorišćene visine stage-a ispod najnižeg koraka. 
-     Te dve KOREKCIJE (+42 / -47) su svojstvo suseda i tipografije, NE cilja - ako se 150 
+     Te dve KOREKCIJE (+42 / -95) su svojstvo suseda i tipografije, NE cilja - ako se 150 
      kasnije diže ili spušta, oba broja se pomeraju za isti iznos, ne izvode se ispočetka. 
-     Važe SAMO za ove veličine tipografije i ovaj ratio stage-a
+     Važe SAMO za ove veličine tipografije i ovaj ratio stage-a.
+     ⚠ Donja korekcija je bila -47 (pb-[103px]) dok je futer još nosio `.panel-overlap`. 
+     Futer je otišao u full-bleed i taj overlap izgubio, pa je njegovih -48px palo pravo 
+     na ovaj padding (103 → 55) - razmak NA EKRANU se time nije promenio. Ako futer ikad 
+     opet dobije overlap, ovih 48px se vraća
    - Ispod ~700px cik-cak se gasi: stage postaje običan stack, strelice display:none i 
      ISPADAJU iz sekvence (measureProcess filtrira po offsetParent), inače bi njihovi 
      slotovi bili mrtve pauze između koraka
-6. Footer - IZBRENDIRAN, kompletno na srpskom. Otvaraju ga DVE CTA kartice sa medijem 
+6. Footer - IZBRENDIRAN, kompletno na srpskom. **FULL-BLEED i BEZ `.panel-overlap`**: ide 
+   od ivice do ivice, bez 30px inseta (`.section-panel`) i bez radijusa, isti potez kao 
+   header. Unutrašnji wrapper i dalje nosi `max-w-[1440px] px-8 md:px-16`, pa se sadržaj 
+   poravnava sa svim sekcijama iznad - "full širina" se odnosi na TRAKU, ne na sadržaj.
+   ZAŠTO NEMA OVERLAP-a: zaključna traka ima u tamnoj temi punu žutu pozadinu (videti 
+   niže), pa bi blok sa vidljivom gornjom ivicom koji jaše 48px preko prethodne sekcije 
+   čitao kao greška - a na listanju bi baš prekrio dno svetlog panela sa rezultatima. 
+   Posledica je da je sve iznad futera 48px labavije; na naslovnoj je to nadoknađeno u 
+   #proces (pb 103 → 55, videti tačku 5), na druge dve stranice je razmak namerno ostao 
+   veći.
+   **DVA DELA, i podela je poenta:** dve CTA kartice stoje na PODLOZI STRANICE (aurora u 
+   svetloj, skoro crno u tamnoj), a popunu ima SAMO zaključna traka `.footer-bar` na dnu. 
+   ⚠ Kartice su fotografije i tuku se sa punom žutom pločom iza sebe - traženo eksplicitno 
+   da ne budu na žutom, ne vraćati fill na ceo `<footer>`. Oba dela su full-bleed (popuna 
+   trake mora da stigne do obe ivice ekrana), pa SVAKI nosi svoj 1440/px-16 wrapper unutra.
+   `.footer-bar` je JEDAN RED sa tri grid slota: levo copyright, U SREDINI 4 dugmeta 
+   društvenih mreža, desno "Dizajn i razvoj". Tri slota, a ne justify-between, da bi 
+   ikonice bile centrirane prema FUTERU a ne prema dužini bočnih tekstova.
+   UKLONJENO (ne vraćati bez zahteva): kolone "Pun pogodak" i "Navigacija" (sa balkanbet.rs 
+   linkom i celom navigacijom - to header ionako nosi), link "Nazad na vrh", i naslov 
+   "PRATI NAS" iznad ikonica. Naslov je otišao jer četiri prepoznatljiva glifa u svom redu 
+   ne treba najavljivati, a bio je i jedino što je smetalo da sve stane u jedan red; 
+   `aria-label` na svakom dugmetu ostaje, pa čitač ekrana nije ništa izgubio.
+   Otvaraju ga DVE CTA kartice sa medijem 
    (.footer-cta): "Poslovi u lokalima" (fotografija storage-profili.png, podnaslov 
    "Pogledaj otvorene pozicije u Balkan Betu.", vodi na listanje.html) i 
    "Posao u centrali" (isti video kao kartica centrale u mozaiku, pa ne košta dodatan 
@@ -482,14 +510,17 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    byte-identičan, na SVE TRI stranice - menja se na sva četiri mesta odjednom. 
    Ne mešati sa `.zivot-tile__cta` u mozaiku, koje i dalje pišu "Pogledaj pozicije" - to 
    je druga komponenta i nije bila deo zahteva.
-   Ispod kartica kolone "Pun pogodak" (balkanbet.rs link ima border-b-2 punu belu 
-   podvlaku, istu kao "POGLEDAJ SVE POZICIJE" u #openings), "Navigacija" (linkovi su 
-   BOLD), "Prati nas".
-   Donji red je grid od TRI kolone (ne justify-between, da bi srednja bila centrirana 
-   prema futeru a ne prema dužini bočnih tekstova): levo copyright "©2026 Balkan Bet. 
-   Sva prava zadržana.", u sredini "Nazad na vrh", desno "Dizajn i razvoj" + 
-   assets/logo/smartweb-logo.svg. Taj logo je VEĆ ceo beo (fill="#fff"), ne treba mu 
-   filter; visina je 1.15em da prati font reda. "Politika privatnosti" je UKLONJENA.
+   Sadržaj trake (`.footer-bar` → `.footer-legal`, mt-16, py-6) je namerno SITAN 
+   (text-xs), osim samih dugmadi: levo "©2026 Balkan Bet. Sva prava zadržana.", u sredini 
+   4 okrugla dugmeta (LinkedIn / Instagram / Facebook / YouTube, 44px), desno 
+   "Dizajn i razvoj" + assets/logo/smartweb-logo.svg. Logo je VEĆ ceo beo (fill="#fff") pa 
+   u SVETLOJ temi ne treba filter, ali u tamnoj mora (žuta traka - videti "Tamna 
+   varijanta"); visina je 1.15em da prati font reda. Klasa `.footer-legal` postoji SAMO 
+   kao kuka za to dark pravilo. 
+   Traka nosi `border-t border-white/20`: to je separator SAMO u svetloj temi, gde je 
+   providna i čita se kao crta ispod kartica. U tamnoj deli sama ivica žutog, pa se 
+   linija gasi u `transparent`.
+   "Politika privatnosti" je UKLONJENA.
 
 ### Uklonjene sekcije (NE vraćati bez eksplicitnog zahteva)
 - **"Naših 5 vrednosti"** (#values) - uklonjena zajedno sa .value-card CSS-om i VALUES 
@@ -521,6 +552,11 @@ Ranije je imala `rounded-b-[32px]` - UKLONJENO, ne vraćati.
   Traka koja bi se završavala iznad njega čitala bi se kao odsečen panel. Uz to, aurora 
   ionako radi posao koji je glow radio, pa je i on obrisan (`background: none` gasi i 
   boju i background-image; `::after` je i dalje `content: none`)
+- ⚠ BEZ PODLOGE VAŽI I U TAMNOJ TEMI. `background: none` iz `.page-hero--flush` (0,1,0) 
+  gubi od `[data-theme="dark"] .page-hero` (0,2,0), pa je flush hero u tamnoj varijanti 
+  ipak dobijao staklenu podlogu (--dk-glass) I okvir. Zato je to pravilo suženo na 
+  `[data-theme="dark"] .page-hero:not(.page-hero--flush)` - `:not()` je NOSEĆI, ne 
+  kozmetika. Traka na oglas-primer.html (`.page-hero` bez `--flush`) staklo i dalje ima
 - ⚠ `.page-hero--flush` je I MARKER po kome header zna da na ovoj stranici startuje 
   providan (videti tačku 1 gore) - ne stavljati tu klasu na treću stranicu ako se ne misli 
   i to
@@ -730,12 +766,15 @@ udvostručio. Markup stranica se za temu NE dira uopšte osim `<html>` taga i `<
 ⚠ NAJVEĆI DEO LISTANJA NE TRAŽI NIJEDNO PRAVILO IZ OVOG FAJLA, i to je namerno: aurora, 
 header, futer i žuta CTA dugmad su isti zajednički elementi kao na naslovnoj, pa ih hvataju 
 pravila koja tu već postoje. Ono što je stvarno specifično za listanje - `.page-hero--flush` 
-bez podloge i sticky `.search-dock` - pisano je BEZ TEME, u styles.css, jer izgleda isto u 
-obe varijante. Jedino stvarno novo pravilo je izuzetak za hover:
+bez podloge i `.search-band` - pisano je BEZ TEME, u styles.css, jer izgleda isto u 
+obe varijante. Stvarno svoja su samo dva izuzetka:
 - `[data-theme="dark"] .job-card a.bg-brand-cta:hover` vraća SVETLOTEMSKI hover 
   (brightness .95, bez haloa). "Prijavi se" na listanju je jedina žuta CTA koja i u tamnoj 
   temi stoji na BELOJ kartici, jer panel sa rezultatima ostaje svetao; opšte tamno pravilo 
   (posvetljenje + žuti halo) bi joj na belom nacrtalo prljav oreol
+- `:not(.page-hero--flush)` na tamnom pravilu za `.page-hero` - bez toga bi hero na 
+  listanju u tamnoj temi dobio staklenu podlogu i okvir, iako u svetloj stoji golo na 
+  aurori (videti "Hero traka" u sekciji listanja)
 - Uključuje je atribut `data-theme="dark"` na `<html>`, koji STOJI ZAKUCAN U MARKUPU. Tako 
   važi od prvog pixela - pre nego što se izvrši ijedna linija JS-a, i onda kad JS ne radi. 
   Ranije ga je postavljao boot skript, pa je postojao rizik od bleska svetle teme
@@ -774,16 +813,29 @@ obe varijante. Jedino stvarno novo pravilo je izuzetak za hover:
     potamnjenje, što na tamnoj stranici deluje kao da se dugme gasi. Ovde ide obrnuto - 
     brightness(1.07) + meki žuti halo (box-shadow 4px na .16 alfe), pa dugme zasvetli. 
     Selektor je specifičniji od Tailwindove hover klase, pa se markup ne dira
-  - TRI KARTICE U FUTERU nose istu podlogu i okvir kao kartice pozicija (--dk-glass + 
-    --dk-line). Ranije su bile rgba(255,255,255,.05), tj. svetle staklene pločice - drugi 
-    materijal na istoj stranici
+  - **ZAKLJUČNA TRAKA FUTERA JE PUNA ŽUTA** (#FDB813) - jedina puna žuta POVRŠINA na 
+    tamnoj stranici. ⚠ ŽUTU NOSI SAMO `.footer-bar`, NE ceo `<footer>`: dve .footer-cta 
+    kartice iznad ostaju na podlozi stranice (traženo eksplicitno - fotografije se tuku sa 
+    žutom pločom iza sebe). U svetloj temi traka nema podlogu (vidi se aurora, tekst je 
+    beo), pa je ceo dark blok samo okretanje te iste, nepromenjene strukture u tamno na 
+    žutom:
+      * ⚠ žuta je #FDB813 (brend akcenat), NE #ffbb1a (`brand.cta`) - traka je podloga, 
+        a ne kontrola
+      * tekst trake: belo na .8 alfe → rgba(35,31,32,.72). Isti odnos, pa red ostaje 
+        sekundaran umesto da na žutom postane drugi naslov
+      * gornja linija trake ide u `transparent` - u svetloj temi je separator, ovde deli 
+        sama ivica žutog, pa bi bela crta po njenom vrhu bila šav viška
+      * Smartweb logo je ceo beo i na žutom bi NESTAO - obara se u crno preko 
+        `filter: brightness(0)` (+ opacity .72 da prati tekst pored sebe). To je jedini 
+        razlog zašto red uopšte nosi klasu `.footer-legal`
+      * KRUGOVI DRUŠTVENIH MREŽA se obrću: puna TAMNA pločica sa ŽUTIM glifom (u svetloj 
+        temi je obrnuto, bela pločica sa tamnim glifom), pa se čitaju kao rupe izbušene u 
+        traci. Hover je inverzija - beo krug, taman glif; svetlotemski hover je tamna 
+        pilula, tj. tačno mirno stanje ovde, pa bi bio nevidljiv
+      * .footer-cta kartice NE TRAŽE NIŠTA - medij ide preko cele kartice a tekst stoji 
+        na svom crnom scrimu, pa rade na tamnom bez ijedne izmene
   - linkovi "POGLEDAJ SVE POZICIJE" (#openings) i "SAZNAJ VIŠE O NAMA" (#impact) su ŽUTI 
-    zajedno sa svojim border-b-2 podvlakama, hover im se vraća u belo - isto rešenje kao 
-    balkanbet.rs u futeru
-  - u futeru su ŽUTI i glifovi društvenih mreža i link balkanbet.rs (taj zajedno sa svojom 
-    border-b-2 podvlakom - da je požuteo samo tekst, bela linija bi ostala da visi). 
-    Hover balkanbet.rs se vraća u BELO, jer opšte pravilo `hover:text-brand-dark` → žuto 
-    na već žutom linku ne bi dalo nikakav odziv
+    zajedno sa svojim border-b-2 podvlakama, hover im se vraća u belo
   - senka loptice je ŽUTA i tražena je kao ODRAZ, ne kao senka - loptica koja svetli 
     ostavlja mrvicu svog svetla na podu. Zato ima SVOJ keyframe set 
     (`hero-ball-reflection`), alfe ~40% od svetle teme (.02-.07): alfe do .17 bi kao žuta 

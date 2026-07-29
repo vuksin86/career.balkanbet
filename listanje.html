@@ -333,14 +333,29 @@
   </section>
 
 <!-- ============================================================================
-     FOOTER CTA — closing call-to-action + site navigation + socials
+     FOOTER CTA — closing call-to-action + socials
 
      ⚠ SHARED BLOCK — same rule as the header above: this exact markup is
      duplicated BYTE-FOR-BYTE in listanje.html and oglas-primer.html.
      index.html is the source of truth; edit here, then copy this comment and
      the whole footer element across unchanged.
+
+     TWO PARTS, and the split is the point: the media CTAs sit on the page's own
+     background (aurora in the light theme, near-black in the dark one), and only
+     the closing .footer-bar carries a fill — solid yellow in the dark theme.
+     The cards are photographs and would fight a yellow plate behind them.
+
+     No .panel-overlap on the footer: the bar is a real coloured band, and a
+     visible top edge riding 48px up over the section above it would read as a
+     mistake — on listanje.html it would cover the bottom of the results panel.
+     Losing the overlap makes everything above the footer sit 48px looser, which
+     is why #proces above dropped its bottom padding by exactly that much.
+
+     Both parts are FULL-BLEED (the bar's fill has to reach both screen edges),
+     so each keeps its own 1440/px-16 wrapper inside — that is what lines the
+     content up with every section above.
 ============================================================================ -->
-<footer class="relative z-20 panel-overlap section-panel rounded-[32px] pt-20 pb-10">
+<footer class="relative z-20 pt-20">
   <div class="max-w-[1440px] mx-auto px-8 md:px-16">
 
     <!-- Two media CTAs opening the footer — lokali / centrala. Both slots used
@@ -349,7 +364,7 @@
          swing-up hover). The visuals deliberately reuse what already stands for
          each track in the ŽIVOT mosaic: the lokal photo and the centrala clip
          (same src, so the video costs no extra download). -->
-    <div class="reveal grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <div class="reveal grid grid-cols-1 lg:grid-cols-2 gap-8">
       <a href="listanje.html" class="footer-cta">
         <img class="footer-cta__media" src="assets/bb-zivot/storage-profili.png" alt="Balkan Bet lokal">
         <div class="footer-cta__scrim"></div>
@@ -381,38 +396,30 @@
       </a>
     </div>
 
-    <div class="reveal grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Column: corporate site -->
-      <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
-        <h3 class="text-white font-bold uppercase tracking-wide mb-4">Pun pogodak</h3>
-        <p class="text-white/85">
-          Poseti naš sajt i saznaj više o Balkan Betu — o ponudi, lokalima širom Srbije i svemu što radimo.
-        </p>
-        <!-- border-b-2 + solid white: same underline weight as the
-             "Pogledaj sve pozicije" link in #openings, so the two text CTAs
-             read as one style. -->
-        <a href="#" class="inline-flex items-center gap-2 mt-10 text-white font-bold uppercase tracking-wide border-b-2 border-white pb-1 hover:text-brand-dark hover:border-brand-dark transition-colors cursor-pointer">
-          <svg width="10" height="12" viewBox="0 0 10 12" fill="none"><path d="M1 1L9 6L1 11V1Z" fill="currentColor"/></svg>
-          balkanbet.rs
-        </a>
-      </div>
+  </div>
 
-      <!-- Column: site navigation -->
-      <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
-        <h3 class="text-white font-bold uppercase tracking-wide mb-6">Navigacija</h3>
-        <nav class="flex flex-col gap-4 text-white/90 font-bold">
-          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Poslovi u lokalima</a>
-          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Posao u centrali</a>
-          <a href="#" class="hover:text-brand-dark transition-colors w-fit">O nama</a>
-          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Život u Balkan Betu</a>
-          <a href="#" class="hover:text-brand-dark transition-colors w-fit">Kontakt</a>
-        </nav>
-      </div>
+  <!-- CLOSING BAR — everything the footer still has to say, on ONE line: legal
+       left, socials centred, credit right. Three grid slots rather than
+       justify-between, so the socials are centred against the FOOTER and not
+       against whatever the two side texts happen to measure.
 
-      <!-- Column: social -->
-      <div class="bg-white/10 border border-white/25 rounded-3xl p-10">
-        <h3 class="text-white font-bold uppercase tracking-wide mb-6">Prati nas</h3>
-        <div class="flex items-center gap-4">
+       This is the only part of the footer that takes a fill (see .footer-bar in
+       theme-dark.css — solid yellow there, nothing in the light theme, where it
+       reads as a rule under the cards instead).
+
+       The "Prati nas" heading above the icons is gone: four recognisable glyphs
+       on their own line do not need to be announced, and the label was the only
+       thing keeping this from fitting on one line. The aria-labels stay, so
+       nothing was lost for screen readers.
+
+       .footer-legal is the hook the dark theme needs: on the yellow band this
+       text goes dark and the all-white Smartweb logo has to flip with it. -->
+  <div class="footer-bar mt-16 py-6 border-t border-white/20">
+    <div class="max-w-[1440px] mx-auto px-8 md:px-16">
+      <div class="reveal footer-legal grid grid-cols-1 sm:grid-cols-3 items-center gap-6 text-white/80 text-xs text-center">
+        <p class="sm:justify-self-start">&copy;2026 Balkan Bet. Sva prava zadržana.</p>
+
+        <div class="flex items-center justify-center gap-4 sm:justify-self-center">
           <a href="#" aria-label="LinkedIn" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer font-bold text-sm">in</a>
           <a href="#" aria-label="Instagram" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="1.2" fill="currentColor"/></svg>
@@ -422,21 +429,15 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" stroke-width="2"/><path d="M10 9L15 12L10 15V9Z" fill="currentColor"/></svg>
           </a>
         </div>
-      </div>
-    </div>
 
-    <!-- Three slots, so "Nazad na vrh" is centred against the FOOTER, not
-         against whatever the two side texts happen to measure — hence a
-         3-column grid rather than justify-between. -->
-    <div class="reveal grid grid-cols-1 sm:grid-cols-3 items-center gap-4 mt-10 pt-8 border-t border-white/20 text-white/80 text-sm text-center sm:text-left">
-      <p class="sm:justify-self-start">&copy;2026 Balkan Bet. Sva prava zadržana.</p>
-      <a href="#top" class="sm:justify-self-center hover:text-white transition-colors">Nazad na vrh</a>
-      <span class="sm:justify-self-end inline-flex items-center gap-2">
-        Dizajn i razvoj
-        <!-- smartweb-logo.svg is already all-white (fill="#fff"), so it needs no
-             filter here. Height is in em so it tracks this row's font size. -->
-        <img src="assets/logo/smartweb-logo.svg" alt="Smartweb" class="h-[1.15em] w-auto">
-      </span>
+        <span class="sm:justify-self-end inline-flex items-center justify-center gap-2">
+          Dizajn i razvoj
+          <!-- smartweb-logo.svg is already all-white (fill="#fff"), so it needs
+               no filter in the light theme. Height is in em so it tracks this
+               row's font size. -->
+          <img src="assets/logo/smartweb-logo.svg" alt="Smartweb" class="h-[1.15em] w-auto">
+        </span>
+      </div>
     </div>
   </div>
 </footer>

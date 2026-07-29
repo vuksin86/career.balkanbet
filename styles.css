@@ -1583,18 +1583,10 @@
   }
   .fld-file input { display: none; }
 
-  /* ------------------------------------------------------------------
-     "Saznaj više" info cards + the two dark cards at the bottom of the
-     listing page. Lift on hover, same 12px-family radius as the job cards.
-  ------------------------------------------------------------------ */
-  .info-card {
-    background: #231F20;
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 20px;
-    padding: 32px;
-    transition: transform .3s ease, border-color .3s ease;
-  }
-  .info-card:hover { transform: translateY(-6px); border-color: rgba(253,184,19,.55); }
+  /* `.info-card` STOOD HERE and is gone. It dressed the three "Saznaj više o
+     nama" cards on oglas-primer.html and, before that, the two dark cards at
+     the bottom of the listing. Both sections have now been removed on request,
+     so the rule had no user left. Do not re-add it without the markup. */
 
   /* ========================================================================
      PROCES ZAPOŠLJAVANJA — hand-lettered, scroll-written composition

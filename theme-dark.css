@@ -1,10 +1,10 @@
   /* ##########################################################################
      TAMNA VARIJANTA — dodatni sloj preko styles.css
 
-     Učitava se na index.html i listanje.html, odmah posle styles.css, i ne radi
-     ništa dok <html> ne nosi data-theme="dark" (atribut stoji ZAKUCAN u markupu
-     obe stranice; boot skript u <head>-u ga samo SKIDA kad je tražena svetla).
-     Zato je svetla verzija netaknuta: bez atributa se nijedno pravilo odavde ne
+     Učitava se na SVE TRI stranice, odmah posle styles.css, i ne radi ništa dok
+     <html> ne nosi data-theme="dark" (atribut stoji ZAKUCAN u markupu svake od
+     njih; boot skript u <head>-u ga samo SKIDA kad je tražena svetla). Zato je
+     svetla verzija netaknuta: bez atributa se nijedno pravilo odavde ne
      primenjuje.
 
      ZAŠTO OVAKO, A NE DRUGI index-dark.html:
@@ -18,8 +18,8 @@
      blokovi mozaika, kojima JS piše boju u INLINE style (videti ZIVOT_TILES
      render u index.html); inline stil se bez !important ne može nadjačati.
 
-     OPSEG: naslovna + listanje. oglas-primer.html ovaj fajl NE učitava i ostaje
-     svetla — za nju bi trebalo dopisati .fld-* i .info-card pravila.
+     OPSEG: sve tri stranice. Tamna tema je time kompletna — raniji nesklad
+     (tamno listanje → svetao oglas na klik "Prijavi se") više ne postoji.
 
      ⚠ NAJVEĆI DEO LISTANJA NE TRAŽI NIJEDNO PRAVILO ODAVDE, i to je namerno:
      aurora, header, futer i CTA dugmad su isti zajednički elementi kao na
@@ -265,54 +265,59 @@
   [data-theme="dark"] .proc-arrow path { stroke: var(--dk-ink); }
 
   /* ========================================================================
-     FOOTER
+     FOOTER — PUNA ŽUTA TRAKA NA DNU
 
-     .footer-cta kartice (medij + crni scrim + žuti hover panel) rade na tamnom
-     bez ijedne izmene — zato ih ovde nema.
+     ⚠ ŽUTU NOSI SAMO `.footer-bar` (zaključni red: copyright / mreže / kredit),
+     NE ceo `<footer>`. Dve .footer-cta kartice iznad njega ostaju na podlozi
+     stranice — one su fotografije i tuku se sa punom žutom pločom iza sebe.
+     Traženo tako; ne premeštati fill nazad na `footer`.
+
+     Traka je full-bleed, pa se čita kao dno sajta, a ne kao još jedna kartica.
+     U svetloj temi nema pozadinu — tamo se vidi aurora kroz nju i tekst je beo,
+     a red od tanke gornje linije čita kao crta ispod kartica; sve ispod ovog
+     komentara postoji samo da se ta ista, nepromenjena struktura okrene u tamno
+     na žutom.
+
+     ⚠ ŽUTA JE #FDB813 (brend akcenat), NE #ffbb1a (`brand.cta`, popuna dugmadi).
+     Traka je podloga, ne kontrola.
   ======================================================================== */
-  /* Tri kolone futera nose ISTU podlogu i ISTI okvir kao kartice pozicija —
-     --dk-glass (#0e0d0e na .6) + --dk-line. Traženo tako, da se sve kartice na
-     stranici čitaju kao jedan materijal. Ranije su bile rgba(255,255,255,.05),
-     dakle svetle staklene pločice, što je bio drugi materijal. */
-  [data-theme="dark"] footer .bg-white\/10 { background: var(--dk-glass); }
-  [data-theme="dark"] footer .border-white\/25 { border-color: var(--dk-line); }
-
-  /* Krugovi društvenih mreža su pune bele pločice — na tamnoj stranici su
-     najsvetlija stvar u futeru i vuku pogled sa CTA kartica iznad. Postaju
-     staklene, a SAM GLIF je ŽUT. Hover ostaje inverzija (pun žuti krug, taman
-     glif) — u svetloj temi je hover tamna pilula, koja bi ovde nestala. */
-  [data-theme="dark"] footer a.bg-white {
-    background: rgba(255,255,255,.08);
-    border: 1px solid var(--dk-line);
-  }
-  [data-theme="dark"] footer a.bg-white.text-brand-dark { color: #FDB813; }
-  [data-theme="dark"] footer a.bg-white:hover {
+  /* Gornja linija je separator SAMO u svetloj temi, gde je traka providna. Ovde
+     deli sama ivica žutog, pa bi bela crta po njenom vrhu bila šav viška —
+     zato `transparent`, a ne neka tamna varijanta linije. Selektor mora biti
+     specifičniji od Tailwindove `.border-white\/20` u markupu. */
+  [data-theme="dark"] footer .footer-bar {
     background: #FDB813;
-    border-color: #FDB813;
+    border-top-color: transparent;
   }
-  [data-theme="dark"] footer a.bg-white.hover\:text-white:hover { color: #231F20; }
 
-  /* balkanbet.rs — jedini link u futeru sa border-b-2 podvlakom, pa je selektor
-     jednoznačan. Ide u žuto ZAJEDNO SA PODVLAKOM; da je samo tekst požuteo,
-     bela linija ispod bi ostala da visi.
-     Hover mu se OVDE vraća u belo, ne u žuto: opšte pravilo niže prevodi
-     `hover:text-brand-dark` u žutu, a link koji je već žut tako na hover ne bi
-     davao nikakav odziv. */
-  [data-theme="dark"] footer a.border-b-2 {
-    color: #FDB813;
-    border-color: #FDB813;
+  /* Tekst trake: belo na .8 alfe → tamno na .72. Isti odnos, pa red ostaje
+     sekundaran umesto da na žutom postane drugi naslov. */
+  [data-theme="dark"] footer .footer-legal { color: rgba(35,31,32,.72); }
+
+  /* Smartweb logo je ceo beo (fill="#fff") — na žutoj traci bi nestao. Nema
+     tamnu varijantu fajla, pa se obara u crno filterom; opacity ga spušta na
+     istu težinu koju ima tekst pored njega. */
+  [data-theme="dark"] footer .footer-legal img {
+    filter: brightness(0);
+    opacity: .72;
   }
-  [data-theme="dark"] footer a.border-b-2:hover {
-    color: var(--dk-ink);
-    border-color: var(--dk-ink);
-  }
+
+  /* Krugovi društvenih mreža su u svetloj temi pune BELE pločice — na žutoj
+     traci belo na žutom je najslabiji kontrast na stranici. Obrću se: pun tamni
+     krug sa žutim glifom, pa se čitaju kao rupe izbušene u traci. Hover ostaje
+     inverzija (beo krug, taman glif) — svetlotemski hover je tamna pilula, tj.
+     tačno ovo mirno stanje, pa bi ovde bio nevidljiv. */
+  [data-theme="dark"] footer a.bg-white { background: #231F20; }
+  [data-theme="dark"] footer a.bg-white.text-brand-dark { color: #FDB813; }
+  [data-theme="dark"] footer a.bg-white:hover { background: #FFFFFF; }
+  [data-theme="dark"] footer a.bg-white.hover\:text-white:hover { color: #231F20; }
 
   /* ========================================================================
      HOVER NA TAMNO → HOVER NA ŽUTO (globalno za temu)
 
      Kroz naslovnu ide više linkova sa `hover:text-brand-dark` /
-     `hover:border-brand-dark` ("Pogledaj sve pozicije", balkanbet.rs, cela
-     Navigacija u futeru). Na narandžastoj podlozi je taj hover potamnjivanje;
+     `hover:border-brand-dark` ("Pogledaj sve pozicije", "Saznaj više o nama").
+     Na narandžastoj podlozi je taj hover potamnjivanje;
      na tamnoj bi bio tekst iste boje kao podloga, tj. link koji na hover
      NESTANE. Žuta je jedini smisleni ekvivalent.
 
@@ -321,6 +326,89 @@
   ======================================================================== */
   [data-theme="dark"] .hover\:text-brand-dark:hover { color: #FDB813; }
   [data-theme="dark"] .hover\:border-brand-dark:hover { border-color: #FDB813; }
+
+  /* ========================================================================
+     OGLAS (oglas-primer.html)
+
+     ⚠ FORMA NE TRAŽI NIŠTA. `.fld`, `.fld-label`, `.fld-file` su od početka
+     crtani kao SVETLI blokovi (rgba(255,255,255,.08)) na tamnoj podlozi, jer je
+     panel prijave oduvek bio taman — pa rade i na staklu ispod bez ijedne
+     izmene. Isto važi za `.page-hero` hero traku i za sve žute akcente.
+
+     Ostaju tačno dve stvari: dva BELA panela (opis pozicije i "Pretraži druge
+     pozicije") i beli `.jf-bar` u drugom od njih.
+  ======================================================================== */
+
+  /* Dve tamne trake stranice (hero i panel prijave, obe `.page-hero`) prelaze
+     sa punog #231F20 na isto staklo koje nose #impact i kartice pozicija, pa se
+     cela stranica čita kao isti materijal i aurora se nazire kroz nju.
+     Corner glow (`.page-hero::after`) se NE dira — žuti radial na staklu radi
+     isto što je radio i na punoj podlozi.
+
+     ⚠ `:not(.page-hero--flush)` JE NOSEĆE, ne kozmetika. Hero na listanju nosi
+     obe klase, a `background: none` iz `.page-hero--flush` (0,1,0) gubi od ovog
+     selektora — pa je flush hero, koji u svetloj temi stoji golo na aurori, u
+     tamnoj ipak dobijao staklenu podlogu I okvir. Traženo je da tamo NEMA
+     nikakve podloge, u obe varijante. Pravilo zato važi samo za `.page-hero`
+     koje zaista ima svoju traku, tj. za oglas-primer.html. */
+  [data-theme="dark"] .page-hero:not(.page-hero--flush) {
+    background: var(--dk-glass);
+    border: 1px solid var(--dk-line);
+  }
+
+  /* --- Dva bela panela ---------------------------------------------------
+     Opis pozicije i "Pretraži druge pozicije" su jedine bele površine na ovoj
+     stranici. Za razliku od panela sa rezultatima na listanju (koji OSTAJE
+     svetao namerno, jer je tamo sadržaj zbog kog stranica postoji), ovde je
+     bela ploča samo pozadina teksta — na tamnoj stranici bi bila blesak usred
+     čitanja oglasa. Selektor je `section.bg-white`, dovoljno jednoznačan: to su
+     jedina dva takva elementa u fajlu.
+  --------------------------------------------------------------------- */
+  [data-theme="dark"] section.bg-white {
+    background: var(--dk-glass);
+    border: 1px solid var(--dk-line);
+  }
+  /* Tekst tih panela je pisan Tailwindovim `text-brand-dark` u tri jačine.
+     Escape-ovana kosa crta u imenu klase mora biti \/ u selektoru. */
+  [data-theme="dark"] section.bg-white .text-brand-dark { color: var(--dk-ink); }
+  [data-theme="dark"] section.bg-white .text-brand-dark\/80 { color: var(--dk-ink-2); }
+  [data-theme="dark"] section.bg-white .text-brand-dark\/60 { color: var(--dk-ink-3); }
+
+  /* --- Filter bar "Pretraži druge pozicije" ------------------------------
+     Beli `.jf-bar` sa sivim poljima. Postaje tamna pločica na staklu; senka mu
+     se gasi jer na skoro crnoj podlozi ne radi ništa osim što blati ivicu.
+     ⚠ OPSEG: ova pravila NE SMEJU da dohvate sortiranje na listanju — ono stoji
+     na svetlom panelu koji ostaje svetao. Zato sve ide kroz `.jf-bar`, koji
+     postoji SAMO na ovoj stranici; `.jf-field--solid` sa listanja nije u njemu.
+  --------------------------------------------------------------------- */
+  [data-theme="dark"] .jf-bar {
+    background: var(--dk-card);
+    border: 1px solid var(--dk-line);
+    box-shadow: none;
+  }
+  [data-theme="dark"] .jf-bar .jf-field { background: rgba(255,255,255,.06); }
+  [data-theme="dark"] .jf-bar .jf-label { color: var(--dk-ink-3); }
+  [data-theme="dark"] .jf-bar .jf-trigger { color: var(--dk-ink); }
+  [data-theme="dark"] .jf-bar .jf-check { color: var(--dk-ink); }
+  [data-theme="dark"] .jf-bar .jf-check__box { border-color: rgba(255,255,255,.35); }
+  /* Meni je zaseban sloj nad barom, pa nosi svoju punu podlogu — providan bi
+     propuštao tekst ispod sebe. */
+  [data-theme="dark"] .jf-bar .jf-menu {
+    background: var(--dk-card);
+    border: 1px solid var(--dk-line);
+    box-shadow: 0 20px 50px rgba(0,0,0,.55);
+  }
+  [data-theme="dark"] .jf-bar .jf-option { color: var(--dk-ink); }
+  [data-theme="dark"] .jf-bar .jf-option:hover { background: rgba(255,255,255,.08); }
+  /* Izabrani red ostaje ŽUT sa tamnim tekstom — isto kao u svetloj temi, i isto
+     kao `.hero-search__option.is-selected` inverzija. Bez ovoga bi nasledio
+     `--dk-ink` odozgo i dao svetao tekst na žutom. */
+  [data-theme="dark"] .jf-bar .jf-option.is-selected { color: #231F20; }
+
+  /* Potvrda posle slanja i placeholder okvir za fotografiju su `bg-white/5` —
+     svetle staklene pločice, isti materijal koji je u futeru zamenjen. Ovde se
+     poravnavaju sa ostatkom teme. */
+  [data-theme="dark"] #apply-done { background: var(--dk-glass); }
 
   /* ##########################################################################
      PREKIDAČ TEME — demo kontrola, NIJE deo dizajna sajta
