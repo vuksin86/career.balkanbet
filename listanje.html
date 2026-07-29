@@ -158,8 +158,24 @@
       Postani deo Balkan Bet tima
     </h1>
     <!-- No top margin: the two lines are one block, and the h1's own line-height
-         already leaves the gap. Removing mt-5 was asked for directly. -->
-    <p class="text-white/80 text-lg font-medium max-w-2xl mx-auto">
+         already leaves the gap. Removing mt-5 was asked for directly.
+
+         ONE LINE, in brand yellow, at 1.6rem — all three asked for directly.
+         max-w-2xl had to go with it: at 1.6rem the sentence measures 650px,
+         wider than that 42rem cap, so the cap was what broke it in two.
+
+         The size is min()'d against a vw figure rather than written flat.
+         MEASURED: the line is 25.4em wide, so it needs 25.4 × font-size to fit
+         between this section's own paddings; below ~825px of viewport a flat
+         1.6rem no longer does, and `nowrap` there would push a horizontal
+         scrollbar onto the whole page. 3.1vw is that limit taken at the
+         narrowest phone (320px), so it only ever takes over where a flat
+         1.6rem could not have held one line anyway — at every desktop width
+         the computed size is exactly 1.6rem.
+         If the copy changes, re-measure the em figure; it is the whole basis
+         for that 3.1. -->
+    <p class="text-brand-yellow font-medium whitespace-nowrap"
+       style="font-size: min(1.6rem, 3.1vw);">
       Pridruži se timu od preko 1000 zaposlenih širom Srbije.
     </p>
   </div>
@@ -414,7 +430,7 @@
 
        .footer-legal is the hook the dark theme needs: on the yellow band this
        text goes dark and the all-white Smartweb logo has to flip with it. -->
-  <div class="footer-bar mt-16 py-6 border-t border-white/20">
+  <div class="footer-bar mt-16 py-8 border-t border-white/20">
     <div class="max-w-[1440px] mx-auto px-8 md:px-16">
       <div class="reveal footer-legal grid grid-cols-1 sm:grid-cols-3 items-center gap-6 text-white/80 text-xs text-center">
         <p class="sm:justify-self-start">&copy;2026 Balkan Bet. Sva prava zadržana.</p>

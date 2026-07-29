@@ -510,7 +510,8 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    byte-identičan, na SVE TRI stranice - menja se na sva četiri mesta odjednom. 
    Ne mešati sa `.zivot-tile__cta` u mozaiku, koje i dalje pišu "Pogledaj pozicije" - to 
    je druga komponenta i nije bila deo zahteva.
-   Sadržaj trake (`.footer-bar` → `.footer-legal`, mt-16, py-6) je namerno SITAN 
+   Sadržaj trake (`.footer-bar` → `.footer-legal`, mt-16, **py-8 = 2rem gore i dole**, 
+   traženo tako; bilo je py-6) je namerno SITAN 
    (text-xs), osim samih dugmadi: levo "©2026 Balkan Bet. Sva prava zadržana.", u sredini 
    4 okrugla dugmeta (LinkedIn / Instagram / Facebook / YouTube, 44px), desno 
    "Dizajn i razvoj" + assets/logo/smartweb-logo.svg. Logo je VEĆ ceo beo (fill="#fff") pa 
@@ -542,6 +543,16 @@ otvorenu prijavu na dnu panela → footer.
   su jedan blok, razmak drži line-height naslova. Oboje traženo eksplicitno
 - HTML tekst naslova je "Postani deo Balkan Bet tima" u rečeničnom slučaju; verzali dolaze 
   iz `uppercase` klase, po opštem pravilu sajta (ne menjati sam tekst u markupu)
+- PODNASLOV ("Pridruži se timu od preko 1000 zaposlenih širom Srbije.") je ŽUT 
+  (text-brand-yellow), 1.6rem i U JEDNOM REDU - sve tri stvari tražene eksplicitno. Bio je 
+  `text-white/80 text-lg max-w-2xl`; taj max-width je morao da ode jer je na 1.6rem 
+  rečenica šira od 42rem, pa je baš on lomio red.
+  ⚠ Veličina je `min(1.6rem, 3.1vw)`, ne ravnih 1.6rem. IZMERENO: red je 25.4em širok, pa 
+  mu treba 25.4 × font-size prostora; ispod ~825px širine ekrana ravnih 1.6rem više ne 
+  stane, a `whitespace-nowrap` bi tu izbacio horizontalni skrol na CELU stranicu. 3.1vw je 
+  ta granica uzeta na najužem telefonu (320px), pa na svakoj desktop širini računa tačno 
+  1.6rem i vw član nikad ne stupa na scenu. Ako se tekst menja, PREMERITI onih 25.4em - 
+  na tome ceo broj 3.1 i stoji
 
 ### Hero traka - FULL-BLEED, BEZ RADIJUSA, BEZ PODLOGE
 `.page-hero.page-hero--flush` - NEMA .section-panel inset, NEMA mt-6 i NEMA zaobljene 
