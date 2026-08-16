@@ -913,11 +913,34 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
   razmicanje - svi dobijaju samo `translateZ`, a širenje ka ivicama crta sama perspektiva 
   (`perspective: 1000px` na `#v2-scene`). Ako se ovo menja, menjati DUBINU, ne x/y: čim se 
   x/y anima ručno, pokret prestane da izgleda kao jedan prostor
-- ⚠ **PLOČICE SE POSTAVLJAJU U PROSTORU, NE NA EKRANU** - jedina netrivijalna računica u 
-  fajlu. x/y/w u nizu TILES su gde pločica treba da se VIDI, ali perspektiva sve duboko 
-  vuče ka nedogledu; postave li se te vrednosti direktno kao left/top/width, celo polje se 
-  na dubini od −2500 skupi u gomilicu u sredini ekrana (prvo je tako i bilo). Zato se svaka 
-  množi sa `k = (P − z0) / P`, inverzom perspektivnog umanjenja na toj dubini
+- **RASPORED PLOČICA JE PREPISAN SA REFERENCE, NE IZMIŠLJEN.** Niz TILES u variation-2.js 
+  su IZMERENE vrednosti sa telescope.fyi (getComputedStyle nad njihovih 12 `.media` 
+  elemenata), snimljene na DVA viewport-a (1280x720 i 1440x900) da bi se izveo i zakon 
+  skaliranja: `x` i `w` prate ŠIRINU kadra, `y` prati VISINU, a visina pločice opet širinu 
+  (odnos stranica je fiksan). Perspektiva je `100vh` - i to je izmereno (720px na kadru 
+  visokom 720, 900px na 900), pa `PERSPECTIVE` u JS-u mora ostati jednak `vh`.
+  Provereno: na 1440x900 prva pločica ispadne `−72px / 189px / 165.594×165.594`, referenca 
+  ima `−72 / 189 / 165.6 / 165.6`. Ako se raspored ikad menja, menjaju se OVE vrednosti - 
+  ne "otprilike slično", nego se premeri referenca
+- ⚠ **U MIROVANJU JE translateZ NULA**, ne dubinska konstanta. Ovo je bila prava zabuna: 
+  `d` (720/360/1080/540) jeste ono što stoji u njihovom CSS-u, ali čim se njihov skript 
+  upali, on piše translateZ od nule naviše - prvo merenje je uhvatilo neinicijalizovano 
+  stanje. Posledice, i obe su tražene:
+    * pločice na PRVOM EKRANU stoje tačno na prepisanim koordinatama, razasute preko celog 
+      kadra, raznih veličina, neke preko naslova i neke odsečene ivicom (x = −0.05 je 
+      namerno van kadra)
+    * **VIDE SE ODMAH, BEZ SKROLA.** Nema ulaznog fade-a; jedino gašenje je ono na kraju 
+      puta, kad pločica stigne do ravni kamere
+  `d` odlučuje SAMO koliko brzo koja poleti ka posmatraču. Do kraja uvoda svaka pređe 
+  `1.5 × d` (izmereno: d=720 završi na 1080, d=360 na 540), pa one sa velikim `d` PROĐU 
+  pored posmatrača a one sa malim samo narastu - to raslojavanje je ono što daje dubinu
+- ⚠ Pločice nemaju ni radijus ni senku - i to je sa reference (izmereno `border-radius: 0`). 
+  Sa 10px radijusa i senkom su se čitale kao UI kartice, a ne kao slike u prostoru
+- ⚠ Dve gornje pločice (y = 0.03 i 0.05) padaju POD FIKSIRANI HEADER. Na referenci tog 
+  sudara nema jer njihova brend traka stoji na DNU ekrana. Koordinate su ostavljene tačne 
+  jer je traženo "identičan raspored"; nav je čitljiv jer sadržaj trake u providnom stanju 
+  nosi `drop-shadow` (videti tačku 1). Ako ikad zasmeta, spuštaju se te dve pločice - ne 
+  dira se ceo raspored
 - ⚠ **SEARCH BAR SE SELI UNUTAR `#hero-media-box`** (samo u #2, radi to skript). To je ceo 
   trik iza "video i search se zumiraju zajedno": kutija je tačno viewport, bar u njoj stoji 
   na svojih 96px od dna, pa jedan `scale()` zumira oba i sleti na 1:1 - krajnji kadar je 
@@ -932,8 +955,8 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
 - SAMO FOTOGRAFIJE u polju. `assets/values/*.png` i `benefit-*.png` su ikonice (providni 
   PNG sa sitnim žutim glifom) i čitaju se kao prazni tamni pravougaonici - probano, 
   izbačeno. Fotografija ima svega šest pa se ciklus ponavlja
-- TAJMING (razlomci uvodnog napretka `e`): pločice se pale 0.02→0.14, reči se razmiču 
-  0.06→0.72, naslov se gasi 0.42→0.72, zum ide 0.16→1.0
+- TAJMING (razlomci uvodnog napretka `e`): pločice su vidljive od nule i nemaju ulaznu 
+  rampu, reči se razmiču 0.06→0.72, naslov se gasi 0.42→0.72, zum ide 0.16→1.0
 - SPACER je 493vh (naspram 373vh u #1): P0 1vh | uvod 252vh | snap 10vh | izlazak 130vh. 
   ⚠ **IZLAZAK MORA OSTATI 130vh** - na njemu stoji `margin-top: -130vh` sekcije #openings. 
   Produžen je samo uvod. Razlomke drži `PHASE` u variation-2.js

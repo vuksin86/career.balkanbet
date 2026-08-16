@@ -71,22 +71,36 @@
     p1End: 253 / SCROLLABLE_VH
   };
 
-  var PERSPECTIVE = 1000;   // mora se poklapati sa perspective u variation-2.css
+  /* Perspektiva je 100vh — tako je i na referenci (izmereno: 720px na kadru
+     visokom 720, 900px na 900). Zato NIJE konstanta nego se čita u measure();
+     CSS je drži kao `perspective: 100vh`, a ovde mora biti isti broj jer se iz
+     njega računa kad pločica stigne do ravni kamere. */
+  var PERSPECTIVE = 900;
 
   /* ==========================================================================
-     RASPORED PLOČICA
+     RASPORED PLOČICA — PREPISAN SA telescope.fyi, ne izmišljen
 
-     x/y su procenti stage-a i to je POZICIJA CENTRA pločice; w je širina u
-     procentima MANJE stranice kadra (min(vw,vh)), pa polje drži isti odnos i
-     na širokom i na uskom ekranu. z0 je početna dubina.
+     Brojevi su IZMERENI sa reference (getComputedStyle nad njenih 12 `.media`
+     elemenata) na dva viewport-a, 1280x720 i 1440x900, pa je iz razlike izveden
+     i zakon skaliranja:
+       x  = left  / vw     (leva ivica, NE centar)
+       y  = top   / vh
+       w  = width / vw     (visina ide iz `ar`, pa je odnos stranica fiksan)
+       ar = width / height
+       d  = dubinska konstanta (|translateZ| iz njihovog CSS-a)
+     Levo i širina prate ŠIRINU kadra, vrh prati VISINU, a visina pločice opet
+     širinu — tako je i na referenci, i zato se raspored ne prelama na drugim
+     odnosima stranica.
 
-     Raspored je prsten oko sredine: naslov drži centar, pa pločice kreću sa
-     strane i odozgo/odozdo. Preklapanje sa naslovom nije problem — pločice se
-     pale tek kad naslov počne da se gasi (videti tileOpacity niže).
+     ⚠ U MIROVANJU JE translateZ NULA, ne `d`. Ovo je bila ključna zabuna: `d`
+     jeste zapisano u njihovom CSS-u, ali čim se njihov skript upali, on piše
+     translateZ od nule naviše. Zato pločice na prvom ekranu stoje TAČNO na ovim
+     koordinatama — razasute preko celog kadra, raznih veličina, neke preko
+     naslova i neke odsečene ivicom ekrana (x = −0.05 je namerno van kadra).
+     `d` odlučuje SAMO koliko brzo koja poleti ka posmatraču kad skrol krene.
 
-     z0 je NAMERNO neravnomeran: da su na pravilnom razmaku, pločice bi
-     prolazile u taktu i pokret bi se čitao kao mehanička povorka umesto kao
-     prolazak kroz prostor.
+     Zato su i vidljive odmah, bez skrola — traženo eksplicitno, i tako je i na
+     referenci.
   ========================================================================== */
   /* ⚠ SAMO FOTOGRAFIJE. assets/values/*.png i assets/bb-zivot/benefit-*.png su
      ikonice — providni PNG-ovi sa sitnim žutim glifom — i u ovom polju se čitaju
@@ -103,19 +117,27 @@
   ];
 
   var TILES = [
-    { x: 11, y: 20, w: 15, ar: 0.72, z: -2450 },
-    { x: 31, y:  9, w: 12, ar: 1.35, z: -1500 },
-    { x: 53, y: 12, w: 10, ar: 0.80, z: -2850 },
-    { x: 73, y:  8, w: 14, ar: 1.30, z: -1850 },
-    { x: 90, y: 23, w: 11, ar: 0.75, z: -2600 },
-    { x: 95, y: 52, w: 16, ar: 1.20, z: -1250 },
-    { x: 83, y: 80, w: 12, ar: 0.78, z: -2200 },
-    { x: 63, y: 92, w: 15, ar: 1.40, z: -1650 },
-    { x: 39, y: 88, w: 11, ar: 0.82, z: -2950 },
-    { x: 18, y: 79, w: 14, ar: 1.25, z: -1400 },
-    { x:  5, y: 50, w: 12, ar: 0.76, z: -2050 },
-    { x: 78, y: 40, w:  9, ar: 1.10, z: -3200 }
+    { x: -0.0500, y: 0.2100, w: 0.1150, ar: 1.00, d:  720 },
+    { x:  0.2900, y: 0.1500, w: 0.0920, ar: 1.40, d:  360 },
+    { x:  0.3600, y: 0.0300, w: 0.1150, ar: 1.10, d: 1080 },
+    { x:  0.6240, y: 0.1100, w: 0.0760, ar: 0.90, d:  360 },
+    { x:  0.8990, y: 0.0500, w: 0.0610, ar: 1.40, d:  360 },
+    { x:  0.7980, y: 0.2800, w: 0.1320, ar: 0.90, d: 1080 },
+    { x:  0.9680, y: 0.6041, w: 0.0470, ar: 1.10, d:  360 },
+    { x:  0.7000, y: 0.7545, w: 0.1500, ar: 1.40, d:  720 },
+    { x:  0.5370, y: 0.8796, w: 0.0830, ar: 1.40, d:  540 },
+    { x:  0.1600, y: 0.6953, w: 0.1050, ar: 1.10, d:  360 },
+    { x:  0.2900, y: 0.6688, w: 0.0590, ar: 1.15, d:  720 },
+    { x:  0.0750, y: 0.4630, w: 0.0520, ar: 1.20, d:  360 }
   ];
+
+  /* Koliko daleko svaka pločica odleti do kraja uvoda, kao višekratnik svoje
+     dubinske konstante. IZMERENO na referenci: pločica sa d=720 završi na
+     translateZ 1080, ona sa d=360 na 540 — dakle 1.5 × d u oba slučaja.
+     Posledica je da one sa velikim d PROĐU pored posmatrača (1.5·1080 = 1620 je
+     iza ravni kamere na 100vh), a one sa malim d samo narastu i ostanu. To je
+     ono što pokretu daje dubinu umesto da celo polje ode u istom potezu. */
+  var DEPTH_TRAVEL = 1.5;
 
   var tiles = [];
   var words = [];
@@ -186,41 +208,28 @@
      čista aritmetika, jer ga Lenis zove na svaki scroll tick (isto pravilo po
      kom radi updateHero varijacije #1).
   ========================================================================== */
-  var vw = 0, vh = 0, unit = 0;
+  var vw = 0, vh = 0;
   var wordDirs = [];
 
   function measure() {
     vw = document.documentElement.clientWidth;
     vh = window.innerHeight;
-    unit = Math.min(vw, vh);
+    PERSPECTIVE = vh;                 // drži se uz `perspective: 100vh` u CSS-u
 
-    /* ⚠ PLOČICE SE POSTAVLJAJU U PROSTORU, NE NA EKRANU — ovo je jedina
-       netrivijalna računica u fajlu i lako se pogreši.
+    /* Raspored je doslovno onaj sa reference: left/top su LEVA GORNJA IVICA i
+       postavljaju se direktno, bez ijedne korekcije za dubinu. To sme baš zato
+       što je translateZ u mirovanju nula — pločica na prvom ekranu stoji tačno
+       ovde, u ovoj veličini. Perspektiva ulazi u igru tek kad skrol pomeri z.
 
-       x/y/w u TILES su gde pločica treba da se VIDI, ali perspektiva sve što
-       je duboko vuče ka nedogledu (sredini kadra) i smanjuje. Postave li se te
-       vrednosti direktno kao left/top/width, na dubini od −2500 se celo polje
-       skupi u gomilicu u sredini ekrana. (Prvo je tako i bilo.)
-
-       Zato se svaka vrednost pomnoži faktorom sopstvene dubine
-         k = (P − z0) / P
-       koji je tačno inverz perspektivnog umanjenja na toj dubini. Pločica time
-       na svom z0 pada tačno na projektovano mesto i u projektovanoj veličini, a
-       kako prilazi kameri i k opada, sama se širi ka ivicama kadra — to
-       razmicanje je posledica prostora, ne posebne animacije. */
+       (Ranija verzija je množila sve faktorom dubine k = (P − z)/P jer je
+       pločice startovala duboko u sceni; sa startom na nuli ta korekcija nema
+       šta da ispravlja i samo bi izobličila prepisane koordinate.) */
     tiles.forEach(function (t) {
-      var k = (PERSPECTIVE - t.def.z) / PERSPECTIVE;
-      var w = unit * t.def.w / 100 * k;
-      var h = w / t.def.ar;
-      // Odstojanje od centra kadra takođe ide kroz k — inače bi veličina bila
-      // tačna a raspored i dalje zgužvan u sredinu.
-      var cx = vw / 2 + (vw * t.def.x / 100 - vw / 2) * k;
-      var cy = vh / 2 + (vh * t.def.y / 100 - vh / 2) * k;
+      var w = vw * t.def.w;
       t.el.style.width = w + 'px';
-      t.el.style.height = h + 'px';
-      // left/top nose CENTAR pločice, pa ide -50%/-50% u transformu niže.
-      t.el.style.left = (cx - w / 2) + 'px';
-      t.el.style.top = (cy - h / 2) + 'px';
+      t.el.style.height = (w / t.def.ar) + 'px';
+      t.el.style.left = (vw * t.def.x) + 'px';
+      t.el.style.top = (vh * t.def.y) + 'px';
     });
 
     // Smer razmicanja reči: čita se JEDNOM, iz mirnog stanja naslova. Mora se
@@ -247,25 +256,23 @@
     var e = clamp(p / PHASE.p2End, 0, 1);          // napredak uvoda 0→1
 
     /* ---- Kamera. Jedan broj vozi celu scenu: koliko je posmatrač odmakao
-       napred. Sve pločice i naslov dele isti pomeraj, pa se kadar čita kao
-       jedan prostor kroz koji se prolazi. */
-    var camZ = easeInOut(e) * 3400;
+       napred. Svaka pločica taj napredak množi SVOJOM dubinskom konstantom, pa
+       se polje ne pomera u bloku nego se raslojava — bliže lete brže. */
+    var camT = easeInOut(e);
 
-    /* ---- Pločice */
+    /* ---- Pločice.
+       ⚠ NEMA ULAZNOG FADE-A. Pločice se vide od prvog paint-a, pre ijednog
+       piksela skrola — traženo eksplicitno, i tako je i na referenci. Jedino
+       gašenje je ono na kraju puta, kad pločica stigne do ravni kamere: bez
+       njega bi nestala punom neprozirnošću i pročitala se kao rez, a ne kao
+       prolazak pored posmatrača. */
     for (var i = 0; i < tiles.length; i++) {
       var t = tiles[i];
-      var tz = t.def.z + camZ;
-      // Iza kamere ili tik uz nju — sklanja se iz posla. display umesto opacity:
-      // pločica koja je prošla ne treba ni da se kompozituje.
+      var tz = t.def.d * DEPTH_TRAVEL * camT;
+      // Stigla je do ravni kamere ili je prošla — nema šta da se crta.
       if (tz > PERSPECTIVE - 40) { t.el.style.opacity = '0'; continue; }
-
-      // Pale se zajedno na početku skrola (na p=0 kadar je čist naslov), a gase
-      // se pojedinačno kako prilaze ravni kamere — bliska pločica koja bi
-      // nestala punom neprozirnošću čita se kao rez, ne kao prolazak.
-      var opIn = span(e, 0.02, 0.14);
-      var opOut = clamp((PERSPECTIVE - tz) / 520, 0, 1);
-      t.el.style.opacity = String(opIn * opOut);
-      t.el.style.transform = 'translate(-50%, -50%) translateZ(' + tz.toFixed(1) + 'px)';
+      t.el.style.opacity = clamp((PERSPECTIVE - tz) / (PERSPECTIVE * 0.45), 0, 1).toFixed(3);
+      t.el.style.transform = 'translateZ(' + tz.toFixed(1) + 'px)';
     }
 
     /* ---- Naslov: razmicanje + gašenje.

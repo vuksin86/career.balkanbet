@@ -55,23 +55,28 @@
   z-index: 12;
   overflow: hidden;
   pointer-events: none;              /* ukras — ne sme da jede klik na loptu */
-  perspective: 1000px;
+  /* 100vh, isto kao na referenci (izmereno: 720px na kadru visokom 720, 900px
+     na 900). ⚠ PERSPECTIVE u variation-2.js mora ostati isti broj — iz njega se
+     računa kad pločica stigne do ravni kamere. */
+  perspective: 100vh;
   perspective-origin: 50% 50%;
   transform-style: preserve-3d;
 }
 
 /* Pojedinačna pločica. left/top/width/height postavlja skript (raspored je
    podatak, ne stil), ovde stoji samo ono što je isto za sve.
-   backface-visibility + translateZ(0) na slici drže teksturu oštrom dok
-   pločica raste — bez toga Chrome rasterizuje jednom pa razvlači bitmapu. */
+
+   BEZ RADIJUSA I BEZ SENKE — tako je i na referenci (izmereno border-radius: 0):
+   fotografije stoje kao goli isečci, a ne kao kartice. Ranije su imale 10px i
+   tešku senku, što ih je čitalo kao UI elemente umesto kao slike u prostoru.
+
+   backface-visibility + translateZ(0) na slici drže teksturu oštrom dok pločica
+   raste — bez toga Chrome rasterizuje jednom pa razvlači bitmapu. */
 [data-var="2"] .v2-tile {
   position: absolute;
   will-change: transform, opacity;
-  border-radius: 10px;
   overflow: hidden;
   background: #0e0d0e;
-  box-shadow: 0 18px 50px rgba(0,0,0,.45);
-  opacity: 0;
 }
 [data-var="2"] .v2-tile img {
   display: block;
