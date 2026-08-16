@@ -14,7 +14,24 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(git ls-remote *)",
-      "PowerShell(git -C \"C:\\\\Users\\\\Vukasin\\\\Desktop\\\\klijent-projekti\\\\careers-balkanbet\" status --short)"
+      "PowerShell(git -C \"C:\\\\Users\\\\Vukasin\\\\Desktop\\\\klijent-projekti\\\\careers-balkanbet\" status --short)",
+      "PowerShell(Write-Output \"--- angelani folder ---\"; Test-Path \"C:\\\\Users\\\\Vukasin\\\\Desktop\\\\klijent-projekti\\\\angelani\"; Write-Output \"--- ffmpeg ---\"; $f = Get-Command ffmpeg -ErrorAction SilentlyContinue; if \\($f\\) { $f.Source } else { \"NEMA\" }; Write-Output \"--- node ---\"; $n = Get-Command node -ErrorAction SilentlyContinue; if \\($n\\) { node -v } else { \"NEMA\" }; Write-Output \"--- git ---\"; git --version)",
+      "PowerShell(Set-Location \"C:\\\\Users\\\\Vukasin\\\\Desktop\\\\klijent-projekti\\\\angelani\"; $f = Get-Item \"hero sajt bnw.mp4\"; Write-Output \"Size: $\\([math]::Round\\($f.Length/1MB,2\\)\\) MB\"; Write-Output \"Modified: $\\($f.LastWriteTime\\)\"; Write-Output \"--- svi fajlovi u root-u \\(bez agentic-awesome i skills\\) ---\"; Get-ChildItem -File | Where-Object { $_.Name -ne \"hero sajt bnw.mp4\" } | Format-Table Name, Length)",
+      "PowerShell(winget install --id=Gyan.FFmpeg -e --accept-package-agreements --accept-source-agreements --silent)",
+      "PowerShell($env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); ffmpeg -version 2>&1 | Select-Object -First 3; Write-Output \"---PROBE---\"; ffprobe -v error -select_streams v:0 -show_entries stream=width,height,r_frame_rate,duration,codec_name -of default=noprint_wrappers=1 \"C:\\\\Users\\\\Vukasin\\\\Desktop\\\\klijent-projekti\\\\angelani\\\\assets\\\\video\\\\hero sajt bnw.mp4\")",
+      "PowerShell($env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); ffprobe -v error -show_entries format=duration,size,bit_rate -show_entries stream=nb_frames,duration,avg_frame_rate -of default=noprint_wrappers=1 \"C:\\\\Users\\\\Vukasin\\\\Desktop\\\\klijent-projekti\\\\angelani\\\\assets\\\\video\\\\hero sajt bnw.mp4\")",
+      "PowerShell($env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); ffprobe -v error -show_streams \"C:\\\\Users\\\\Vukasin\\\\Desktop\\\\klijent-projekti\\\\angelani\\\\assets\\\\video\\\\hero sajt bnw.mp4\")",
+      "PowerShell(\\(Get-Command ffmpeg\\).Source)",
+      "Bash(mkdir -p /c/Users/Vukasin/AppData/Local/Temp/claude/C--Users-Vukasin-Desktop-klijent-projekti-careers-balkanbet/43e2a846-1bb5-402f-b100-564eed55da98/scratchpad/preview)",
+      "Bash(/c/Users/Vukasin/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0-full_build/bin/ffmpeg.exe -y -i '/c/Users/Vukasin/Desktop/klijent-projekti/angelani/assets/video/hero sajt bnw.mp4' -vf 'select='\\\\''eq\\(n\\\\,0\\)+eq\\(n\\\\,29\\)+eq\\(n\\\\,59\\)'\\\\'',scale=480:-2' -vsync 0 /c/Users/Vukasin/AppData/Local/Temp/claude/C--Users-Vukasin-Desktop-klijent-projekti-careers-balkanbet/43e2a846-1bb5-402f-b100-564eed55da98/scratchpad/preview/f_%02d.jpg)",
+      "Bash(/c/Users/Vukasin/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-9.0-full_build/bin/ffmpeg.exe -y -i '/c/Users/Vukasin/Desktop/klijent-projekti/angelani/assets/video/hero sajt bnw.mp4' -vf 'select='\\\\''eq\\(n\\\\,0\\)+eq\\(n\\\\,29\\)+eq\\(n\\\\,59\\)'\\\\'',scale=480:-2' -fps_mode vfr /c/Users/Vukasin/AppData/Local/Temp/claude/C--Users-Vukasin-Desktop-klijent-projekti-careers-balkanbet/43e2a846-1bb5-402f-b100-564eed55da98/scratchpad/preview/f_%02d.jpg)",
+      "Bash(npm init *)",
+      "Bash(npm i *)",
+      "Bash(node -e ' *)",
+      "Bash(node swap-toggle.mjs)",
+      "Bash(node shot.mjs \"http://localhost:4173/index.html\" v2 \"0.10,0.22,0.36,0.50,0.64\" --var=2 --w=1440 --h=900)",
+      "Bash(node shot.mjs \"http://localhost:4173/index.html\" v2exit \"0.66,0.80,0.92,1.0\" --var=2 --w=1440 --h=900)",
+      "Bash(node shot.mjs \"http://localhost:4173/index.html\" v1 \"0,0.30,0.49,0.75,1.0\" --var=1 --w=1440 --h=900)"
     ]
   }
 }

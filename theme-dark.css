@@ -411,59 +411,52 @@
   [data-theme="dark"] #apply-done { background: var(--dk-glass); }
 
   /* ##########################################################################
-     PREKIDAČ TEME — demo kontrola, NIJE deo dizajna sajta
+     PREKIDAČ VARIJACIJE — demo kontrola, NIJE deo dizajna sajta
 
-     Namerno je IZVAN [data-theme="dark"] opsega: mora se videti i u svetloj
-     varijanti, inače nema čime da se uđe u tamnu. Markup mu pravi skript na dnu
-     index.html i listanje.html, pa u HTML-u stranica ne stoji ništa.
+     Nasledio je mesto i izgled ranijeg prekidača TEME (kružno dugme 44px dole
+     desno). Svetle teme više nema, pa dugme sada bira DIZAJN, ne temu: u krugu
+     stoji "#1" ili "#2". Markup mu pravi skript na dnu index.html i
+     listanje.html, pa u HTML-u stranica ne stoji ništa.
 
-     Kad klijent izabere varijantu, briše se i ovaj blok i skript — sajt ostaje
-     bez ijednog traga prekidača.
+     Stoji u ovom fajlu a ne u styles.css jer je, kao i tamna tema, sloj koji se
+     briše u jednom potezu kad klijent izabere varijantu.
   ########################################################################## */
-  .theme-toggle {
+  .var-toggle {
     position: fixed;
     right: 22px;
     bottom: 22px;
     z-index: 60;                 /* iznad headera (50) */
-    /* Kružno dugme, SAMO ikonica — tekstualna oznaka je uklonjena na zahtev.
-       Fiksne dimenzije umesto paddinga: bez teksta unutra pilula bi se stegla
-       na širinu glifa i ispala kao ovalčić, a ne krug. */
+    /* Fiksne dimenzije umesto paddinga: sa dva-tri znaka unutra pilula bi se
+       stegla na širinu teksta i ispala kao ovalčić, a ne krug. */
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 44px;
     height: 44px;
     padding: 0;
-    border: 1px solid rgba(255,255,255,.28);
+    border: 1px solid rgba(255,255,255,.22);
     border-radius: 999px;
-    background: rgba(35,31,32,.55);
+    background: rgba(255,255,255,.10);
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     font-family: inherit;
     font-size: 14px;
     font-weight: 500;
+    letter-spacing: -.02em;
     color: #fff;
     cursor: pointer;
     transition: background .2s ease, border-color .2s ease, transform .2s ease;
   }
-  .theme-toggle:hover {
-    background: rgba(35,31,32,.78);
+  .var-toggle:hover {
+    background: rgba(255,255,255,.18);
     border-color: rgba(255,255,255,.45);
     transform: translateY(-2px);
   }
-  .theme-toggle svg { flex: 0 0 auto; }
-  /* Ista pilula na tamnoj stranici mora da bude svetlija od podloge, a ne
-     tamnija — inače se stopi sa dnom stranice. */
-  [data-theme="dark"] .theme-toggle {
-    background: rgba(255,255,255,.10);
-    border-color: rgba(255,255,255,.22);
-  }
-  [data-theme="dark"] .theme-toggle:hover { background: rgba(255,255,255,.18); }
 
   @media (max-width: 640px) {
-    .theme-toggle { right: 14px; bottom: 14px; width: 40px; height: 40px; }
+    .var-toggle { right: 14px; bottom: 14px; width: 40px; height: 40px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .theme-toggle { transition: none; }
-    .theme-toggle:hover { transform: none; }
+    .var-toggle { transition: none; }
+    .var-toggle:hover { transform: none; }
   }

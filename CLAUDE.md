@@ -22,10 +22,14 @@ kaže drugačije.
   .talent-cta, .fld-* polja forme, .info-card, prefers-reduced-motion blok). Stoji u root-u NAMERNO - url() putanje do fontova su relativne 
   (assets/fonts/...), pa bi premeštanje u podfolder polomilo fontove. CSS više NIJE 
   inline u index.html
-- **theme-dark.css** - TAMNA VARIJANTA, aditivni sloj i **PODRAZUMEVANA tema**. 
-  Učitava se u index.html **i u listanje.html**, posle styles.css. Pravila važe dok 
-  `<html>` ima `data-theme="dark"`, a taj atribut stoji ZAKUCAN u markupu obe stranice. 
-  oglas-primer.html ga NE učitava i ostaje svetla. Videti sekciju "Tamna varijanta" niže
+- **theme-dark.css** - TAMNA TEMA, aditivni sloj i **JEDINA tema sajta**. Učitava se na 
+  SVE TRI stranice posle styles.css. Pravila važe dok `<html>` ima `data-theme="dark"`, a 
+  taj atribut stoji ZAKUCAN u markupu i NIŠTA GA VIŠE NE SKIDA - svetla varijanta je 
+  povučena na zahtev. Ovde živi i `.var-toggle` (prekidač varijacija). Videti sekciju 
+  "Tamna tema" niže
+- **variation-2.css** / **variation-2.js** - VARIJACIJA #2 dizajna, za sada samo hero 
+  naslovne. Sva pravila su pod `[data-var="2"]`, pa bez tog atributa fajlovi ne rade 
+  ništa i varijacija #1 (original) ostaje netaknuta. Videti sekciju "Varijacije dizajna"
 - **brand-setup.js** - Tailwind (Play CDN) config sa brend tokenima, učitava se odmah 
   posle CDN skripte na sve tri stranice
 - **job-filter.js** - custom dropdown-i za filter barove + srpska množina za brojive 
@@ -143,9 +147,13 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      kadar. Ako logo ikad stigne u potpuno beloj varijanti za ovo stanje, senka može da ode
    BalkanBetLogo je visok 60px (ranije 51.2px). Traka NEMA svoju fiksnu visinu - ona je logo 
    + py-3 wrappera, pa dizanje logotipa je ono što diže header, sa ~76px na ~85px. 
-   nav linkovi (Poslovi u lokalima, Posao u centrali, O nama, Život u Balkan Betu, Kontakt) 
-   - caps-lock, 16px, Medium, letter-spacing -0.06em, padding 30px levo/desno na celom 
-   nav baru; CTA dugme "Pronađi posao" desno - bold, puna žuta #FDB813 sa BELIM slovima 
+   **NAV LINKOVI, tačan redosled (traženo eksplicitno):** „O kompaniji", „Život u Balkan 
+   Betu", „Poslovi u lokalima", „Poslovi u centrali", „CSR", „Kontakt". Šest ih je, ranije 
+   pet (Poslovi u lokalima / Posao u centrali / O nama / Život u Balkan Betu / Kontakt) - 
+   „O nama" je postalo „O kompaniji", „Posao u centrali" je prešao u množinu, „CSR" je nov, 
+   i ceo redosled je promenjen. U markupu stoje u rečeničnom slučaju; verzali dolaze iz 
+   `uppercase` klase, po opštem pravilu sajta. Caps-lock, 16px, Medium, letter-spacing 
+   -0.06em, padding 30px levo/desno na celom nav baru; CTA dugme "Pronađi posao" desno - bold, puna žuta #FDB813 sa BELIM slovima 
    (ista boja kao "Prijavi se" dugmad na karticama pozicija). JEDINI CTA na sajtu koji 
    NIJE caps-lock - eksplicitan zahtev. Ranije je imao .cta-gradient pozadinu i uppercase, 
    ne vraćati
@@ -534,7 +542,7 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
 - Ranije uklonjeno: "Naše poslovnice" (Leaflet mapa Srbije, zajedno sa Leaflet CDN-om)
 
 ## listanje.html (listing)
-**TAMNA JE PODRAZUMEVANA I OVDE** - stranica učitava theme-dark.css i nosi 
+**TAMNA JE I OVDE JEDINA TEMA** - stranica učitava theme-dark.css i nosi 
 `data-theme="dark"` zakucan na `<html>`, isto kao naslovna (videti "Tamna varijanta" niže).
 Struktura: hero BEZ PODLOGE (.page-hero--flush) sa naslovom "Postani deo Balkan Bet tima" → 
 search bar (.search-band) → svetli panel sa 16 kartica pozicija (4 u redu) + CTA za 
@@ -767,10 +775,19 @@ manje dimenzije ~25vw/25vw/20vw radi vidljivosti pokreta, brže animacije ~16s/1
 boje #FAA61A/#FFCB05. Sekcije sa čvrstom pozadinom (bela/#ECECEC) prekrivaju je normalno; 
 orange sekcije je puštaju da se vidi kroz njih.
 
-## Tamna varijanta (theme-dark.css)
-⚠ **TAMNA JE PODRAZUMEVANA.** Naslovna I LISTANJE se otvaraju tamni; svetla i dalje postoji 
-cela i do nje se stiže prekidačem ili preko `?tema=light`. Obe varijante žive na ISTIM 
-fajlovima. Nije napravljen drugi `index-dark.html` NAMERNO: header i footer moraju ostati 
+## Tamna tema (theme-dark.css)
+⚠ **TAMNA JE JEDINA TEMA.** Sve tri stranice se otvaraju tamne i NEMA IZLAZA IZ TOGA - 
+svetla varijanta je povučena na zahtev ("neće biti light teme, samo dark"). Uklonjeni su 
+prekidač teme, `?tema=light` i localStorage ključ `bb-tema`; kružno dugme dole desno je 
+ostalo na istom mestu ali sada bira VARIJACIJU dizajna (videti "Varijacije dizajna").
+
+⚠ ŠTA NIJE URAĐENO, i namerno: svetla pravila u styles.css NISU obrisana niti su tamna 
+presuta u njih. Ona su i dalje osnovni sloj preko kog theme-dark.css piše - samo se do njih 
+više ne može doći iz UI-ja. Presipanje je veliki i nepovratan refaktor jednog jedinog 
+stylesheet-a koji dele sve tri stranice; radi se tek kad se dizajn zaključi. Do tada je 
+"nema svetle teme" sprovedeno na nivou pristupa, ne na nivou fajlova.
+
+Nije napravljen drugi `index-dark.html` NAMERNO: header i footer moraju ostati 
 na tri byte-identične kopije, a duplikat bi ih digao na četiri i svaku buduću ispravku 
 udvostručio. Markup stranica se za temu NE dira uopšte osim `<html>` taga i `<head>`-a.
 
@@ -789,16 +806,9 @@ obe varijante. Stvarno svoja su samo dva izuzetka:
 - Uključuje je atribut `data-theme="dark"` na `<html>`, koji STOJI ZAKUCAN U MARKUPU. Tako 
   važi od prvog pixela - pre nego što se izvrši ijedna linija JS-a, i onda kad JS ne radi. 
   Ranije ga je postavljao boot skript, pa je postojao rizik od bleska svetle teme
-- Boot skript u `<head>`-u (odmah posle `<link>`-a) radi OBRNUTO od ranijeg: on je samo 
-  IZLAZ iz tamne, tj. SKIDA atribut kad je tražena svetla (`?tema=light` ili localStorage 
-  ključ `bb-tema`). MORA ostati u `<head>`-u - skidanje kasnije daje blesak tamne pre svetle
-- URL parametar pobeđuje zapamćeni izbor, da se varijanta može poslati kao link
-- Prekidač (`.theme-toggle`, KRUŽNO dugme 44px dole desno, SAMO IKONICA) PRAVI JS na dnu 
-  index.html I listanje.html, ne stoji u markupu. Tekstualna oznaka ("Svetla varijanta") je uklonjena na 
-  zahtev, pa značenje nosi samo glif - `aria-label` i `title` su jedini tekst i moraju se 
-  održavati uz ikonicu. Dimenzije su fiksne, ne padding: bez teksta unutra pilula bi se 
-  stegla na širinu glifa i ispala ovalna umesto okrugla. Njegov CSS je u theme-dark.css ali IZVAN `[data-theme]` opsega - mora se videti 
-  i u svetloj temi. To je DEMO kontrola, ne deo dizajna sajta
+- Boot skript u `<head>`-u više NE dira temu - on sada postavlja `data-var` (videti 
+  "Varijacije dizajna"). Raniji skript koji je SKIDAO `data-theme` na `?tema=light` je 
+  obrisan sa sve tri stranice
 - Specifičnost: `[data-theme="dark"] .opening-card` (0,2,0) pobeđuje Tailwindovu 
   `.bg-white` (0,1,0), pa !important nigde ne treba OSIM kod stat blokova mozaika - njima 
   JS piše boju u inline style, a to se bez !important ne može nadjačati. Dva tona se 
@@ -865,18 +875,71 @@ obe varijante. Stvarno svoja su samo dva izuzetka:
   "Saznaj više o nama", koji na hover menja i podlogu - njegovo pravilo je specifičnije
 - Proces zapošljavanja: tuš (#231F20) ide u #F5F1EC, pa rukopis čita kao kreda. Debljina 
   strelica se NE dira - uparena je sa Lumierinim perom i ne zavisi od boje
-- ⚠ OPSEG JE NASLOVNA + LISTANJE. Ostaje SAMO `oglas-primer.html`, koja ovaj fajl ne 
-  učitava i otvara se svetla - vidljiv nesklad kad se sa tamnog listanja klikne "Prijavi 
-  se". Za širenje i na nju treba: kopirati `<link>` + boot skript + `data-theme` na 
-  `<html>`, dopisati pravila za `.fld-*` (forma) i `.info-card` (tri kartice "Saznaj više 
-  o nama"), i odlučiti da li njen `.page-hero` (bez `--flush`, dakle sa tamnom trakom) 
-  ostaje takav ili i on ide na auroru
-- ⚠ `?tema=` i localStorage ključ `bb-tema` su ZAJEDNIČKI za obe stranice, pa izbor 
-  napravljen na jednoj važi i na drugoj. Prekidač (`.theme-toggle`) pravi skript na dnu 
-  OBE stranice - ako se menja, menja se na oba mesta
-- KAD SE VARIJANTA ZAKLJUČA: tamna → pravila se presipaju u styles.css, a theme-dark.css, 
-  boot skript i prekidač nestaju; svetla → briše se theme-dark.css, `<link>`, boot skript, 
-  `data-theme` sa `<html>` i blok prekidača na dnu index.html
+- OPSEG JE SVE TRI STRANICE - `oglas-primer.html` je uključena i više nema onog nesklada 
+  kad se sa tamnog listanja klikne "Prijavi se"
+- KAD SE TEMA ZAKLJUČA: pravila se presipaju u styles.css, a theme-dark.css i njegov 
+  `<link>` nestaju. `data-theme="dark"` sa `<html>` tada takođe ide, jer ga niko više ne 
+  čita
+
+## Varijacije dizajna (variation-2.css / variation-2.js)
+Prekidač dole desno (kružno dugme 44px, `.var-toggle`) više NE bira temu nego DIZAJN. U 
+krugu stoji `#1` ili `#2`.
+- **#1** je original - sve što je opisano gore u ovom fajlu. Bez `data-var` atributa.
+- **#2** je nova verzija. Za sada menja SAMO HERO NASLOVNE; sve ispod heroja i cele druge 
+  dve stranice su identične u obe.
+
+Mehanika je namerno ista kao kod teme, jer je dokazano dobra na ovom projektu:
+- atribut `data-var="2"` na `<html>`, postavlja ga boot skript u `<head>`-u SVE TRI 
+  stranice (`?var=2` iz URL-a ili localStorage ključ `bb-var`; URL pobeđuje, da se 
+  varijacija može poslati kao link). MORA ostati u `<head>`-u - postavljanje kasnije daje 
+  vidljiv blesak varijacije #1
+- `variation-2.css` se učitava SAMO na index.html; svako pravilo u njemu je pod 
+  `[data-var="2"]`, pa fajl bez atributa ne radi ništa
+- ⚠ **PREKIDAČ RELOADUJE STRANICU.** Varijacija #2 gradi svoj hero iz skripta i menja 
+  geometriju naslovne (spacer 493vh naspram 373vh, sva merenja), pa je prebacivanje uživo 
+  značilo rušenje i ponovno dizanje pola stranice
+- prekidač postoji i na listanju i na oglasu, iako tamo ne menja ništa - da izbor ne bi 
+  ispario kad se napusti naslovna, i da broj u krugu bude tačan
+
+### Varijacija #2 - hero naslovne
+Rekonstrukcija uvodne animacije sa **telescope.fyi** (traženo eksplicitno, "identična kao 
+na tom sajtu"): polje sitnih fotografija oko naslova prolazi kroz kadar ka posmatraču, 
+naslov se razmiče u stranu i gasi, a u sredini se zumira glavni medij. Kod nas je taj medij 
+POSTOJEĆI hero video sa search barom, umesto njihove slike.
+- Naslov je ISTI tekst, ISTI prelom u tri reda i ISTA boja kao u #1 ("Uskoči u igru." žuta, 
+  ostatak beo) - traženo tako. Skript samo obavija svaku reč u `<span class="v2-word">`, a 
+  `<br>`-ove i `.hero-heading__lead` ne dira, pa prelom i boja dolaze iz postojećih pravila
+- ⚠ **JEDNA SCENA, JEDNA PERSPEKTIVA.** Ni pločice ni reči nemaju sopstvenu formulu za 
+  razmicanje - svi dobijaju samo `translateZ`, a širenje ka ivicama crta sama perspektiva 
+  (`perspective: 1000px` na `#v2-scene`). Ako se ovo menja, menjati DUBINU, ne x/y: čim se 
+  x/y anima ručno, pokret prestane da izgleda kao jedan prostor
+- ⚠ **PLOČICE SE POSTAVLJAJU U PROSTORU, NE NA EKRANU** - jedina netrivijalna računica u 
+  fajlu. x/y/w u nizu TILES su gde pločica treba da se VIDI, ali perspektiva sve duboko 
+  vuče ka nedogledu; postave li se te vrednosti direktno kao left/top/width, celo polje se 
+  na dubini od −2500 skupi u gomilicu u sredini ekrana (prvo je tako i bilo). Zato se svaka 
+  množi sa `k = (P − z0) / P`, inverzom perspektivnog umanjenja na toj dubini
+- ⚠ **SEARCH BAR SE SELI UNUTAR `#hero-media-box`** (samo u #2, radi to skript). To je ceo 
+  trik iza "video i search se zumiraju zajedno": kutija je tačno viewport, bar u njoj stoji 
+  na svojih 96px od dna, pa jedan `scale()` zumira oba i sleti na 1:1 - krajnji kadar je 
+  identičan varijaciji #1 do piksela, a dropdown-i i dalje rade
+- Kutija se SKALIRA, ne raste kroz width/height kao u #1. Skaliranje je jedino što zumira 
+  SADRŽAJ; menjanje dimenzija bi samo otkrivalo više videa umesto da mu prilazi
+- Naslov i zum se NAMERNO PREKLAPAJU. Prvo su išli jedan za drugim i sredina kadra je 
+  ostajala prazna nekoliko desetina skrola - čitalo se kao kvar. Sada video raste kroz 
+  procep koji reči otvaraju
+- Naslov koristi `scale()`, ne `translateZ`: `#hero-heading` nije u `#v2-scene` i nema 
+  perspektivnog pretka, pa Z tamo ne bi radio ništa
+- SAMO FOTOGRAFIJE u polju. `assets/values/*.png` i `benefit-*.png` su ikonice (providni 
+  PNG sa sitnim žutim glifom) i čitaju se kao prazni tamni pravougaonici - probano, 
+  izbačeno. Fotografija ima svega šest pa se ciklus ponavlja
+- TAJMING (razlomci uvodnog napretka `e`): pločice se pale 0.02→0.14, reči se razmiču 
+  0.06→0.72, naslov se gasi 0.42→0.72, zum ide 0.16→1.0
+- SPACER je 493vh (naspram 373vh u #1): P0 1vh | uvod 252vh | snap 10vh | izlazak 130vh. 
+  ⚠ **IZLAZAK MORA OSTATI 130vh** - na njemu stoji `margin-top: -130vh` sekcije #openings. 
+  Produžen je samo uvod. Razlomke drži `PHASE` u variation-2.js
+- ŠTA JE ZAJEDNIČKO: `updateHero()` u index.html i dalje je jedini scroll listener. Na vrhu 
+  računa izlaznu fazu i staklo headera, pa tek onda preda kadar varijaciji #2 - tako se to 
+  dvoje ne može razići između varijacija
 
 ## Pravila za dalji rad
 1. Pre bilo koje vizuelne izmene, PROVERI trenutno stanje u index.html (ne pretpostavljaj 
@@ -886,20 +949,24 @@ obe varijante. Stvarno svoja su samo dva izuzetka:
    picsum placeholder slike). Ako se dodaje nov sadržaj, mora biti na srpskom i sa 
    Balkan Bet podacima; pre nego što se javi da je gotovo, grepni sve tri stranice za 
    "kaizen|SOUL|SBC|picsum|Lorem" da ne bi nešto ostalo
-3. Kod svake izmene, sačuvaj fajl i po mogućnosti napravi screenshot za proveru pre 
-   nego što se javi da je gotovo. Ako Browser pane ne radi, radi headless Chrome:
-   `& "C:\Program Files\Google\Chrome\Application\chrome.exe" --headless=new --disable-gpu 
-   --hide-scrollbars --force-prefers-reduced-motion --virtual-time-budget=10000 
-   --window-size=1280,4300 --user-data-dir=<temp> --screenshot=<out.png> file:///<путanja>`
-   (`--force-prefers-reduced-motion` je bitan - inače se ulazne animacije uhvate 
-   nedovršene i tekst izgleda providno; vidi reduced-motion blok u styles.css). 
-   Praktično iskustvo: dodaj i `--no-sandbox` (bez njega Chrome često ne napiše PNG), 
-   a ako neki raniji headless proces visi, ubij SAMO njega 
-   (`Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" | ? CommandLine -like '*--headless*'`) 
-   - ne diraj korisnikov Chrome. Headless ne ume da skroluje: za snimak sekcija ispod 
-   heroja napravi PRIVREMENU kopiju (npr. _shot.html u root-u, da relativne putanje rade) 
-   sa `#hero-spacer{height:0}` `#hero-stage{display:none}` `#openings{margin-top:0}`, 
-   snimi je u visokom prozoru (npr. 1440x3400) i OBRIŠI kopiju posle
+3. Kod svake izmene, sačuvaj fajl i napravi screenshot za proveru pre nego što se javi 
+   da je gotovo.
+   **NAJBOLJI ALAT: PLAYWRIGHT** (traženo eksplicitno da se ne ostaje na headless Chrome-u).
+   Ceo sajt je scroll-driven, a headless Chrome ne ume da skroluje - sa njim se hero uopšte 
+   ne može proveriti bez sakaćenja stranice privremenom kopijom. Playwright ume, i ume da 
+   klikne, izmeri i pročita konzolu u istom prolazu.
+   - `npm i playwright` u scratchpad folder, pa `chromium.launch({channel:'chrome'})` - 
+     koristi VEĆ INSTALIRAN Google Chrome, pa nema preuzimanja browsera. ⚠ `npx playwright 
+     install` NE TREBA i ume da promaši: keširani browseri na ovoj mašini su novijeg builda 
+     od onog koji npm paket očekuje, pa `launch()` bez `channel` puca na "Executable 
+     doesn't exist"
+   - Server je `preview_start {name:'static-preview'}` na `http://localhost:4173`
+   - ⚠ SCROLL SE MORA SAČEKATI. Lenis izglađuje vrednost koju hero čita, pa snimak odmah 
+     posle `window.scrollTo` uhvati kadar na pola puta. NE spavati fiksno i NE dodavati 
+     `window.lenis` u produkcijski kod - čekati IZLAZ: poll-uj `transform` na 
+     `#hero-media-box` i `#hero-heading` dok se ne poklope u dva uzastopna frejma
+   - Harness koji sve to radi: `shot.mjs` u scratchpad folderu 
+     (`node shot.mjs <url> <prefix> <razlomci> --var=2 --w=1440 --h=900`)
 4. Ne diraj animiranu pozadinu (.animated-bg) osim ako se eksplicitno ne traži
 5. Izmena koja se tiče izgleda komponente ide u styles.css (deli je svih troje stranica), 
    NE u <style> na pojedinačnoj stranici - inače stranice počnu da se razilaze

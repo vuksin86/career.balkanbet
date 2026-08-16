@@ -1,8 +1,11 @@
 ﻿<!DOCTYPE html>
-<!-- data-theme="dark" stoji U MARKUPU, ne postavlja ga skript: tamna je sada
-     PODRAZUMEVANA varijanta, pa mora da važi od prvog pixela — pre nego što se
-     izvrši ijedna linija JS-a, i onda kad JS ne radi uopšte. Skript u <head>-u
-     ispod je sada samo izlaz iz nje (?tema=light ili zapamćen izbor). -->
+<!-- data-theme="dark" stoji U MARKUPU i NEMA IZLAZA IZ NJEGA: sajt je sada
+     samo taman. Svetla varijanta je povučena na zahtev — ranije se do nje
+     stizalo prekidačem i preko ?tema=light, oboje je uklonjeno, kao i ključ
+     bb-tema u localStorage-u.
+
+     Prekidač dole desno više ne bira TEMU nego VARIJACIJU dizajna (#1 / #2);
+     njegov atribut je data-var i postavlja ga boot skript u <head>-u ispod. -->
 <html lang="sr" data-theme="dark">
 <head>
 <meta charset="UTF-8">
@@ -28,37 +31,46 @@
 <link rel="stylesheet" href="styles.css">
 
 <!-- ==========================================================================
-     TAMNA VARIJANTA — PODRAZUMEVANA tema ove stranice.
+     TAMNA VARIJANTA — jedina tema sajta.
 
      Fajl je i dalje aditivni sloj preko styles.css, ne zamena za njega: sva
-     pravila su pod [data-theme="dark"], a taj atribut sada stoji zakucan na
-     <html>. Skinuti atribut = svetla varijanta, koja i dalje postoji cela i
-     dostupna je preko prekidača dole desno i preko ?tema=light.
-
-     Zašto tema a ne drugi HTML fajl: markup stranice se ne dira uopšte, a
-     header i footer ostaju na tri byte-identične kopije umesto da odu na četiri.
-
-     OPSEG: samo naslovna. listanje.html i oglas-primer.html ovaj fajl ne
-     učitavaju i ostaju svetle — videti napomenu u CLAUDE.md.
+     pravila su pod [data-theme="dark"], a taj atribut stoji zakucan na <html>
+     i ništa ga više ne skida. Svetla pravila u styles.css su time postala
+     samo osnovni sloj preko kog ovaj piše — do njih se ne može doći iz UI-ja.
 ========================================================================== -->
 <link rel="stylesheet" href="theme-dark.css">
+
+<!-- ==========================================================================
+     VARIJACIJA #2 — alternativni dizajn naslovne (za sada samo hero).
+
+     Stil i skript stoje u zasebnim fajlovima, a ne u styles.css / u telu
+     stranice, iz istog razloga iz kog tamna tema ima svoj fajl: pravila su
+     sva pod [data-var="2"], pa varijacija #1 ostaje BITNO NETAKNUTA. CSS se
+     učitava uvek (bez atributa ne radi ništa), skript sam proverava atribut i
+     ne gradi ništa u varijaciji #1.
+
+     ⚠ Ovo je JEDINI fajl koji sme da zna za varijacije. Ne posipati
+     [data-var] selektore po styles.css — cela poenta je da se varijacija
+     skida brisanjem dva <link>/<script> reda.
+========================================================================== -->
+<link rel="stylesheet" href="variation-2.css">
 <script>
-  /* IZLAZ iz podrazumevane teme. Radi obrnuto od ranije verzije: tamna se više
-     ne pali odavde (za to je atribut u markupu, koji važi i pre JS-a i bez
-     njega), nego se ovde SKIDA kada je tražena svetla.
+  /* PREKIDAČ VARIJACIJE — boot deo. Mora ostati u <head>-u i pre <body>-ja:
+     varijacija #2 menja ceo hero, pa bi postavljanje atributa kasnije (npr. na
+     DOMContentLoaded) dalo vidljiv blesak varijacije #1 pre nje.
 
-     Mora ostati u <head>-u i pre <body>-ja: skidanje atributa kasnije, npr. na
-     DOMContentLoaded, daje vidljiv blesak tamne teme pre svetle.
+     Podrazumevana je #1, pa se atribut samo DODAJE kad je tražena #2 — isti
+     obrazac koji je ranije koristio izlaz iz tamne teme.
 
-     Prioritet: ?tema= iz URL-a pobeđuje zapamćeni izbor, da se varijanta može
+     Prioritet: ?var= iz URL-a pobeđuje zapamćeni izbor, da se varijacija može
      nekome poslati kao link koji uvek otvara ono što u njemu piše. */
   (function () {
-    var url = new URLSearchParams(location.search).get('tema');
+    var url = new URLSearchParams(location.search).get('var');
     var saved = null;
-    try { saved = localStorage.getItem('bb-tema'); } catch (e) { /* privatni režim */ }
-    var theme = url || saved;
-    if (theme === 'light') document.documentElement.removeAttribute('data-theme');
-    if (url) { try { localStorage.setItem('bb-tema', url); } catch (e) {} }
+    try { saved = localStorage.getItem('bb-var'); } catch (e) { /* privatni režim */ }
+    var v = url || saved;
+    if (v === '2') document.documentElement.setAttribute('data-var', '2');
+    if (url) { try { localStorage.setItem('bb-var', url); } catch (e) {} }
   })();
 </script>
 </head>
@@ -112,10 +124,11 @@
 
      NOTE for dev handoff: the "#" hrefs are placeholders. Swap them for real
      paths once the rest of the site exists, e.g.:
-       Poslovi u lokalima     -> poslovi-u-lokalima.html   (its own page, TBD)
-       Posao u centrali       -> posao-u-centrali.html
-       O nama                 -> o-nama.html
+       O kompaniji            -> o-kompaniji.html
        Život u Balkan Betu    -> zivot-u-balkan-betu.html
+       Poslovi u lokalima     -> poslovi-u-lokalima.html   (its own page, TBD)
+       Poslovi u centrali     -> poslovi-u-centrali.html
+       CSR                    -> csr.html
        Kontakt                -> kontakt.html
 ============================================================================ -->
 <header class="fixed top-0 inset-x-0 z-50">
@@ -133,10 +146,11 @@
 
     <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case -->
     <nav class="hidden md:flex items-center gap-5 text-base font-medium uppercase text-white whitespace-nowrap">
-      <a href="#" class="hover:text-brand-yellow transition-colors">Poslovi u lokalima</a>
-      <a href="#" class="hover:text-brand-yellow transition-colors">Posao u centrali</a>
-      <a href="#" class="hover:text-brand-yellow transition-colors">O nama</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">O kompaniji</a>
       <a href="#" class="hover:text-brand-yellow transition-colors">Život u Balkan Betu</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Poslovi u lokalima</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Poslovi u centrali</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">CSR</a>
       <a href="#" class="hover:text-brand-yellow transition-colors">Kontakt</a>
     </nav>
 
@@ -624,6 +638,11 @@
 <!-- ============================================================================
      SCRIPTS
 ============================================================================ -->
+<!-- VARIJACIJA #2 — mora ići PRE glavnog bloka ispod: on na startu čita
+     window.BB_VAR2 da bi znao čije fazne granice da koristi i kome da preda
+     uvodni kadar. Skript sam proveri data-var i u varijaciji #1 ne uradi
+     ništa, pa je bezbedno da stoji uvek. -->
+<script src="variation-2.js"></script>
 <script>
   /* ==========================================================================
      LENIS — smooth scroll init
@@ -685,7 +704,15 @@
   // notch while keeping the travel long enough to still read as a rise.
   const HERO_ENTER_TRAVEL = 1.0;
 
-  const HERO_PHASE = {
+  /* VARIJACIJA #2 — ako je aktivna, ona vozi UVODNI deo heroja (videti
+     variation-2.js). Ono što ostaje zajedničko i NE sme da se razilazi između
+     varijacija: merenje spacera, izlazna faza P4 i staklo headera — sve troje
+     je iznad grane u updateHero() niže.
+     Fazne granice se uzimaju od nje jer joj je spacer duži (493vh naspram
+     373vh), pa bi razlomci varijacije #1 pali na pogrešna mesta. */
+  const heroVar2 = (window.BB_VAR2 && window.BB_VAR2.active) ? window.BB_VAR2 : null;
+
+  const HERO_PHASE = heroVar2 ? heroVar2.PHASE : {
     // Fractions of the 273vh scrollable range, derived from the per-phase vh
     // budgets listed above #hero-spacer in the CSS:
     //   P0 1vh | entrance 132vh | P3 10vh | P4 130vh
@@ -735,6 +762,17 @@
     const vw = document.documentElement.clientWidth;
     const vh = window.innerHeight;
 
+    /* ---- SHARED WITH VARIATION #2 — everything from here to the branch below
+       has to behave identically in both designs, so it is computed before the
+       split rather than duplicated on the other side of it:
+         - the exit travel, because #openings' -130vh margin is tuned to it;
+         - the header's glass, because it is one event with the exit starting. */
+    const exitTShared = clamp((p - HERO_PHASE.p3End) / (HERO_PHASE.p4End - HERO_PHASE.p3End), 0, 1);
+    const exitYShared = lerp(0, -vh * HERO_EXIT_TRAVEL, exitTShared);
+    siteHeader.classList.toggle('is-solid', p >= HERO_PHASE.p3End);
+
+    if (heroVar2) { heroVar2.update({ p: p, vw: vw, vh: vh, exitY: exitYShared }); return; }
+
     // ---- Phase 1+2: media rises to center AND grows to near-fullscreen as
     // ONE continuous decelerating motion. A single easing curve spans the
     // whole p0End→p2End range and only reaches zero velocity at its very
@@ -775,18 +813,10 @@
     // would cut four notches out of the viewport's own corners.
     const boxRadius = lerp(32, 0, revealT);
 
-    // ---- Phase 4: media + search block travel up together and exit
-    const exitT = clamp((p - HERO_PHASE.p3End) / (HERO_PHASE.p4End - HERO_PHASE.p3End), 0, 1);
-    const exitY = lerp(0, -vh * HERO_EXIT_TRAVEL, exitT);
-
-    // Header glass follows the exit: bare over the video, solid once the hero
-    // unit starts clearing out and real content comes up behind the bar. The
-    // threshold is p3End — the END of the snap-hold, i.e. the exact frame the
-    // media starts moving — so the two read as one event. See "HEADER —
-    // transparent while the hero owns the screen" in styles.css for why the
-    // painted state lives in the markup's utilities and only its REMOVAL is a
-    // rule. classList.toggle is idempotent, so this is safe to run every tick.
-    siteHeader.classList.toggle('is-solid', p >= HERO_PHASE.p3End);
+    // ---- Phase 4: media + search block travel up together and exit.
+    // Computed above the variation branch (see the SHARED note there) — the
+    // header's glass rides on the same threshold and is set there too.
+    const exitY = exitYShared;
 
     // Media box: position, size, and the discrete (non-transitioned) z-index flip
     heroMediaBox.style.width = `${boxW}px`;
@@ -831,9 +861,13 @@
   }
 
   measureHero();
+  if (heroVar2) heroVar2.measure();
   lenis.on('scroll', ({ scroll }) => updateHero(scroll));
   window.addEventListener('resize', () => {
     measureHero();
+    // Varijacija #2 kešira svoje mere iz istog razloga iz kog i hero kešira
+    // svoje: update() se vrti na svaki scroll tick i ne sme da čita layout.
+    if (heroVar2) heroVar2.measure();
     updateHero(lenis.scroll);
   });
   updateHero(lenis.scroll);
@@ -1714,46 +1748,46 @@
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasureAll);
 
   /* ==========================================================================
-     PREKIDAČ TEME — demo kontrola za prikaz klijentu, nije deo dizajna sajta.
+     PREKIDAČ VARIJACIJE — demo kontrola za prikaz klijentu, nije deo dizajna.
 
-     Dugme se PRAVI ovde umesto da stoji u markupu, iz istog razloga iz kog je
-     tamna tema poseban CSS fajl: telo stranice ostaje netaknuto, pa se ceo
-     mehanizam uklanja brisanjem ovog bloka, <link>-a i skripta iz <head>-a i
-     fajla theme-dark.css — bez ijedne izmene u samoj stranici.
+     Zamenio je raniji prekidač TEME. Svetle varijante više nema (videti <html>
+     komentar na vrhu fajla), pa dugme sada bira između dva DIZAJNA: #1 je
+     originalni tamni, #2 je nova verzija.
 
-     Ne dira nijednu izmerenu vrednost (measureImpact / measureProcess): menja
-     samo boje, ne i geometriju, pa remeasure posle prebacivanja nije potreban.
+     Dugme se PRAVI ovde umesto da stoji u markupu iz istog razloga iz kog
+     varijacija ima svoj CSS fajl: telo stranice ostaje netaknuto, pa se ceo
+     mehanizam uklanja brisanjem ovog bloka i dva reda iz <head>-a.
+
+     ⚠ PRELAZAK RELOADUJE STRANICU. Varijacija #2 gradi svoj hero iz skripta i
+     menja geometriju cele naslovne (spacer, merenja u remeasureAll), pa je
+     prebacivanje uživo značilo rušenje i ponovno dizanje pola stranice. Reload
+     je i pošteniji prikaz klijentu: vidi tačno ono što bi video na svež ulaz.
   ========================================================================== */
   (function () {
     var root = document.documentElement;
-    var SUN = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v2.5M12 20v2.5M3.5 12H1M23 12h-2.5M5.6 5.6L3.8 3.8M20.2 20.2l-1.8-1.8M18.4 5.6l1.8-1.8M3.8 20.2l1.8-1.8"/></svg>';
-    var MOON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.3A8.6 8.6 0 019.7 3.5a8.8 8.8 0 102.8 17.2 8.8 8.8 0 008-6.4z"/></svg>';
-
     var btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'theme-toggle';
+    btn.className = 'var-toggle';
 
-    function paint() {
-      var dark = root.getAttribute('data-theme') === 'dark';
-      // SAMO IKONICA — tekstualna oznaka ("Svetla varijanta") je uklonjena na
-      // zahtev. Dugme i dalje nudi ONU DRUGU varijantu, ne imenuje trenutnu.
-      // Značenje sada nosi samo glif, pa aria-label (za čitače ekrana) i title
-      // (tooltip mišem) ostaju jedini tekst i moraju se održavati.
-      btn.innerHTML = dark ? SUN : MOON;
-      var label = 'Prebaci na ' + (dark ? 'svetlu' : 'tamnu') + ' varijantu';
-      btn.setAttribute('aria-label', label);
-      btn.setAttribute('title', label);
-    }
+    function current() { return root.getAttribute('data-var') === '2' ? 2 : 1; }
+
+    // Dugme IMENUJE TRENUTNU varijaciju, ne onu drugu — suprotno od starog
+    // prekidača teme, koji je prikazivao ikonicu one druge. Broj u krugu je
+    // oznaka stanja ("gledaš #1"), a ne komanda; šta klik radi kaže title.
+    var now = current();
+    btn.textContent = '#' + now;
+    var label = 'Varijacija #' + now + ' — klikni za varijaciju #' + (now === 1 ? 2 : 1);
+    btn.setAttribute('aria-label', label);
+    btn.setAttribute('title', label);
 
     btn.addEventListener('click', function () {
-      var dark = root.getAttribute('data-theme') === 'dark';
-      if (dark) root.removeAttribute('data-theme');
-      else root.setAttribute('data-theme', 'dark');
-      try { localStorage.setItem('bb-tema', dark ? 'light' : 'dark'); } catch (e) {}
-      paint();
+      var next = current() === 1 ? '2' : '1';
+      try { localStorage.setItem('bb-var', next); } catch (e) {}
+      var u = new URL(location.href);
+      u.searchParams.set('var', next);
+      location.href = u.toString();
     });
 
-    paint();
     document.body.appendChild(btn);
   })();
 

@@ -1,0 +1,146 @@
+/* ##########################################################################
+   VARIJACIJA #2 — alternativni hero naslovne
+
+   Aditivni sloj preko styles.css + theme-dark.css, po istom pravilu po kom
+   radi i tamna tema: SVAKO pravilo ovde je pod [data-var="2"], pa fajl bez tog
+   atributa ne radi baš ništa. Varijacija #1 (original) ostaje netaknuta.
+
+   Atribut postavlja boot skript u <head>-u svake stranice (?var=2 ili zapamćen
+   izbor), a prekidač dole desno ga menja uz reload.
+
+   ⚠ OPSEG: SAMO HERO NASLOVNE. Sve ispod heroja (#openings pa nadole) je
+   zajedničko obema varijacijama i ovde se ne pominje.
+
+   ŠTA JE OVO: rekonstrukcija uvodne animacije sa telescope.fyi — polje sitnih
+   slika raspoređeno oko naslova koje na skrol proleće kroz kadar ka posmatraču,
+   dok se naslov razmiče u stranu i gasi, a u sredini se zumira glavni medij.
+   Kod nas je taj glavni medij POSTOJEĆI hero video sa search barom na sebi, pa
+   se posle animacije stiže na tačno isti kadar kao u varijaciji #1.
+   ########################################################################## */
+
+/* ==========================================================================
+   SPACER — duži nego u varijaciji #1
+
+   Budžeti po fazama (isti zapis kao komentar iznad #hero-spacer u styles.css):
+     P0  naslov sam .........   1vh
+     P1+P2 uvodna animacija . 252vh   <- 132vh u varijaciji #1
+     P3  snap pauza .........  10vh
+     P4  izlazak ............ 130vh   <- MORA ostati 130 (= HERO_EXIT_TRAVEL)
+   ------------------------------------------------
+     100 + 1 + 252 + 10 + 130 = 493vh
+
+   ⚠ P4 se NE DIRA. Na njemu stoji margin-top: -130vh sekcije #openings (videti
+   "HERO → FIRST SECTION OVERLAP" u styles.css); svaka druga vrednost otvara
+   prazninu iza videa. Produžen je samo uvodni deo, jer let slika + zum traže
+   duži hod od dizanja pravougaonika u varijaciji #1.
+
+   Razlomke ovih budžeta drži HERO_PHASE u variation-2.js — menja se jedno,
+   preračunava se drugo. */
+[data-var="2"] #hero-spacer { height: 493vh; }
+
+/* ==========================================================================
+   3D SCENA — polje slica koje proleće kroz kadar
+
+   Sve pločice žive u JEDNOJ perspektivi i imaju SAMO translateZ koji se menja
+   na skrol. Divergencija (kako se razmiču ka ivicama dok prilaze) nije
+   animirana ručno — nju crta sama perspektiva. Zato je i naslov u istoj sceni:
+   njegove reči se razmiču iz istog razloga, a ne po posebnoj formuli.
+
+   z-index 12 je IZNAD naslova (#hero-heading-wrap je 10) a ISPOD medija (20):
+   pločice treba da prolete i preko naslova, ali nikad preko videa koji se
+   zumira, jer je on ono ka čemu se ceo pokret sliva. */
+[data-var="2"] #v2-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  overflow: hidden;
+  pointer-events: none;              /* ukras — ne sme da jede klik na loptu */
+  perspective: 1000px;
+  perspective-origin: 50% 50%;
+  transform-style: preserve-3d;
+}
+
+/* Pojedinačna pločica. left/top/width/height postavlja skript (raspored je
+   podatak, ne stil), ovde stoji samo ono što je isto za sve.
+   backface-visibility + translateZ(0) na slici drže teksturu oštrom dok
+   pločica raste — bez toga Chrome rasterizuje jednom pa razvlači bitmapu. */
+[data-var="2"] .v2-tile {
+  position: absolute;
+  will-change: transform, opacity;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0e0d0e;
+  box-shadow: 0 18px 50px rgba(0,0,0,.45);
+  opacity: 0;
+}
+[data-var="2"] .v2-tile img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* ==========================================================================
+   NASLOV — iste tri linije i ista boja kao u varijaciji #1
+
+   Markup se NE menja u HTML-u: skript obavija svaku reč u <span class="v2-word">
+   i ostavlja <br>-ove i .hero-heading__lead (žuta prva rečenica) na miru, pa
+   se boja i prelom nasleđuju iz postojećih pravila.
+
+   inline-block je noseći: reč mora imati sopstveni transform, a inline element
+   ga ne prima. white-space: pre čuva razmak koji bi inline-block inače pojeo
+   na prelomu. */
+[data-var="2"] .v2-word {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* Naslov u varijaciji #2 stoji u sceni sa pločicama, pa mu treba isti
+   3D kontekst; bez ovoga bi transform reči bio čisto 2D i razmicanje ne bi
+   pratilo perspektivu ostatka kadra. */
+[data-var="2"] #hero-heading {
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+
+/* ==========================================================================
+   MEDIJ — video + search kao JEDNA celina koja se zumira
+
+   U varijaciji #1 se kutija RASTE (menjaju se width/height), a search bar je
+   zaseban sloj koji uleti odozdo. Ovde se kutija SKALIRA iz tačke u sredini
+   kadra, a search bar je skript premestio UNUTAR nje — pa se video i bar
+   zumiraju zajedno, kao jedan snimak, i slete na tačno 1:1.
+
+   Zato kutija ovde ima fiksnu veličinu (ceo viewport) i menja joj se samo
+   transform: skaliranje je jeftinije od preračunavanja layouta po frejmu, a i
+   jedino ono zumira SADRŽAJ (menjanje width/height bi samo otkrivalo više
+   videa umesto da mu prilazi). */
+[data-var="2"] #hero-media-box {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  will-change: transform, opacity;
+}
+
+/* Search bar unutar medija. Iste vrednosti kao u styles.css (bottom: 96px,
+   92%/66rem), samo se sada mere u odnosu na kutiju — a ona je tačno viewport,
+   pa je krajnji kadar identičan varijaciji #1 do piksela.
+   z-index ostaje iznad tamnog vela (.hero-media-fade). */
+[data-var="2"] #hero-search-block {
+  bottom: 96px;
+  z-index: 3;
+  will-change: transform;
+}
+
+/* ==========================================================================
+   REDUCED MOTION
+
+   Sav pokret ovde je scroll-scrubbed, dakle nema CSS tranzicija koje bi se
+   ugasile — gasi se u skriptu (videti PREFERS_REDUCED u variation-2.js), koji
+   pločice uopšte ne pravi i odmah postavlja završni kadar. Ovde ostaje samo
+   da scena ne zauzima mesto ako je ipak nastala. */
+@media (prefers-reduced-motion: reduce) {
+  [data-var="2"] #v2-scene { display: none; }
+}
