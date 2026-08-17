@@ -119,6 +119,25 @@
 [data-var="2"] #v2-scene.is-locked .v2-tile__hit { pointer-events: none; }
 
 /* ==========================================================================
+   ŠTA VARIJACIJA #2 SKRIVA IZ ORIGINALA
+
+   Dve stvari postoje SAMO u varijaciji #1 i ovde se gase. Nisu obrisane iz
+   projekta — original mora ostati netaknut kao poređenje:
+
+   1. BOUNCING LOPTICA (#hero-scroll-ball) — scroll hint ispod naslova. U #2 je
+      hero potpuno drugačiji (polje slika + zum), pa bi loptica bila strano telo
+      usred njega. Skriva se, ne uklanja: markup, CSS i njen klik handler stoje
+      i rade u #1.
+   2. PROCES ZAPOŠLJAVANJA (#proces) — rukom pisana sekcija "4 koraka".
+
+   `display: none` a ne `visibility`: loptica je <button> i mora prestati da
+   prima Tab, a #proces ne sme da zauzima visinu stranice (njegov skript meri
+   sopstveni offsetTop, pa bi prazan prostor pomerio sva merenja ispod).
+========================================================================== */
+[data-var="2"] #hero-scroll-ball,
+[data-var="2"] #proces { display: none; }
+
+/* ==========================================================================
    NASLOV — izlazi kroz kameru, kao i pločice
 
    Markup se NE dira: dva reda, `<br>` između njih i `.hero-heading__lead` na
@@ -130,8 +149,16 @@
    Ista vrednost kao na sceni sa pločicama (100vh) je ono što drži da naslov i
    pločice izlaze kroz ISTU kameru, a ne kroz dve različite.
 
-   Ranije su se redovi razmicali gore i dole i za to su se obavijali u
-   `.v2-line`; to je uklonjeno na zahtev — naslov sada ide "prema nama". */
+   DVA POKRETA ODJEDNOM, i to je traženo tako:
+     - CEO naslov ide u dubinu (translateZ na h1) — perspektiva
+     - SVAKI RED se uz to razmiče, gornji gore i donji dole (translateY na
+       .v2-line), tako da video koji raste u sredini nikad ne dodirne tekst
+   Razmicanje se NE bira slobodno: skript ga računa iz trenutne veličine videa
+   (videti "razmak reda" u variation-2.js), pa razmak ostaje isti bez obzira na
+   visinu ekrana.
+
+   display: block je noseći — red mora zauzeti celu širinu i primiti sopstveni
+   transform; inline element ne prima ni jedno ni drugo. */
 [data-var="2"] #hero-heading-wrap {
   perspective: 100vh;
   perspective-origin: 50% 50%;
@@ -139,6 +166,10 @@
 [data-var="2"] #hero-heading {
   will-change: transform, opacity;
   transform-style: preserve-3d;
+}
+[data-var="2"] .v2-line {
+  display: block;
+  will-change: transform;
 }
 
 /* ==========================================================================

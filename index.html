@@ -199,6 +199,41 @@
       </h1>
     </div>
 
+    <!-- Scroll hint: the logo's ball, bouncing in place. Stands in for the
+         usual "scroll down" chevron. The outer element carries the scroll-driven
+         exit (set in updateHero, tied to the same headT as the headline so
+         the two leave together); the inner span owns the looping bounce, so
+         the CSS animation and the JS transform never fight over one element.
+
+         It is a real <button>, not a decorative div: clicking it jumps to the
+         snap-hold, the point where the video is fullscreen with the search bar
+         on it (see the handler at the bottom of this file). That makes it a
+         control, so it has to be reachable and announceable — hence the element
+         and the aria-label, and hence no aria-hidden. -->
+    <button type="button" id="hero-scroll-ball" aria-label="Pređi na pretragu poslova">
+      <span class="hero-scroll-ball__shadow"></span>
+      <!-- The ball is lifted verbatim out of BalkanBetLogo.svg: same circle
+           path, same radialGradient stops AND the same gradientTransform, in
+           a viewBox matching the logo's own user space (0 0 158.03 158.03).
+           That transform is the reason a CSS radial-gradient can't stand in
+           here — it rotates 72deg and scales the gradient off-centre, so any
+           `radial-gradient(circle at x% y%)` is only ever an approximation. -->
+      <svg class="hero-scroll-ball__dot" viewBox="0 0 158.03 158.03" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="heroBallGradient" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
+                          gradientTransform="translate(58.2688 36.7026) rotate(71.9728) scale(117.678 116.136)">
+            <stop stop-color="#FFF75C"/>
+            <stop offset="0.32" stop-color="#FBC707"/>
+            <stop offset="0.531908" stop-color="#FBC707"/>
+            <stop offset="0.85" stop-color="#F89C0E"/>
+            <stop offset="1" stop-color="#FAB20B"/>
+          </radialGradient>
+        </defs>
+        <path d="M0 79.0146C0 122.652 35.376 158.027 79.0107 158.027C122.651 158.027 158.025 122.652 158.025 79.0146C158.025 35.376 122.651 0 79.0107 0C35.376 0 0 35.376 0 79.0146Z"
+              fill="url(#heroBallGradient)"/>
+      </svg>
+    </button>
+
     <!-- Media layer: single rectangle that rises, crosses the text, then grows to near-fullscreen -->
     <div id="hero-media-box">
       <video src="assets/video/BalkanBet.mp4" class="w-full h-full object-cover"
@@ -462,6 +497,104 @@
 </section>
 
 <!-- ============================================================================
+     PROCES ZAPOŠLJAVANJA — the client's hand-lettered artwork, rebuilt as live
+     type and written on by scroll. No section background: the four steps are
+     drawn in brand-dark straight onto the animated aurora, exactly as in the
+     reference. Replaced an icon-disc + dot-nav slider (5 steps) — the artwork
+     says four, and the subtitle counts them, so keep the two in sync.
+
+     LAYOUT — #proces-stage is a fixed-ratio container-query box; the --x/--y
+     on each piece are percentages lifted off the artwork (origin at the step
+     band's top-left, 1380 x 290 of its units). All type sizes live in `cqw` in
+     styles.css, so the whole composition scales as one drawing. Steps sit on a
+     zigzag: 01 mid, 02 high, 03 low, 04 high.
+
+     ORDER MATTERS — updateProcess() writes the pieces in DOCUMENT order, so
+     the markup below is authored in writing order (numeral, first label line,
+     second label line, then the arrow that leads to the next step). Reordering
+     these nodes reorders the animation.
+============================================================================ -->
+<!-- Padding is ASYMMETRIC to come out visually SYMMETRIC — the section read as
+     cramped at the site's usual 96px py-24 rhythm, so its own target was raised
+     to 150px top and bottom. Measured edge-of-neighbour to edge-of-INK:
+       top    150 + 42 = 192  — .panel-overlap has already eaten 48px, and the
+                               first line is the SUBTITLE, whose box starts
+                               ~6px above its cap line
+       bottom 150 - 95 = 55   — what follows is not a background edge but the
+                               footer, which brings 80px of pt-20, plus ~15px of
+                               unused stage height under the lowest step
+     The two CORRECTIONS (+42 / -95) are properties of the neighbours and the
+     type, not of the target, so raising or lowering the 150 later means moving
+     both numbers by the same amount — do not re-derive them from scratch.
+     They are only valid for these type sizes and this stage ratio.
+     The bottom correction was -47 while the footer still carried .panel-overlap;
+     the footer went full-bleed and dropped it, so its -48px came straight off
+     this padding (103 → 55) and the gap on screen did not move. -->
+<section id="proces" class="relative z-20 panel-overlap section-panel pt-[192px] pb-[55px]">
+  <!-- Subtitle ABOVE the heading (it reads as a kicker) — the reference artwork
+       had them the other way round, this order was asked for afterwards. -->
+  <div class="max-w-[1200px] mx-auto px-8 md:px-16 text-center">
+    <!-- leading-tight / leading-[1.05] are doing the tightening, not the margin.
+         Both lines inherit line-height 1.5, which parks ~9px under the kicker's
+         baseline and ~10px over the heading's cap line; trimming the margin
+         alone barely moved the pair closer. -->
+    <p class="reveal text-white font-bold leading-tight" style="font-size: clamp(1.05rem, 1.9vw, 1.6rem);">
+      4 koraka do karijere u Balkan Bet-u
+    </p>
+    <h2 class="reveal text-white uppercase font-medium tracking-tight leading-[1.05] mt-3"
+        style="font-size: clamp(2rem, 4.5vw, 3.5rem);">
+      Proces zapošljavanja
+    </h2>
+  </div>
+
+  <div class="max-w-[1200px] mx-auto px-8 md:px-16 mt-6 md:mt-8">
+    <div id="proces-stage">
+
+      <!-- The --x values were spread out along with the 0.85 size reduction:
+           each piece, in writing order, carries one more percent of the stage
+           than the one before it (s1 +0, a1 +1, s2 +2 … s4 +6), and the first
+           step was pulled 1% closer to the left edge. Shrinking the type freed
+           roughly 13% of the stage's width and this is where it went — the
+           composition now runs 1.2% → ~98% instead of 2.2% → 92%.
+           The --y zigzag is untouched. -->
+      <!-- 01 -->
+      <div class="proc-step" style="--x:1.2%; --y:31.3%">
+        <span class="proc-step__num proc-ink">01</span>
+        <span class="proc-step__label"><span class="proc-ink">Pronađi</span><span class="proc-ink">poziciju</span></span>
+      </div>
+      <svg class="proc-arrow proc-ink" viewBox="0 0 96 72" style="--x:27.4%; --y:43.1%" aria-hidden="true">
+        <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
+      </svg>
+
+      <!-- 02 -->
+      <div class="proc-step" style="--x:30.6%; --y:4.7%">
+        <span class="proc-step__num proc-ink">02</span>
+        <span class="proc-step__label"><span class="proc-ink">Prijavi se</span><span class="proc-ink">online</span></span>
+      </div>
+      <svg class="proc-arrow proc-arrow--down proc-ink" viewBox="0 0 96 72" style="--x:54.4%; --y:23.4%" aria-hidden="true">
+        <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
+      </svg>
+
+      <!-- 03 -->
+      <div class="proc-step" style="--x:53.3%; --y:54.7%">
+        <span class="proc-step__num proc-ink">03</span>
+        <span class="proc-step__label"><span class="proc-ink">Razgovor</span><span class="proc-ink">sa timom</span></span>
+      </div>
+      <svg class="proc-arrow proc-ink" viewBox="0 0 96 72" style="--x:81.1%; --y:48.4%" aria-hidden="true">
+        <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
+      </svg>
+
+      <!-- 04 -->
+      <div class="proc-step" style="--x:77.7%; --y:6.3%">
+        <span class="proc-step__num proc-ink">04</span>
+        <span class="proc-step__label"><span class="proc-ink">Ponuda</span><span class="proc-ink">za posao</span></span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
      FOOTER — zaključna žuta traka
 
      ⚠ SHARED BLOCK — same rule as the header above: this exact markup is
@@ -586,6 +719,7 @@
   const heroSpacer = document.getElementById('hero-spacer');
   const heroMediaBox = document.getElementById('hero-media-box');
   const heroHeading = document.getElementById('hero-heading');
+  const heroScrollBall = document.getElementById('hero-scroll-ball');
   const heroSearchBlock = document.getElementById('hero-search-block');
 
   const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
@@ -740,6 +874,21 @@
     heroHeading.style.opacity = 1 - headT;
     heroHeading.style.transform = `translateY(${lerp(0, -vh * 0.18, headT)}px) scale(${headScale})`;
 
+    // Scroll-hint ball rides out on exactly the headline's headT — same fade,
+    // same upward travel — so the two clear the screen as one piece. It can
+    // afford the full duration because it paints under the media box (see
+    // #hero-scroll-ball's z-index), so the rising video simply covers it.
+    // translateX has to be restated: it lives in the CSS transform this
+    // declaration overwrites.
+    heroScrollBall.style.opacity = 1 - headT;
+    heroScrollBall.style.transform = `translateX(-50%) translateY(${lerp(0, -vh * 0.18, headT)}px)`;
+    // Now that it is a button it must stop existing once it has faded out, not
+    // just stop being visible: an opacity-0 control still takes Tab, and it
+    // would still be sitting under the pointer over the video. Guarded so this
+    // is a write on the two frames it flips, not on every scroll tick.
+    const ballGone = headT >= 1;
+    if (heroScrollBall.hidden !== ballGone) heroScrollBall.hidden = ballGone;
+
     // Search block: enters in phase 2 (same timing as heading exit), exits in phase 4
     const searchEnterY = lerp(vh * 0.5, 0, revealT);
     heroSearchBlock.style.opacity = revealT;
@@ -757,6 +906,22 @@
     // svoje: update() se vrti na svaki scroll tick i ne sme da čita layout.
     if (heroVar2) heroVar2.measure();
     updateHero(lenis.scroll);
+
+  /* Clicking the bouncing ball jumps to the SNAP-HOLD — the stretch where the
+     video is stretched across the whole screen with the search bar on it.
+
+     p2End is the exact frame it arrives there (p2End → p3End is the hold), so
+     it is the earliest scroll position that shows the finished picture; landing
+     any deeper would already be eating into the pause.
+
+     Derived from the same cached measurements updateHero runs on, and read at
+     click time rather than precomputed, so a resize in between needs nothing
+     kept in sync. Driven through lenis.scrollTo for the same reason every other
+     scroll read on this page goes through Lenis — a native scrollTo would jump
+     the smoothed value out from under the choreography. */
+  heroScrollBall.addEventListener('click', () => {
+    lenis.scrollTo(heroOffsetTop + HERO_PHASE.p2End * heroScrollable, { duration: 1.4 });
+  });
   });
   updateHero(lenis.scroll);
 
@@ -1481,6 +1646,86 @@
   benefitsGrid.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
 
   /* ==========================================================================
+     PROCES ZAPOŠLJAVANJA — scroll-written hand lettering
+
+     Replaced an auto-advancing icon+text slider with dot nav. Nothing here is
+     timed: the four steps are WRITTEN as the section scrolls, piece by piece
+     from the left, and un-write if the reader scrolls back up.
+
+     The pieces are simply every `.proc-ink` in DOCUMENT order — that is why
+     index.html authors the composition in writing order (01, "Pronađi",
+     "poziciju", arrow, 02, …) even though every piece is absolutely
+     positioned and DOM order has no effect on where it lands.
+
+     Each piece gets a --w of 0→1; the CSS decides what that means (a mask
+     sweeping across glyphs, a dashoffset drawing an arrow). Slots overlap by a
+     hair (PROC_SPAN is slightly wider than an even share) so the hand does not
+     stop dead between pieces, and the starts are spaced so the LAST piece
+     finishes exactly at progress 1 rather than running past the window.
+
+     Window length is derived, not fixed: the whole run has to fit in the
+     scroll distance over which the stage stays fully on screen, otherwise the
+     last step would be written above the top edge where nobody sees it. On a
+     ~900px viewport that works out to ~400px of scroll for all 15 pieces —
+     deliberately brisk, the client asked for the four steps not to drag.
+  ========================================================================== */
+  const procStage = document.getElementById('proces-stage');
+  const procInkEls = Array.from(procStage.querySelectorAll('.proc-ink'));
+  // Writing starts as soon as the TOP of the composition clears the bottom edge
+  // by this much. It used to wait for the whole stage to be on screen, which
+  // meant the reader had the four steps sitting there blank for a moment before
+  // anything happened.
+  const PROC_LEAD = 70;
+
+  // Arrows are drawn with stroke-dashoffset, which needs the path's real
+  // length — a guessed dasharray wraps the pattern and flashes the whole arrow
+  // in at once. Measured once here and handed to the CSS as --len.
+  procStage.querySelectorAll('.proc-arrow path').forEach((path) => {
+    path.style.setProperty('--len', path.getTotalLength().toFixed(1));
+  });
+
+  let procStart = 0;
+  let procRun = 1;
+  let procActive = procInkEls; // pieces currently on screen at all (see below)
+  let procSpan = 1;
+  let procGap = 1;
+
+  function measureProcess() {
+    const rect = procStage.getBoundingClientRect();
+    const top = rect.top + window.scrollY;
+    const vh = window.innerHeight;
+    procStart = top + PROC_LEAD - vh;
+    // Half a viewport of scroll for all 15 pieces. Short on purpose (the client
+    // asked for the four steps not to drag), and short enough that the run ends
+    // with the whole composition still comfortably in frame even though it now
+    // begins the moment the composition's top edge appears.
+    procRun = clamp(vh * 0.5, 280, 520);
+
+    // The stacked phone layout drops the arrows (display:none). They must drop
+    // out of the sequence too, or their slots become dead pauses between steps.
+    procActive = procInkEls.filter((el) => el.offsetParent !== null);
+    procInkEls.forEach((el) => {
+      if (!procActive.includes(el)) el.style.setProperty('--w', '1');
+    });
+    procSpan = Math.min(1, 1.15 / Math.max(1, procActive.length));
+    procGap = (1 - procSpan) / Math.max(1, procActive.length - 1);
+  }
+
+  function updateProcess(scrollY) {
+    const progress = wantsLessMotion ? 1 : clamp((scrollY - procStart) / procRun, 0, 1);
+    procActive.forEach((el, i) => {
+      el.style.setProperty('--w', clamp((progress - i * procGap) / procSpan, 0, 1).toFixed(3));
+    });
+  }
+
+  measureProcess();
+  lenis.on('scroll', ({ scroll }) => updateProcess(scroll));
+  window.addEventListener('resize', () => {
+    measureProcess();
+    updateProcess(lenis.scroll);
+  });
+
+  /* ==========================================================================
      SCROLL PROGRESS RAIL
 
      Reads its position from lenis.on('scroll') like everything else on this
@@ -1528,6 +1773,8 @@
   function remeasureAll() {
     measureImpact();
     updateImpact(lenis.scroll);
+    measureProcess();
+    updateProcess(lenis.scroll);
     // The rail's own measurement is the page height, which is exactly what
     // these late-arriving cards and fonts change.
     measureProgress();

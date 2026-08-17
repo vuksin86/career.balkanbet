@@ -34,7 +34,11 @@
       "Bash(node shot.mjs \"http://localhost:4173/index.html\" v1 \"0,0.30,0.49,0.75,1.0\" --var=1 --w=1440 --h=900)",
       "Bash(python -)",
       "Bash(node shot.mjs \"http://localhost:4173/index.html\" v2c \"0.10,0.20,0.32,0.50,0.64\" --var=2 --w=1440 --h=900)",
-      "Bash(node shot.mjs \"http://localhost:4173/index.html\" v2y \"0.10,0.20,0.30\" --w=1440 --h=900)"
+      "Bash(node shot.mjs \"http://localhost:4173/index.html\" v2y \"0.10,0.20,0.30\" --w=1440 --h=900)",
+      "Bash(node -e \"require\\('fs'\\).readFileSync\\('variation-2.js','utf8'\\)\")",
+      "Bash(node --check variation-2.js)",
+      "Bash(node shot.mjs \"http://localhost:4173/index.html\" v2f \"0.14,0.22,0.32\" --w=1440 --h=900)",
+      "Bash(node shot.mjs \"http://localhost:4173/index.html?var=1\" v1f \"0,0.30\" --w=1440 --h=900)"
     ]
   }
 }

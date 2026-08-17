@@ -2,8 +2,9 @@
    VARIJACIJA #2 — uvodna animacija naslovne
 
    Rekonstrukcija uvoda sa telescope.fyi: polje sitnih slika raspoređeno oko
-   naslova prolazi kroz kadar ka posmatraču, naslov ide zajedno sa njima i izlazi
-   kroz kameru, a u sredini se zumira glavni medij. Kod nas je taj medij
+   naslova prolazi kroz kadar ka posmatraču, naslov ide zajedno sa njima u dubinu
+   i pritom se razmiče gore/dole da ga video ne dodirne, a u sredini se zumira
+   glavni medij. Kod nas je taj medij
    POSTOJEĆI hero video sa search barom, pa se na kraju animacije stiže na isti
    kadar kao u varijaciji #1 — odatle nadalje (snap pauza, izlazak, sekcija
    ispod) obe varijacije dele isti kod.
@@ -189,7 +190,14 @@
      pokazivač nasred videa. */
   var HOVER_LOCK_AT = 0.03;
 
+  /* Koliko EKRANSKIH piksela reda naslova mora ostati između njega i ivice
+     videa koji raste. Traženo je da se to dvoje ne dodiruje; ovo je jedina
+     ručno birana vrednost u toj računici — sve ostalo se izvodi iz veličine
+     videa (videti "razmak reda" u render()). */
+  var HEAD_CLEARANCE = 46;
+
   var tiles = [];
+  var lines = [];
   // Indeks pločice nad kojom je pokazivač (−1 = nijedna) i njegova pozicija.
   // Stoje ovde, iznad izgradnje, jer ih listeneri koji se tamo kače zatvaraju.
   var hovered = -1;
@@ -205,10 +213,30 @@
   // dodatnog računa. U varijaciji #1 bar ostaje gde je bio.
   mediaBox.appendChild(searchBlock);
 
-  /* NASLOV OSTAJE TAČNO KAKAV JE U MARKUPU — ni jedan čvor se ne dira.
-     Ranije su se redovi obavijali u <span class="v2-line"> da bi mogli da se
-     razmiču gore i dole; sada naslov izlazi kroz kameru kao celina, pa mu treba
-     samo jedan transform na samom h1 i nikakvo prepakivanje. */
+  /* NASLOV — svaki red dobija svoj omotač, da bi mogao da se razmiče.
+
+     Rez se ne izmišlja: uzima se `<br>` koji već stoji u markupu, pa su redovi
+     tačno one dve rečenice koje su i napisane kao dve. Prva zadržava svoj
+     `.hero-heading__lead` (bela u tamnoj temi), druga nasleđuje žutu sa h1 —
+     boje i prelom time ostaju iz postojećih pravila, bez ijedne kopije ovde.
+
+     Sam h1 ostaje netaknut kao element: on nosi dubinu (translateZ), a omotači
+     nose razmicanje. Dva svojstva, dva nivoa — nikad oba na istom elementu. */
+  (function buildLines() {
+    var groups = [[]];
+    Array.prototype.slice.call(heading.childNodes).forEach(function (n) {
+      if (n.nodeType === 1 && n.tagName === 'BR') { groups.push([]); return; }
+      groups[groups.length - 1].push(n);
+    });
+    heading.textContent = '';
+    groups.forEach(function (nodes) {
+      var line = document.createElement('span');
+      line.className = 'v2-line';
+      nodes.forEach(function (n) { line.appendChild(n); });
+      heading.appendChild(line);
+      lines.push(line);
+    });
+  })();
 
   var scene = null;
   if (!PREFERS_REDUCED) {
@@ -416,7 +444,43 @@
     heading.style.transform = 'translateZ(' + headZ.toFixed(1) + 'px)';
     heading.style.opacity = (1 - span(zoomT, 0.08, 0.50)).toFixed(3);
 
-    mediaBox.style.opacity = String(span(zoomT, 0, 0.06));
+    /* ---- Razmak reda: gornji red gore, donji dole, UVEK ispred ivice videa.
+
+       Traženo je da se naslov ne dodiruje sa videom koji se pojavljuje. Zato
+       razmicanje NIJE slobodno izabran broj nego se RAČUNA iz trenutne veličine
+       videa, pa razmak ostaje isti na svakoj visini ekrana i pri svakoj brzini
+       skrola:
+
+         ivica videa na ekranu = (vh / 2) × scale
+         red mora biti bar toliko + HEAD_CLEARANCE od centra
+
+       Podeljeno sa `k` jer red živi UNUTAR naslova koji je već uvećan
+       perspektivom: transform reda je u lokalnom prostoru h1, a k ga pretvara u
+       ekranske piksele. Bez tog deljenja razmak bi bio k puta veći nego što
+       treba i redovi bi odleteli mnogo pre videa.
+
+       Rampa na početku postoji da redovi ne odskoče odmah: dok je video još
+       nevidljiv nema šta da se izbegava.
+       ⚠ Njen kraj (0.06) je NAMERNO isti kao kraj rampe neprozirnosti videa
+       nekoliko redova niže — razmak mora biti uspostavljen tačno u trenutku kad
+       video postane vidljiv. Na dužoj rampi (0.10) prvih ~100px skrola je
+       izmereno 39px umesto punih 46. */
+    var k = PERSPECTIVE / (PERSPECTIVE - headZ);        // perspektivno uvećanje
+    var videoEdge = (vh / 2) * scale;
+    var needed = (videoEdge + HEAD_CLEARANCE) / k;
+    var lineShift = needed * span(zoomT, 0, 0.06);
+    for (var L = 0; L < lines.length; L++) {
+      var dir = L === 0 ? -1 : 1;                       // prvi red gore, drugi dole
+      lines[L].style.transform = 'translateY(' + (dir * lineShift).toFixed(1) + 'px)';
+    }
+
+    /* ⚠ Fade videa je DUŽI od rampe kojom se redovi naslova razmiču (0.06),
+       i to je jedini razlog za baš ovaj broj: dok video tek naviru u vidljivost,
+       redovi su već otišli na svoj puni zazor. Na kraćem fade-u (0.06, isto kao
+       rampa) izmereno je da u prvom trenutku vidljivosti između teksta i ivice
+       videa ostane svega 5px — tehnički se ne dodiruju, ali izgleda kao da se
+       očešali. */
+    mediaBox.style.opacity = String(span(zoomT, 0, 0.14));
     mediaBox.style.borderRadius = '0';
     mediaBox.style.transform =
       'translate(-50%, -50%) translateY(' + lastExitY.toFixed(1) + 'px) scale(' + scale.toFixed(4) + ')';
@@ -466,6 +530,7 @@
   function settle(ctx) {
     var exitY = (ctx && ctx.exitY) || 0;
     heading.style.opacity = '0';
+    for (var L = 0; L < lines.length; L++) lines[L].style.transform = 'none';
     mediaBox.style.opacity = '1';
     mediaBox.style.borderRadius = '0';
     mediaBox.style.transform = 'translate(-50%, -50%) translateY(' + exitY.toFixed(1) + 'px)';

@@ -710,10 +710,98 @@
     pointer-events: none;
   }
 
-  /* Loptica koja je poskakivala ispod naslova (#hero-scroll-ball, njena senka i
-     keyframe-ovi hero-ball-bounce / hero-ball-shadow) UKLONJENA JE na zahtev.
-     Bila je i klik-prečica na snap pauzu. Ne vraćati bez zahteva; z-index 3,
-     koji je bio njen, više ništa ne koristi. */
+  /* ========================================================================
+     HERO SCROLL HINT — the logo's ball, bouncing, in place of a chevron.
+     Sits below the headline (a scroll cue in the dead centre would land on
+     top of the h1). z-index 3 is deliberately UNDER the media box's starting
+     5: the video rises from the bottom straight through where this sits, and
+     passing over it is what lets the ball fade on exactly the headline's
+     timing without ever appearing to float on top of the video.
+  ======================================================================== */
+  /* It is a <button> — clicking it jumps to the snap-hold — so the browser's
+     own button chrome has to be reset before the layout below means anything.
+     It stays interactive (no `pointer-events: none`): while it is visible it is
+     the click target, and once the video has risen over it the media box's
+     higher z-index takes every click anyway. */
+  #hero-scroll-ball {
+    position: absolute;
+    left: 50%;
+    bottom: 8vh;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    will-change: transform, opacity;
+  }
+  /* Ring around the ball rather than a box: the element's own rect is the
+     30px dot, so a default outline would sit tight against it and read as a
+     hairline collar. */
+  #hero-scroll-ball:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 6px;
+    border-radius: 999px;
+  }
+  /* Faded out (past the headline's exit) it must stop taking clicks AND stop
+     taking Tab — an invisible button that still swallows a click over the video
+     is worse than no button. updateHero() sets this via inline style; the rule
+     here is the initial state only. */
+  #hero-scroll-ball[hidden] { display: none; }
+  .hero-scroll-ball__dot {
+    display: block;
+    width: 30px;
+    height: 30px;
+    overflow: visible;   /* the squash keyframes scale past the viewBox */
+    animation: hero-ball-bounce 1.15s infinite;
+  }
+  /* Cast shadow on the floor the ball bounces off. Pinned to that floor
+     (it never moves) and animated on the SAME duration and keyframe stops as
+     the bounce, so the two stay locked together: widest and most visible at
+     the apex, tight and nearly gone at the moment of contact. */
+  .hero-scroll-ball__shadow {
+    position: absolute;
+    left: 50%;
+    bottom: -13px;
+    width: 30px;
+    height: 7px;
+    border-radius: 50%;
+    background: #231F20;
+    filter: blur(3px);
+    transform: translateX(-50%);
+    animation: hero-ball-shadow 1.15s infinite;
+  }
+  /* Gravity-ish: quick off the floor, hanging at the apex, accelerating back
+     down, with a squash on contact and a slight stretch at the top. */
+  @keyframes hero-ball-bounce {
+    0%   { transform: translateY(0)     scale(1.10, 0.90); animation-timing-function: ease-out; }
+    12%  { transform: translateY(-6px)  scale(1, 1);       animation-timing-function: ease-out; }
+    50%  { transform: translateY(-30px) scale(0.96, 1.04); animation-timing-function: ease-in; }
+    88%  { transform: translateY(-6px)  scale(1, 1);       animation-timing-function: ease-in; }
+    100% { transform: translateY(0)     scale(1.10, 0.90); }
+  }
+  /* Keyframe stops mirror hero-ball-bounce exactly (0/12/50/88/100 with the
+     same easing per stop) — that is what keeps the shadow reading as cast by
+     THAT ball rather than pulsing on its own clock.
+     Size and opacity move TOGETHER, both tracking distance: far = wide and
+     slightly more present, near = tight and almost gone at contact. Keep the
+     whole opacity range low (.05-.17) — the ball is small and sits on a busy
+     orange background, so anything heavier at the apex stops reading as a
+     cast shadow and starts looking like a second dark blob under the ball. */
+  @keyframes hero-ball-shadow {
+    0%   { transform: translateX(-50%) scale(0.70); opacity: .05; animation-timing-function: ease-out; }
+    12%  { transform: translateX(-50%) scale(0.80); opacity: .08; animation-timing-function: ease-out; }
+    50%  { transform: translateX(-50%) scale(1.30); opacity: .17; animation-timing-function: ease-in; }
+    88%  { transform: translateX(-50%) scale(0.80); opacity: .08; animation-timing-function: ease-in; }
+    100% { transform: translateX(-50%) scale(0.70); opacity: .05; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-scroll-ball__dot,
+    .hero-scroll-ball__shadow { animation: none; }
+  }
 
   #hero-media-box {
     position: absolute;
@@ -1498,11 +1586,145 @@
      the bottom of the listing. Both sections have now been removed on request,
      so the rule had no user left. Do not re-add it without the markup. */
 
-  /* Sekcija "Proces zapošljavanja" (#proces-stage, .proc-step, .proc-ink,
-     .proc-arrow i njihova rukom pisana tipografija) UKLONJENA JE na zahtev,
-     zajedno sa markupom i skriptom. @font-face za LumieraHandwriting i
-     PatrickHand na vrhu fajla su ostali, ali ih VIŠE NIŠTA NE KORISTI — brisati
-     ih tek ako je sigurno da se sekcija ne vraća. */
+  /* ========================================================================
+     PROCES ZAPOŠLJAVANJA — hand-lettered, scroll-written composition
+
+     This section is a straight rebuild of the client's artwork: four steps
+     scattered on a zigzag baseline, the 01–04 numerals in Lumiera and the
+     labels in Patrick Hand, joined by three hand-drawn arrows. It replaced an
+     icon-disc + dot-nav slider; do not put that back.
+
+     Geometry: #proces-stage is a fixed-ratio box carrying `container-type:
+     inline-size`, and EVERY size inside it is in `cqw` (percent of the stage's
+     own width) while every position is a percentage. That is the whole reason
+     the composition holds its proportions at any viewport width — it scales as
+     one drawing instead of reflowing. The percentages come straight off the
+     artwork, normalised to the step band; if a step moves, move it in the
+     markup's inline --x/--y and nothing here changes.
+
+     Writing-on: each piece of ink (numeral, label line, arrow) is revealed by
+     updateProcess() in index.html, which only writes a --w of 0→1 per piece.
+     Text uses a hard-ish mask edge sweeping left to right — a mask, NOT
+     clip-path, so ascenders/descenders are never cut off vertically. Arrows
+     are stroked paths drawn with dashoffset (their --len is measured in JS via
+     getTotalLength(); a hardcoded guess wraps the dash pattern and shows the
+     whole arrow at once).
+  ======================================================================== */
+  #proces-stage {
+    position: relative;
+    container-type: inline-size;
+    /* Matches the artwork's step band: 1380 x 320 of its own units. Every
+       --x/--y in the markup is a percentage of THIS box, so changing the ratio
+       silently re-scales all four steps vertically. */
+    aspect-ratio: 1380 / 320;
+  }
+  .proc-step {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    display: flex;
+    align-items: center;
+    gap: 1.4cqw;
+    white-space: nowrap;
+  }
+  /* Sizes are calibrated off the two fonts' MEASURED ink, not their em size,
+     because the two disagree wildly: Lumiera's digits are only ~0.48em tall
+     (and ~0.42em wide) while Patrick Hand's caps are ~0.66em. Setting both to
+     a similar font-size — the obvious thing — draws the numerals about half
+     the size the artwork has them.
+     line-height .5 on the numeral is deliberate and load-bearing: Lumiera
+     reports a 1.57em content box, so the default (or the .8 this used to have)
+     leaves a huge empty band under each numeral, which drives the flex row's
+     height and pushes step 03 straight out the bottom of the stage. .5em ≈ the
+     digits' real ink height, so the row is as tall as what you can actually
+     see. If the numeral size changes, re-check this. */
+  /* The three sizes below (numeral, label, arrow width) were all scaled DOWN by
+     the same 0.85 on request — 18.2/3.64/8.2cqw before. Scaling them together
+     is what keeps `stroke-width: 4.3` on the arrows valid without recomputing:
+     that number is a ratio between the numeral's pen weight and the arrow's own
+     viewBox unit, so it survives any change that moves both by the same factor.
+     Change one of the three alone and the arrows stop matching the hand — redo
+     the division documented on .proc-arrow path. */
+  .proc-step__num {
+    font-family: 'LumieraHandwriting', cursive;
+    font-size: 15.5cqw;
+    line-height: .5;
+    color: #231F20;
+  }
+  .proc-step__label {
+    font-family: 'PatrickHand', cursive;
+    font-size: 3.1cqw;
+    line-height: 1.08;
+    letter-spacing: .01em;
+    text-transform: uppercase;
+    color: #231F20;
+  }
+  .proc-step__label span { display: block; }
+
+  .proc-arrow {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 7cqw;             /* 8.2 * 0.85 — see the note on .proc-step__num */
+    height: auto;
+    overflow: visible;
+  }
+  /* Arrow 2 dives instead of climbing — same drawing, mirrored, so all three
+     keep an identical hand. */
+  .proc-arrow--down { transform: scaleY(-1); }
+  .proc-arrow path {
+    fill: none;
+    stroke: #231F20;
+    /* Matched to Lumiera's own pen, not picked by eye. Its stroke measures
+       0.02 x font-size (scanned off a canvas render), so at the numerals'
+       18.2cqw that is 0.364cqw; one viewBox unit here is 8.2/96 = 0.0854cqw,
+       hence 0.364 / 0.0854 = 4.3. If either the arrow width or the numeral
+       size changes, redo that division — anything heavier and the arrows read
+       as drawn by a fatter marker than the numbers next to them. */
+    stroke-width: 4.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: var(--len, 200);
+    stroke-dashoffset: calc(var(--len, 200) * (1 - var(--w, 0)));
+  }
+
+  /* The ink mask: a black-to-transparent hand-off travelling from the left
+     edge. The 118%/-9% overshoot is what lets --w:0 hide the glyphs entirely
+     and --w:1 clear the last one, soft edge included. */
+  .proc-ink {
+    -webkit-mask-image: linear-gradient(90deg,
+      #000 calc(var(--w, 0) * 118% - 9%), transparent calc(var(--w, 0) * 118%));
+    mask-image: linear-gradient(90deg,
+      #000 calc(var(--w, 0) * 118% - 9%), transparent calc(var(--w, 0) * 118%));
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+  /* Arrows carry --w too, but theirs drives the dash — masking them as well
+     would double up and clip the head off. */
+  svg.proc-ink {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  /* Under ~700px the zigzag stops working (the numerals would be ~30px), so
+     the absolute layout is dropped for a plain stacked list. */
+  @media (max-width: 700px) {
+    #proces-stage {
+      aspect-ratio: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      align-items: flex-start;
+      padding-left: 6vw;
+    }
+    .proc-step {
+      position: static;
+      gap: 16px;
+    }
+    .proc-step__num { font-size: 110px; }
+    .proc-step__label { font-size: 24px; }
+    .proc-arrow { display: none; }
+  }
 
   /* ========================================================================
      FOOTER CTA PAIR — two photo/video cards that open the footer.
@@ -1672,6 +1894,13 @@
     .footer-cta__face,
     .footer-cta__pillwrap,
     .footer-cta__pill { transition: none !important; }
-    .animated-bg__blob { animation: none !important; }
+    .animated-bg__blob,
+    .hero-scroll-ball__dot,
+    .hero-scroll-ball__shadow { animation: none !important; }
+    .proc-ink {
+      -webkit-mask-image: none !important;
+      mask-image: none !important;
+    }
+    .proc-arrow path { stroke-dashoffset: 0 !important; }
   }
 

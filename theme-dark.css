@@ -122,7 +122,29 @@
     box-shadow: none;
   }
 
-  /* Žuti odraz ispod loptice je otišao sa samom lopticom (uklonjena na zahtev). */
+/* --- Senka loptice ----------------------------------------------------
+     U svetloj temi je to prava bačena senka: #231F20 na .05–.17 alfe, tj.
+     zatamnjenje narandžastog poda. Na #131011 nema šta da se zatamni, pa je
+     ovde ŽUTA i tražena je kao ODRAZ, a ne kao senka — loptica koja svetli
+     ostavlja mrvicu svog svetla na podu ispod sebe.
+
+     Zato ne ide samo promena boje nego i SVOJ set keyframe-ova: alfe iz svetle
+     teme (do .17) bi kao žuta bile jarka mrlja. Ove su oko 40% od njih.
+     ⚠ Stopovi (0/12/50/88/100), easing po stopu i trajanje 1.15s MORAJU ostati
+     identični sa hero-ball-bounce — to je jedino što drži odraz zaključan za
+     loptu umesto da kuca po svom ritmu. Ako se menja jedno, menja se i drugo.
+  --------------------------------------------------------------------- */
+  [data-theme="dark"] .hero-scroll-ball__shadow {
+    background: #FDB813;
+    animation-name: hero-ball-reflection;
+  }
+  @keyframes hero-ball-reflection {
+    0%   { transform: translateX(-50%) scale(0.70); opacity: .02; animation-timing-function: ease-out; }
+    12%  { transform: translateX(-50%) scale(0.80); opacity: .03; animation-timing-function: ease-out; }
+    50%  { transform: translateX(-50%) scale(1.30); opacity: .07; animation-timing-function: ease-in; }
+    88%  { transform: translateX(-50%) scale(0.80); opacity: .03; animation-timing-function: ease-in; }
+    100% { transform: translateX(-50%) scale(0.70); opacity: .02; }
+  }
 
   /* SEARCH BAR NEMA NIJEDNO PRAVILO OVDE, NAMERNO — tražen je stilski identičan
      u obe varijante (žuti okvir, BELI tabovi, crno dugme "Pretraži", beli meni).
@@ -231,8 +253,23 @@
     border-color: var(--dk-ink);
   }
 
-  /* Sekcija "Proces zapošljavanja" je uklonjena na zahtev — sa njom i njena
-     tri pravila (žuti brojevi/labeli, bele strelice). */
+  /* ========================================================================
+     PROCES ZAPOŠLJAVANJA — tuš se okreće u kredu
+
+     Brojevi, labeli i strelice su #231F20 direktno na pozadini; na tamnoj bi
+     bili nevidljivi.
+
+     KORACI I STRELICE SE OVDE RAZILAZE, i to je traženo: koraci (brojevi +
+     labeli) idu u ŽUTU, strelice ostaju BELE. Efekat je da žuto nosi sadržaj a
+     belo samo veze između njih, pa se čita redosled a ne jedna žuta masa.
+     Kratko su oboje bili beli — ne vraćati na to.
+
+     Debljina strelica (stroke-width 4.3) se NE dira — uparena je sa Lumierinim
+     perom i ne zavisi od boje.
+  ======================================================================== */
+  [data-theme="dark"] .proc-step__num,
+  [data-theme="dark"] .proc-step__label { color: #FDB813; }
+  [data-theme="dark"] .proc-arrow path { stroke: var(--dk-ink); }
 
   /* ========================================================================
      FOOTER — PUNA ŽUTA TRAKA NA DNU

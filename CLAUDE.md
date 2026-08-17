@@ -87,9 +87,12 @@ NeoSansW1G, 4 težine (fajlovi u assets/fonts/ ili gde su postavljeni):
 - Light - sitniji tekst
 Svuda gde je tekst caps-lock, koristi text-transform: uppercase (ne menjati sam HTML tekst)
 
-⚠ **LumieraHandwriting** i **PatrickHand** su i dalje @font-face-ovani na vrhu styles.css,
-ali ih VIŠE NIŠTA NE KORISTI - služili su samo sekciji "Proces zapošljavanja", koja je
-uklonjena. Brisati ih tek ako je sigurno da se ta sekcija ne vraća.
+Dodatno, SAMO za sekciju "Proces zapošljavanja" (koja postoji samo u varijaciji #1):
+**LumieraHandwriting** (brojevi 01-04; ime fajla ima RAZMAK, u url() mora ostati %20) i
+**PatrickHand** (nazivi koraka). Obe se @font-face-uju u styles.css uz NeoSans. Dve
+familije se drastično razlikuju po odnosu ink/em (Lumiera cifre ~0.48em, Patrick Hand
+verzali ~0.66em), pa brojevi imaju font-size 18.2cqw a labeli 3.64cqw - isti font-size bi
+nacrtao brojeve upola manje od reference.
 
 ### Logo
 BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK" tekst
@@ -152,7 +155,8 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    (ista boja kao "Prijavi se" dugmad na karticama pozicija). JEDINI CTA na sajtu koji 
    NIJE caps-lock - eksplicitan zahtev. Ranije je imao .cta-gradient pozadinu i uppercase, 
    ne vraćati
-2. Hero - h1 naslov **"UĐI U IGRU." / "BUDI DEO TIMA."** - DVA REDA, jedna rečenica po
+2. Hero (opis ispod je VARIJACIJA #1; za #2 videti "Varijacije dizajna" niže) -
+   h1 naslov **"UĐI U IGRU." / "BUDI DEO TIMA."** - DVA REDA, jedna rečenica po
    redu (traženo tako; bila su tri reda i pisalo je "Uskoči"). Bold, letter-spacing
    -0.06em; u tamnoj temi je prva rečenica žuta a druga bela.
    ⚠ `<br>` između njih je NOSEĆI za varijaciju #2 - ona iz njega izvodi dva bloka koja
@@ -415,15 +419,6 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    "Politika privatnosti" je UKLONJENA.
 
 ### Uklonjene sekcije (NE vraćati bez eksplicitnog zahteva)
-- **"PROCES ZAPOŠLJAVANJA"** (#proces) - rukom pisana kompozicija "4 koraka do karijere u
-  Balkan Bet-u" koja se ispisivala na skrol. Uklonjena na zahtev zajedno sa markupom,
-  skriptom (measureProcess/updateProcess) i CSS-om (.proc-*). ⚠ `@font-face` za
-  **LumieraHandwriting** i **PatrickHand** su ostali na vrhu styles.css ali ih VIŠE NIŠTA
-  NE KORISTI - brisati ih tek ako je sigurno da se sekcija ne vraća
-- **BOUNCING LOPTICA** (#hero-scroll-ball) - loptica iz logotipa koja je poskakivala ispod
-  naslova umesto "scroll down" strelice, i bila klik-prečica na snap pauzu. Uklonjena na
-  zahtev, zajedno sa svojom bačenom senkom, keyframe-ovima (hero-ball-bounce /
-  hero-ball-shadow), žutim odrazom u tamnoj temi i klik handlerom
 - **"Naših 5 vrednosti"** (#values) - uklonjena zajedno sa .value-card CSS-om i VALUES 
   JS blokom. Slike i dalje stoje u assets/values/ (+ originali u assets/values/original/) 
   ako zatrebaju
@@ -765,6 +760,25 @@ obe varijante. Stvarno svoja su samo dva izuzetka:
   `<link>` nestaju. `data-theme="dark"` sa `<html>` tada takođe ide, jer ga niko više ne 
   čita
 
+## ⚠ ŠTA POSTOJI SAMO U VARIJACIJI #1
+Dve stvari su ŽIVE u originalu a UGAŠENE u #2, i to je jedina razlika ispod heroja:
+- **BOUNCING LOPTICA** (#hero-scroll-ball) - loptica iz logotipa koja poskakuje ispod
+  naslova umesto "scroll down" strelice, i klik-prečica je na snap pauzu
+- **"PROCES ZAPOŠLJAVANJA"** (#proces) - rukom pisana kompozicija "4 koraka do karijere u
+  Balkan Bet-u" koja se ispisuje na skrol (LumieraHandwriting + PatrickHand)
+
+Obe su kratko bile OBRISANE iz projekta, pa VRAĆENE: traženo je da nestanu samo iz nove
+verzije, a original mora ostati netaknut kao poređenje. Gase se sa dva selektora u
+variation-2.css:
+```
+[data-var="2"] #hero-scroll-ball,
+[data-var="2"] #proces { display: none; }
+```
+`display: none` a ne `visibility`: loptica je `<button>` i mora prestati da prima Tab, a
+#proces ne sme da zauzima visinu (njegov skript meri sopstveni offsetTop, pa bi prazan
+prostor pomerio sva merenja ispod). Markup, CSS i skriptovi oba ostaju u fajlovima i rade
+u #1 - NE brisati ih ponovo.
+
 ## Varijacije dizajna (variation-2.css / variation-2.js)
 Prekidač dole desno (kružno dugme 44px, `.var-toggle`) više NE bira temu nego DIZAJN. U 
 krugu stoji `#1` ili `#2`.
@@ -800,15 +814,25 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
   tima." je ŽUTA. U theme-dark.css se zato žuta piše na CEO `#hero-heading` a bela vraća
   na `.hero-heading__lead` - obrnuto bi tražilo span oko druge rečenice, koji u markupu ne
   postoji.
-  ⚠ **NASLOV IZLAZI KROZ KAMERU**, kao i pločice - ne ide ni gore ni dole. Ranije su se
-  redovi razmicali vertikalno (a pre toga reči horizontalno); oboje je promenjeno na
-  zahtev, ne vraćati.
+  ⚠ **DVA POKRETA ODJEDNOM**, traženo tako: ceo naslov IZLAZI KROZ KAMERU (translateZ na
+  h1, kao i pločice) i uz to se SVAKI RED RAZMIČE - gornji gore, donji dole (translateY na
+  `.v2-line`). Dubina je na h1, razmicanje na omotačima reda; nikad oba na istom elementu.
   Vozi ga ISTI `zoomEased` koji vozi zum videa, i to je poenta: naslov raste u korak sa
   ivicama videa koji dolazi ispod njega i ne odlepi se od njega.
   ⚠ Dubina je `0.55 × P` (prividna skala do ~2.2×) i taj broj je štimovan PREMA VIDEU:
   na 0.78 (≈4.5×) naslov je na polovini uvoda bio ~1640px širok naspram ~730px koliko je
   tada video i čitao se kao da je odleteo sam.
   Neprozirnost pada na nulu PRE nego što naslov stigne do ivice - traženo tako.
+  ⚠ **RAZMICANJE SE RAČUNA, NE BIRA.** Traženo je da naslov NIKAD ne dodirne video koji
+  raste u sredini, pa se pomeraj reda izvodi iz trenutne veličine videa:
+  `((vh/2) × scale + HEAD_CLEARANCE) / k`, gde je `k` perspektivno uvećanje naslova
+  (deli se njime jer transform reda živi u lokalnom prostoru već uvećanog h1 - bez toga bi
+  razmak bio k puta prevelik). HEAD_CLEARANCE (46px) je jedina ručno birana vrednost.
+  Razmak zato ostaje isti na svakoj visini ekrana. IZMERENO: najmanji zazor dok su oba
+  stvarno vidljiva je 37px.
+  ⚠ Fade videa (`span(zoomT, 0, 0.14)`) je NAMERNO duži od rampe razmicanja (0.06): tako
+  su redovi već na punom zazoru kad video postane vidljiv. Na jednakim rampama izmereno je
+  svega 5px u prvom trenutku - tehnički se ne dodiruju, ali izgleda kao da su se očešali
   ⚠ `#hero-heading-wrap` u varijaciji #2 dobija `perspective: 100vh` - bez perspektivnog
   pretka `translateZ` na naslovu ne radi ništa. Ista vrednost kao na sceni sa pločicama
   je ono što drži da naslov i pločice izlaze kroz ISTU kameru
