@@ -196,6 +196,29 @@
      videa (videti "razmak reda" u render()). */
   var HEAD_CLEARANCE = 46;
 
+  /* Koliko duboko naslov ode, kao udeo perspektive po jedinici napretka.
+     Prividna skala je P/(P − z) = 1/(1 − HEAD_DEPTH × e) i NIJE linearna — raste
+     sve brže kako se prilazi ravni kamere, što je upravo ono što oko čita kao
+     "dolazi ka nama".
+
+     ⚠ 1.05 je štimovano prema PROZORU U KOM SE NASLOV VIDI, a ne prema kraju
+     uvoda. Na ranijih 0.55 skala je do gašenja naslova (e ≈ 0.4) stizala tek do
+     1.44× — uz razmicanje od preko 200px to se čitalo kao da se redovi samo
+     razmiču, bez ikakve dubine. Sa 1.05 naslov do gašenja naraste ~2.7×, pa se
+     vidi i jedno i drugo.
+
+     HEAD_DEPTH_MAX je zaštita: k eksplodira u beskonačno na e = 1/HEAD_DEPTH,
+     pa se dubina zaključava pre toga. Bez toga bi transform postao NaN. */
+  var HEAD_DEPTH = 1.05;
+  var HEAD_DEPTH_MAX = 0.88;
+
+  /* Koliko se red naslova razmakne do kraja uvoda, kao udeo visine kadra —
+     mereno u EKRANSKIM pikselima, pa je razmak isti na svakom ekranu.
+     0.70 × vh je štimovano tako da ravnomerni pokret uvek ostane ispred ivice
+     videa u celom prozoru dok je naslov vidljiv, pa osigurač u render() nikad
+     ne mora da se umeša. */
+  var HEAD_SPLIT = 0.70;
+
   var tiles = [];
   var lines = [];
   // Indeks pločice nad kojom je pokazivač (−1 = nijedna) i njegova pozicija.
@@ -415,60 +438,64 @@
        tek posle postajao pravougaonik. Traženo je da toga nema; referenca
        ionako ima oštre uglove. */
     var zoomT = span(e, 0.16, 1);
+    /* ⚠ MORA se računati OVDE, iznad bloka naslova — naslov je koristi za svoj
+       osigurač razmaka. Dok je stajala niže, uz sam upis neprozirnosti, `var`
+       ju je hoist-ovao ali bez vrednosti: osigurač je dobijao undefined, cela
+       računica je davala NaN i browser je ćutke odbacivao transform, pa se
+       redovi uopšte nisu razmicali. */
+    var videoOn = span(zoomT, 0, 0.14);
     var zoomEased = easeInOut(zoomT);
     var scale = lerp(0.015, 1, zoomEased);
 
-    /* ---- Naslov: IZLAZI KROZ KAMERU, kao i pločice.
+    /* ---- Naslov: OBA POKRETA ODJEDNOM, od prvog piksela skrola.
 
-       ⚠ Ranije su se dva reda razmicala gore i dole. Promenjeno na zahtev:
-       naslov sada ne ide ni gore ni dole nego prilazi posmatraču i izlazi iz
-       kadra "prema nama", dakle isti pokret koji imaju pločice — jedna scena,
-       jedan prostor.
+       Naslov istovremeno (a) izlazi kroz kameru, kao i pločice, i (b) razmiče
+       se — gornji red gore, donji dole. Traženo je da oba krenu ODMAH i teku
+       RAVNOMERNO, pa oba vozi JEDAN linearan pokretač: `e`, napredak uvoda.
 
-       Vozi ga ISTI `zoomEased` koji vozi i zum videa, i to je poenta: naslov
-       tako raste u korak sa ivicama videa koji dolazi ispod njega i ne odlepi
-       se od njega. Da ima svoju krivulju, dva pokreta bi se razišla i pročitala
-       kao dve nezavisne animacije u istom kadru.
+       ⚠ ZAŠTO LINEARNO, a ne easeInOut kao zum. Ranije su oba visila o
+       `zoomEased`, koji je (1) kretao tek na e = 0.16 i (2) kao ease-in-out ima
+       skoro nultu brzinu na početku. Uz to je razmicanje imalo svoju kratku
+       rampu od 6% zuma. Rezultat: na prvi skrol se naslov naglo razmakne a
+       perspektiva se ne pomeri, pa tek na sledeći kreće dubina — dva odvojena
+       trzaja umesto jednog poteza. Linearno `e` daje obojici istu, ravnomernu
+       brzinu od nule; glatkoću ionako donosi Lenis, ne krivulja.
 
-       ⚠ 0.55 × P je KOLIKO DUBOKO IDE i taj broj je štimovan prema videu, ne
-       izabran zbog samog naslova. Prividna skala je P/(P − z), pa 0.55 daje
-       najviše 1/(1 − 0.55) ≈ 2.2×. Na 0.78 (≈4.5×) naslov je bežao daleko ispred
-       videa: na polovini uvoda bio je ~1640px širok naspram ~730px koliko je
-       tada video, pa se čitao kao da se odlepio i odleteo sam. Na 2.2× ivice
-       ostaju blizu ivicama videa koji dolazi i dvoje se čita kao jedan pokret.
+       ⚠ 0.55 × P je koliko duboko ide. Prividna skala je P/(P − z), pa 0.55
+       daje najviše ≈2.2×. Na 0.78 (≈4.5×) naslov je bežao daleko ispred videa:
+       na polovini uvoda bio je ~1640px širok naspram ~730px koliko je tada
+       video, pa se čitao kao da se odlepio i odleteo sam.
 
        Neprozirnost pada na nulu PRE nego što naslov stigne do ivice (traženo
-       tako): uvećan tekst preko videa smeta više nego što pomaže, pa se gasi
-       dok je još u kadru. */
-    var headZ = PERSPECTIVE * 0.55 * zoomEased;
-    heading.style.transform = 'translateZ(' + headZ.toFixed(1) + 'px)';
-    heading.style.opacity = (1 - span(zoomT, 0.08, 0.50)).toFixed(3);
-
-    /* ---- Razmak reda: gornji red gore, donji dole, UVEK ispred ivice videa.
-
-       Traženo je da se naslov ne dodiruje sa videom koji se pojavljuje. Zato
-       razmicanje NIJE slobodno izabran broj nego se RAČUNA iz trenutne veličine
-       videa, pa razmak ostaje isti na svakoj visini ekrana i pri svakoj brzini
-       skrola:
-
-         ivica videa na ekranu = (vh / 2) × scale
-         red mora biti bar toliko + HEAD_CLEARANCE od centra
-
-       Podeljeno sa `k` jer red živi UNUTAR naslova koji je već uvećan
-       perspektivom: transform reda je u lokalnom prostoru h1, a k ga pretvara u
-       ekranske piksele. Bez tog deljenja razmak bi bio k puta veći nego što
-       treba i redovi bi odleteli mnogo pre videa.
-
-       Rampa na početku postoji da redovi ne odskoče odmah: dok je video još
-       nevidljiv nema šta da se izbegava.
-       ⚠ Njen kraj (0.06) je NAMERNO isti kao kraj rampe neprozirnosti videa
-       nekoliko redova niže — razmak mora biti uspostavljen tačno u trenutku kad
-       video postane vidljiv. Na dužoj rampi (0.10) prvih ~100px skrola je
-       izmereno 39px umesto punih 46. */
+       tako): uvećan tekst preko videa smeta više nego što pomaže. */
+    var headT = e;
+    var headZ = PERSPECTIVE * Math.min(HEAD_DEPTH * headT, HEAD_DEPTH_MAX);
     var k = PERSPECTIVE / (PERSPECTIVE - headZ);        // perspektivno uvećanje
+    heading.style.transform = 'translateZ(' + headZ.toFixed(1) + 'px)';
+    heading.style.opacity = (1 - span(e, 0.28, 0.62)).toFixed(3);
+
+    /* ---- Razmak reda.
+
+       Meri se u EKRANSKIM pikselima pa se deli sa `k`: transform reda živi u
+       lokalnom prostoru h1 koji je perspektiva već uvećala, a bez tog deljenja
+       bi razmak bio k puta veći nego što izgleda i redovi bi odleteli mnogo pre
+       videa.
+
+       `Math.max` je OSIGURAČ, ne glavni put. Glavni put je ravnomerno
+       razmicanje (`vh × HEAD_SPLIT × e`), a osigurač garantuje da red nikad ne
+       priđe ivici videa bliže od HEAD_CLEARANCE — čak i ako se brojevi iznad
+       kasnije menjaju. IZMERENO: u celom prozoru dok je naslov vidljiv
+       (e ≤ 0.58) ravnomerni član je veći, pa osigurač ne stupa na scenu i
+       nigde nema promene brzine.
+
+       ⚠ Osigurač se MNOŽI sa `videoOn`. Bez toga važi i dok je video još
+       potpuno nevidljiv, pa na prvi skrol odmah traži svojih ~52px i naslov
+       odskoči umesto da krene ravnomerno — tačno onaj trzaj zbog kog je ceo
+       ovaj blok i prepisan. Nema videa na ekranu, nema ni od čega da se čuva
+       razmak. */
     var videoEdge = (vh / 2) * scale;
-    var needed = (videoEdge + HEAD_CLEARANCE) / k;
-    var lineShift = needed * span(zoomT, 0, 0.06);
+    var floor = (videoEdge + HEAD_CLEARANCE) * videoOn;
+    var lineShift = Math.max(vh * HEAD_SPLIT * headT, floor) / k;
     for (var L = 0; L < lines.length; L++) {
       var dir = L === 0 ? -1 : 1;                       // prvi red gore, drugi dole
       lines[L].style.transform = 'translateY(' + (dir * lineShift).toFixed(1) + 'px)';
@@ -480,7 +507,7 @@
        rampa) izmereno je da u prvom trenutku vidljivosti između teksta i ivice
        videa ostane svega 5px — tehnički se ne dodiruju, ali izgleda kao da se
        očešali. */
-    mediaBox.style.opacity = String(span(zoomT, 0, 0.14));
+    mediaBox.style.opacity = String(videoOn);
     mediaBox.style.borderRadius = '0';
     mediaBox.style.transform =
       'translate(-50%, -50%) translateY(' + lastExitY.toFixed(1) + 'px) scale(' + scale.toFixed(4) + ')';

@@ -814,14 +814,23 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
   tima." je ŽUTA. U theme-dark.css se zato žuta piše na CEO `#hero-heading` a bela vraća
   na `.hero-heading__lead` - obrnuto bi tražilo span oko druge rečenice, koji u markupu ne
   postoji.
-  ⚠ **DVA POKRETA ODJEDNOM**, traženo tako: ceo naslov IZLAZI KROZ KAMERU (translateZ na
-  h1, kao i pločice) i uz to se SVAKI RED RAZMIČE - gornji gore, donji dole (translateY na
-  `.v2-line`). Dubina je na h1, razmicanje na omotačima reda; nikad oba na istom elementu.
+  ⚠ **DVA POKRETA ODJEDNOM, OD PRVOG PIKSELA SKROLA.** Ceo naslov IZLAZI KROZ KAMERU
+  (translateZ na h1, kao i pločice) i uz to se SVAKI RED RAZMIČE - gornji gore, donji dole
+  (translateY na `.v2-line`). Dubina je na h1, razmicanje na omotačima reda; nikad oba na
+  istom elementu.
+  ⚠ OBA VOZI JEDAN LINEARAN POKRETAČ (`e`, napredak uvoda), i to je noseće. Ranije su
+  visili o `zoomEased`, koji kreće tek na e = 0.16 i kao ease-in-out ima skoro nultu
+  brzinu na početku, dok je razmicanje imalo svoju kratku rampu od 6% zuma - rezultat je
+  bio da se na prvi skrol naslov naglo razmakne a dubina se ne pomeri, pa tek na sledeći
+  krene perspektiva. Dva odvojena trzaja umesto jednog poteza. Glatkoću ionako donosi
+  Lenis, ne krivulja.
+  ⚠ `HEAD_DEPTH` je 1.05 (uz `HEAD_DEPTH_MAX` 0.88 kao zaštitu od deljenja nulom) i
+  štimovan je prema PROZORU U KOM SE NASLOV VIDI, ne prema kraju uvoda. Na 0.55 je skala
+  do gašenja naslova stizala tek do 1.44× - uz razmicanje od preko 200px to se čitalo kao
+  da se redovi samo razmiču, bez ikakve dubine. Sada naraste ~2.7× (tekst sa 644px na
+  1770px), pa se vidi i jedno i drugo.
   Vozi ga ISTI `zoomEased` koji vozi zum videa, i to je poenta: naslov raste u korak sa
   ivicama videa koji dolazi ispod njega i ne odlepi se od njega.
-  ⚠ Dubina je `0.55 × P` (prividna skala do ~2.2×) i taj broj je štimovan PREMA VIDEU:
-  na 0.78 (≈4.5×) naslov je na polovini uvoda bio ~1640px širok naspram ~730px koliko je
-  tada video i čitao se kao da je odleteo sam.
   Neprozirnost pada na nulu PRE nego što naslov stigne do ivice - traženo tako.
   ⚠ **RAZMICANJE SE RAČUNA, NE BIRA.** Traženo je da naslov NIKAD ne dodirne video koji
   raste u sredini, pa se pomeraj reda izvodi iz trenutne veličine videa:
@@ -830,9 +839,13 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
   razmak bio k puta prevelik). HEAD_CLEARANCE (46px) je jedina ručno birana vrednost.
   Razmak zato ostaje isti na svakoj visini ekrana. IZMERENO: najmanji zazor dok su oba
   stvarno vidljiva je 37px.
-  ⚠ Fade videa (`span(zoomT, 0, 0.14)`) je NAMERNO duži od rampe razmicanja (0.06): tako
-  su redovi već na punom zazoru kad video postane vidljiv. Na jednakim rampama izmereno je
-  svega 5px u prvom trenutku - tehnički se ne dodiruju, ali izgleda kao da su se očešali
+  ⚠ Osigurač se MNOŽI sa vidljivošću videa (`videoOn`). Bez toga važi i dok je video još
+  potpuno nevidljiv, pa na prvi skrol odmah traži svojih ~52px i naslov odskoči umesto da
+  krene ravnomerno - tačno onaj trzaj zbog kog je blok i prepisan.
+  ⚠ `videoOn` se MORA računati iznad bloka naslova. Kad je stajao niže (uz sam upis
+  neprozirnosti), `var` ga je hoist-ovao bez vrednosti: osigurač je dobijao undefined, cela
+  računica NaN, i browser je ĆUTKE odbacivao transform - redovi se uopšte nisu razmicali.
+  Merenje je pokazivalo translateY 0 na svakoj poziciji
   ⚠ `#hero-heading-wrap` u varijaciji #2 dobija `perspective: 100vh` - bez perspektivnog
   pretka `translateZ` na naslovu ne radi ništa. Ista vrednost kao na sceni sa pločicama
   je ono što drži da naslov i pločice izlaze kroz ISTU kameru
