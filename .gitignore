@@ -1,2 +1,5 @@
 tools/node_modules/
 tools/*.png
+
+# arhive za slanje klijentu — ne idu u repo
+*.zip
