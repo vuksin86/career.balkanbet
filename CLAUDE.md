@@ -156,9 +156,12 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    NIJE caps-lock - eksplicitan zahtev. Ranije je imao .cta-gradient pozadinu i uppercase, 
    ne vraćati
 2. Hero (opis ispod je VARIJACIJA #1; za #2 videti "Varijacije dizajna" niže) -
-   h1 naslov **"UĐI U IGRU." / "BUDI DEO TIMA."** - DVA REDA, jedna rečenica po
+   h1 naslov **"USKOČI U IGRU." / "BUDI DEO TIMA."** - DVA REDA, jedna rečenica po
    redu (traženo tako; bila su tri reda i pisalo je "Uskoči"). Bold, letter-spacing
    -0.06em; u tamnoj temi je prva rečenica žuta a druga bela.
+   ⚠ PRVA REČENICA SE RAZLIKUJE PO VARIJACIJI: markup nosi "Uskoči u igru." (original),
+   a varijacija #2 ga menja u "Uđi u igru." iz svog skripta. Tako se #1 ne oslanja ni na
+   jedan JS. Druga rečenica je ista u obe.
    ⚠ `<br>` između njih je NOSEĆI za varijaciju #2 - ona iz njega izvodi dva bloka koja
    se razilaze gore i dole. Scroll-driven animacija: 
    - video (assets/video/BalkanBet.mp4) ulazi odozdo, ide iza donja 2 reda teksta pa 
@@ -345,7 +348,10 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      pa skok koji preskoči ceo vidljivi opseg (iz "nevidljivo iznad" pravo u "nevidljivo 
      ispod") ne pošalje nikakav callback i reset izostane - to je artefakt skoka, ne bag; 
      testirati postupnim skrolom
-   - "BALKAN BET BENEFITI" - poslednji deo belog panela, ispod mozaika: naslov (manji 
+   - ⚠ **"BALKAN BET BENEFITI" JE TRENUTNO ISKLJUČEN NA OBE VARIJACIJE.** Vraća se
+    brisanjem `hidden` sa wrappera iznad `#benefits-grid` u index.html - BENEFITS niz,
+    render i CSS ostaju na mestu i odmah rade. Opis ispod važi za uključeno stanje:
+  - "BALKAN BET BENEFITI" - poslednji deo belog panela, ispod mozaika: naslov (manji 
      clamp od h2, clamp(1.5rem, 3.2vw, 2.5rem)) + 5 benefita u redu (2 kolone na 
      telefonu, 3 na tabletu, 5 na desktopu), svaki = ikonica u krugu 96px + naslov 
      benefita. BEZ NUMERACIJE - sivi broj 01-05 iznad naslova je UKLONJEN, ne vraćati.
@@ -984,7 +990,13 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
    - Harness koji sve to radi: `shot.mjs` u scratchpad folderu 
      (`node shot.mjs <url> <prefix> <razlomci> --var=2 --w=1440 --h=900`)
 4. Ne diraj animiranu pozadinu (.animated-bg) osim ako se eksplicitno ne traži
-5. Izmena koja se tiče izgleda komponente ide u styles.css (deli je svih troje stranica), 
+5. ⚠ U HTML KOMENTARIMA NE PISATI DOSLOVAN ZATVARAJUĆI NIZ KOMENTARA. Komentar se prekida
+   na prvom takvom nizu, pa ostatak banner-a iscuri u stranicu kao goli tekst. DOGODILO SE:
+   banner iznad #proces je objašnjavao baš taj problem i pukao na sopstvenom primeru -
+   iza sekcije se pojavilo 48px teksta (tamno na tamnom, jedva vidljivo) i razmak do
+   "Najnovijih pozicija" je porastao sa 120px na 168px. Isto pravilo kao ono za
+   `</header>` / `</footer>` u banner komentarima
+6. Izmena koja se tiče izgleda komponente ide u styles.css (deli je svih troje stranica), 
    NE u <style> na pojedinačnoj stranici - inače stranice počnu da se razilaze
 
 ## Pravilo za efikasno čitanje fajlova (štednja tokena)

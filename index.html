@@ -194,8 +194,11 @@
              i zato mu span ne treba; u tamnoj temi je žuta samo ova prva
              (videti .hero-heading__lead u theme-dark.css).
              ⚠ Prelom je NOSEĆI za varijaciju #2: ona iz ovog <br>-a izvodi dva
-             bloka koja se razilaze gore i dole (videti variation-2.js). -->
-        <span class="hero-heading__lead">Uđi u igru.</span><br>Budi deo tima.
+             bloka koja se razilaze gore i dole (videti variation-2.js).
+             ⚠ TEKST OVDE JE TEKST VARIJACIJE #1 ("Uskoči"). Varijacija #2 ima
+             "Uđi" i menja ga SAMA, u variation-2.js — markup uvek nosi original,
+             pa se #1 ne oslanja ni na jedan skript. -->
+        <span class="hero-heading__lead">Uskoči u igru.</span><br>Budi deo tima.
       </h1>
     </div>
 
@@ -418,7 +421,13 @@
        rendered by JS from the BENEFITS array. No numbering — the 01–05 index
        that used to sit above each label was dropped on request.
   ========================================================================== -->
-  <div class="max-w-[1200px] mx-auto px-8 md:px-16 mt-20 text-center">
+  <!-- ⚠⚠ BENEFITI SU TRENUTNO ISKLJUČENI — VRAĆAJU SE BRISANJEM `hidden` SA
+       <div>-a ODMAH ISPOD. Ništa drugo ne treba dirati: BENEFITS niz, render i
+       CSS (.benefit-item*) ostaju na mestu i odmah rade. Isključeno je na OBE
+       varijacije, pa se i vraća na obe odjednom.
+       (Atribut a ne HTML komentar: blok u inline stilu nosi CSS custom
+       property koju JS upisuje, a takve vrednosti ne prolaze kroz komentar.) -->
+  <div class="max-w-[1200px] mx-auto px-8 md:px-16 mt-20 text-center" hidden>
     <h3 class="reveal uppercase font-medium tracking-tight text-brand-dark"
         style="font-size: clamp(1.5rem, 3.2vw, 2.5rem);">
       Balkan Bet benefiti
@@ -451,6 +460,26 @@
 </section>
 
 
+<!-- ============================================================================
+     ⚠⚠ SEKCIJA JE TRENUTNO ISKLJUČENA — VRAĆA SE BRISANJEM `hidden` ATRIBUTA
+     SA <section id="proces"> NEKOLIKO REDOVA NIŽE. Ništa drugo ne treba dirati:
+     markup, CSS (.proc-* u styles.css), skript (measureProcess/updateProcess) i
+     tamna tema svi ostaju na mestu i odmah rade.
+
+     ZAŠTO ATRIBUT A NE HTML KOMENTAR: sekcija u inline stilovima nosi CSS
+     custom properties (style="[dvecrtice]x:27.4%"), a HTML komentar se prekida
+     na prvom zatvarajućem nizu — obavijanje bi ga preseklo na prvoj takvoj
+     vrednosti i ostatak markupa bi iscurio u stranicu kao goli tekst. Atribut
+     je zato i sigurniji i bukvalno jedan potez za vraćanje.
+
+     ⚠ ISTO VAŽI I ZA OVAJ KOMENTAR: ne pisati u njemu doslovan zatvarajući niz
+     komentara. Dogodilo se — banner je pukao na njemu, iza sekcije se pojavilo
+     48px teksta iscurelog u stranicu (tamno na tamnom, jedva vidljivo) i
+     razmak do "Najnovijih pozicija" je porastao sa 120px na 168px.
+
+     ⚠ I DALJE JE SAMO ZA VARIJACIJU #1: variation-2.css je i dalje krije
+     zasebno, pa brisanje `hidden` vraća sekciju samo u original.
+============================================================================ -->
 <!-- ============================================================================
      PROCES ZAPOŠLJAVANJA — the client's hand-lettered artwork, rebuilt as live
      type and written on by scroll. No section background: the four steps are
@@ -493,7 +522,7 @@
      The bottom correction was -47 while the footer still carried .panel-overlap;
      the footer went full-bleed and dropped it, so its -48px came straight off
      this padding (103 → 55) and the gap on screen did not move. -->
-<section id="proces" class="relative z-20 section-panel pt-[120px]">
+<section id="proces" class="relative z-20 section-panel pt-[120px]" hidden>
   <!-- Subtitle ABOVE the heading (it reads as a kicker) — the reference artwork
        had them the other way round, this order was asked for afterwards. -->
   <div class="max-w-[1200px] mx-auto px-8 md:px-16 text-center">

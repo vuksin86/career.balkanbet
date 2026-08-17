@@ -248,6 +248,15 @@
 
      Sam h1 ostaje netaknut kao element: on nosi dubinu (translateZ), a omotači
      nose razmicanje. Dva svojstva, dva nivoa — nikad oba na istom elementu. */
+  /* ⚠ PRVA REČENICA JE DRUGA U OVOJ VARIJACIJI. Markup nosi tekst originala
+     ("Uskoči u igru.") da se varijacija #1 ne bi oslanjala ni na jedan skript;
+     #2 traži "Uđi u igru." i menja ga ovde. Druga rečenica je ista u obe, pa
+     se ne dira. */
+  (function swapLead() {
+    var lead = heading.querySelector('.hero-heading__lead');
+    if (lead) lead.textContent = 'Uđi u igru.';
+  })();
+
   (function buildLines() {
     var groups = [[]];
     Array.prototype.slice.call(heading.childNodes).forEach(function (n) {
