@@ -496,8 +496,15 @@
        čitalo kao samostalna animacija, a video je stizao mnogo posle. */
     var headT = span(e, 0.10, 1);
     var headZ = PERSPECTIVE * Math.min(HEAD_DEPTH * headT, HEAD_DEPTH_MAX);
+    /* ⚠ 2D `scale()`, NE `translateZ()`. Perspektivna projekcija ravne površine
+       centrirane na perspective-origin je matematički isto što i uniformno
+       skaliranje oko centra faktorom P/(P − z), pa je slika identična — a
+       element ostaje običan, nekompozitovan sloj i tekst se svaki frejm crta u
+       punoj rezoluciji. Sa pravim 3D transformom Chrome je naslov rasterizovao
+       jednom pa razvlačio bitmapu u pločicama: mutan tekst, trzaj od pola
+       piksela i vidljivo sečenje slova. Videti duži zapis u variation-2.css. */
     var k = PERSPECTIVE / (PERSPECTIVE - headZ);        // perspektivno uvećanje
-    heading.style.transform = 'translateZ(' + headZ.toFixed(1) + 'px)';
+    heading.style.transform = 'scale(' + k.toFixed(4) + ')';
     heading.style.opacity = (1 - span(e, 0.30, 0.66)).toFixed(3);
 
     /* ---- Razmak reda — VOZI GA IVICA VIDEA, ne sopstveni tajmer.

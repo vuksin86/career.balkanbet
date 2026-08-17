@@ -852,9 +852,17 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
   neprozirnosti), `var` ga je hoist-ovao bez vrednosti: osigurač je dobijao undefined, cela
   računica NaN, i browser je ĆUTKE odbacivao transform - redovi se uopšte nisu razmicali.
   Merenje je pokazivalo translateY 0 na svakoj poziciji
-  ⚠ `#hero-heading-wrap` u varijaciji #2 dobija `perspective: 100vh` - bez perspektivnog
-  pretka `translateZ` na naslovu ne radi ništa. Ista vrednost kao na sceni sa pločicama
-  je ono što drži da naslov i pločice izlaze kroz ISTU kameru
+  ⚠ **NASLOV NIJE U 3D — piše mu se običan 2D `scale()`.** Perspektivna projekcija RAVNE
+  površine centrirane na perspective-origin je matematički ISTO što i uniformno skaliranje
+  oko centra faktorom P/(P − z), pa je slika identična. Sa pravim `translateZ` pod
+  `perspective` Chrome naslov promoviše u kompozitovani 3D sloj, rasterizuje ga JEDNOM i
+  pri uvećanju do ~2.9× razvlači tu bitmapu u pločicama: mutan tekst, trzaj od pola
+  piksela i vidljivo SEČENJE slova na granicama pločica. Zato na `#hero-heading` NEMA ni
+  `perspective` na wrapperu, ni `preserve-3d`, ni `will-change` — sve troje vraća sloj i
+  sa njim kvar.
+  ⚠ Uslov za tu jednakost je da se centar naslova poklapa sa centrom kadra; poklapa se
+  (`#hero-heading-wrap` je `inset: 0`, h1 centriran flexom). Pomeri li se naslov sa centra,
+  `scale()` više nije ekvivalent i mora se vratiti prava projekcija
 - ⚠ **JEDNA SCENA, JEDNA PERSPEKTIVA.** Ni pločice ni reči nemaju sopstvenu formulu za 
   razmicanje - svi dobijaju samo `translateZ`, a širenje ka ivicama crta sama perspektiva 
   (`perspective: 1000px` na `#v2-scene`). Ako se ovo menja, menjati DUBINU, ne x/y: čim se 

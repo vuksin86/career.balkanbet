@@ -138,39 +138,36 @@
 [data-var="2"] #proces { display: none; }
 
 /* ==========================================================================
-   NASLOV — izlazi kroz kameru, kao i pločice
+   NASLOV — prilazi posmatraču i razmiče se
 
    Markup se NE dira: dva reda, `<br>` između njih i `.hero-heading__lead` na
    prvoj rečenici ostaju tačno kako stoje, pa prelom i boje dolaze iz postojećih
    pravila (u tamnoj temi: prva rečenica bela, druga žuta).
 
-   ⚠ PERSPEKTIVA JE OVDE NOSEĆA. Skript naslovu piše `translateZ`, a Z bez
-   perspektivnog pretka ne radi baš ništa — `#hero-heading-wrap` je taj predak.
-   Ista vrednost kao na sceni sa pločicama (100vh) je ono što drži da naslov i
-   pločice izlaze kroz ISTU kameru, a ne kroz dve različite.
+   ⚠ OVDE NEMA NI PERSPEKTIVE NI `preserve-3d` NI `will-change`, i to je
+   NAMERNO — sve troje je bilo tu i sve troje je pravilo isti kvar.
 
-   DVA POKRETA ODJEDNOM, i to je traženo tako:
-     - CEO naslov ide u dubinu (translateZ na h1) — perspektiva
-     - SVAKI RED se uz to razmiče, gornji gore i donji dole (translateY na
-       .v2-line), tako da video koji raste u sredini nikad ne dodirne tekst
-   Razmicanje se NE bira slobodno: skript ga računa iz trenutne veličine videa
-   (videti "razmak reda" u variation-2.js), pa razmak ostaje isti bez obzira na
-   visinu ekrana.
+   Naslov je nekad dobijao `translateZ` pod `perspective: 100vh` na wrapperu.
+   Rezultat: Chrome ga promoviše u zaseban kompozitovani 3D sloj, rasterizuje ga
+   JEDNOM i pri uvećanju do ~2.9× razvlači tu bitmapu, i to u pločicama — pa se
+   tekst mutio, trzao levo-desno za pola piksela i vidljivo SEKAO na granicama
+   pločica (delovi slova bi nestali). Klasičan artefakt, ne greška u računici.
 
-   display: block je noseći — red mora zauzeti celu širinu i primiti sopstveni
-   transform; inline element ne prima ni jedno ni drugo. */
-[data-var="2"] #hero-heading-wrap {
-  perspective: 100vh;
-  perspective-origin: 50% 50%;
-}
-[data-var="2"] #hero-heading {
-  will-change: transform, opacity;
-  transform-style: preserve-3d;
-}
-[data-var="2"] .v2-line {
-  display: block;
-  will-change: transform;
-}
+   Rešenje je da naslov uopšte ne ide u 3D: perspektivna projekcija RAVNE
+   površine centrirane na perspective-origin je MATEMATIČKI ISTO što i uniformno
+   skaliranje oko centra, faktorom P/(P − z). Skript zato računa taj faktor i
+   piše običan 2D `scale()`. Slika je identična, a element ostaje običan
+   nekompozitovan sloj koji se svaki frejm iscrtava u punoj rezoluciji — tekst
+   je oštar i nema šta da se seče.
+
+   ⚠ Uslov za tu jednakost je da se centar naslova poklapa sa centrom kadra.
+   Poklapa se: `#hero-heading-wrap` je `inset: 0` preko celog stage-a, a h1 je u
+   njemu centriran flexom. Ako se naslov ikad pomeri sa centra, `scale()` više
+   nije ekvivalent perspektivi i mora se vratiti prava 3D projekcija.
+
+   display: block na redu je noseći — red mora zauzeti celu širinu i primiti
+   sopstveni transform; inline element ne prima ni jedno ni drugo. */
+[data-var="2"] .v2-line { display: block; }
 
 /* ==========================================================================
    MEDIJ — video + search kao JEDNA celina koja se zumira
