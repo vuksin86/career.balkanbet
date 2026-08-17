@@ -70,15 +70,28 @@
    fotografije stoje kao goli isečci, a ne kao kartice. Ranije su imale 10px i
    tešku senku, što ih je čitalo kao UI elemente umesto kao slike u prostoru.
 
-   backface-visibility + translateZ(0) na slici drže teksturu oštrom dok pločica
-   raste — bez toga Chrome rasterizuje jednom pa razvlači bitmapu. */
+   ⚠ overflow OSTAJE VIDLJIV. Na hover unutrašnji omotač klizi za pokazivačem i
+   mora smeti da izađe van okvira pločice — kao na referenci. Sa overflow:hidden
+   ovde slika bi se secikala o svoju kutiju i efekat bi se pretvorio u pomeranje
+   isečka unutar rama. */
 [data-var="2"] .v2-tile {
   position: absolute;
   will-change: transform, opacity;
+  background: transparent;
+}
+
+/* Omotač slike — jedini element koji nosi hover pomeraj. Sama <img> u njemu
+   miruje, pa se pri kretanju ne re-rasterizuje.
+   backface-visibility + translateZ(0) drže teksturu oštrom dok pločica raste —
+   bez toga Chrome rasterizuje jednom pa razvlači bitmapu. */
+[data-var="2"] .v2-tile__img {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
   background: #0e0d0e;
+  will-change: transform;
 }
-[data-var="2"] .v2-tile img {
+[data-var="2"] .v2-tile__img img {
   display: block;
   width: 100%;
   height: 100%;
@@ -87,27 +100,45 @@
   backface-visibility: hidden;
 }
 
-/* ==========================================================================
-   NASLOV — iste tri linije i ista boja kao u varijaciji #1
-
-   Markup se NE menja u HTML-u: skript obavija svaku reč u <span class="v2-word">
-   i ostavlja <br>-ove i .hero-heading__lead (žuta prva rečenica) na miru, pa
-   se boja i prelom nasleđuju iz postojećih pravila.
-
-   inline-block je noseći: reč mora imati sopstveni transform, a inline element
-   ga ne prima. white-space: pre čuva razmak koji bi inline-block inače pojeo
-   na prelomu. */
-[data-var="2"] .v2-word {
-  display: inline-block;
-  will-change: transform, opacity;
+/* Zona osetljivosti za hover, 15% šira od pločice sa svake strane — mera je sa
+   reference. JEDINI element u sceni koji uopšte prima pokazivač (sama scena je
+   pointer-events: none), pa ništa drugo ovde ne može da ukrade klik.
+   Ne nosi kursor pokazivača: pločice nisu linkovi, samo reaguju. */
+[data-var="2"] .v2-tile__hit {
+  position: absolute;
+  top: -15%;
+  right: -15%;
+  bottom: -15%;
+  left: -15%;
+  pointer-events: auto;
 }
 
-/* Naslov u varijaciji #2 stoji u sceni sa pločicama, pa mu treba isti
-   3D kontekst; bez ovoga bi transform reči bio čisto 2D i razmicanje ne bi
-   pratilo perspektivu ostatka kadra. */
+/* Čim skrol krene, pločice lete kroz kadar i narastu preko pola ekrana — tada
+   se hover gasi, jer bi "magnetna" zona postala ogromna i hvatala pokazivač
+   nasred videa. Skript dodaje klasu, ovde se samo isključi hvatanje. */
+[data-var="2"] #v2-scene.is-locked .v2-tile__hit { pointer-events: none; }
+
+/* ==========================================================================
+   NASLOV — izlazi kroz kameru, kao i pločice
+
+   Markup se NE dira: dva reda, `<br>` između njih i `.hero-heading__lead` na
+   prvoj rečenici ostaju tačno kako stoje, pa prelom i boje dolaze iz postojećih
+   pravila (u tamnoj temi: prva rečenica bela, druga žuta).
+
+   ⚠ PERSPEKTIVA JE OVDE NOSEĆA. Skript naslovu piše `translateZ`, a Z bez
+   perspektivnog pretka ne radi baš ništa — `#hero-heading-wrap` je taj predak.
+   Ista vrednost kao na sceni sa pločicama (100vh) je ono što drži da naslov i
+   pločice izlaze kroz ISTU kameru, a ne kroz dve različite.
+
+   Ranije su se redovi razmicali gore i dole i za to su se obavijali u
+   `.v2-line`; to je uklonjeno na zahtev — naslov sada ide "prema nama". */
+[data-var="2"] #hero-heading-wrap {
+  perspective: 100vh;
+  perspective-origin: 50% 50%;
+}
 [data-var="2"] #hero-heading {
-  transform-style: preserve-3d;
   will-change: transform, opacity;
+  transform-style: preserve-3d;
 }
 
 /* ==========================================================================

@@ -1,12 +1,15 @@
 ﻿<!DOCTYPE html>
-<!-- data-theme="dark" stoji U MARKUPU i NEMA IZLAZA IZ NJEGA: sajt je sada
-     samo taman. Svetla varijanta je povučena na zahtev — ranije se do nje
-     stizalo prekidačem i preko ?tema=light, oboje je uklonjeno, kao i ključ
-     bb-tema u localStorage-u.
+<!-- data-theme="dark" i data-var="2" STOJE U MARKUPU i važe od prvog pixela —
+     pre nego što se izvrši ijedna linija JS-a, i onda kad JS ne radi uopšte.
 
-     Prekidač dole desno više ne bira TEMU nego VARIJACIJU dizajna (#1 / #2);
-     njegov atribut je data-var i postavlja ga boot skript u <head>-u ispod. -->
-<html lang="sr" data-theme="dark">
+     TEMA: samo tamna. Svetla je povučena na zahtev; nema ni prekidača ni
+     ?tema=light, ni ključa bb-tema.
+
+     VARIJACIJA: **#2 JE SADA PODRAZUMEVANA** — na njoj se radi dalje. #1 je
+     original i ostaje samo kao poređenje; do njega se stiže prekidačem dole
+     desno ili preko ?var=1, i tada boot skript SKIDA data-var (isti obrazac
+     koji je ranije koristio izlaz iz tamne teme). -->
+<html lang="sr" data-theme="dark" data-var="2">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,11 +39,14 @@
 ========================================================================== -->
 <link rel="stylesheet" href="theme-dark.css">
 <script>
-  /* PREKIDAČ VARIJACIJE — boot deo, byte-identičan skript kao u index.html.
-     Mora ostati u <head>-u i pre <body>-ja: varijacija #2 menja hero naslovne,
-     pa bi postavljanje atributa kasnije dalo vidljiv blesak varijacije #1.
+  /* PREKIDAČ VARIJACIJE — boot deo.
 
-     Podrazumevana je #1, pa se atribut samo DODAJE kad je tražena #2.
+     Radi OBRNUTO od ranije verzije: varijacija #2 se više ne pali odavde (za to
+     je atribut u markupu, koji važi i pre JS-a i bez njega), nego se ovde SKIDA
+     kada je tražena #1.
+
+     Mora ostati u <head>-u i pre <body>-ja: skidanje atributa kasnije, npr. na
+     DOMContentLoaded, daje vidljiv blesak varijacije #2 pre #1.
 
      Prioritet: ?var= iz URL-a pobeđuje zapamćeni izbor, da se varijacija može
      nekome poslati kao link koji uvek otvara ono što u njemu piše. */
@@ -49,7 +55,7 @@
     var saved = null;
     try { saved = localStorage.getItem('bb-var'); } catch (e) { /* privatni režim */ }
     var v = url || saved;
-    if (v === '2') document.documentElement.setAttribute('data-var', '2');
+    if (v === '1') document.documentElement.removeAttribute('data-var');
     if (url) { try { localStorage.setItem('bb-var', url); } catch (e) {} }
   })();
 </script>
@@ -351,68 +357,31 @@
   </section>
 
 <!-- ============================================================================
-     FOOTER CTA — closing call-to-action + socials
+     FOOTER — zaključna žuta traka
 
      ⚠ SHARED BLOCK — same rule as the header above: this exact markup is
      duplicated BYTE-FOR-BYTE in listanje.html and oglas-primer.html.
      index.html is the source of truth; edit here, then copy this comment and
      the whole footer element across unchanged.
 
-     TWO PARTS, and the split is the point: the media CTAs sit on the page's own
-     background (aurora in the light theme, near-black in the dark one), and only
-     the closing .footer-bar carries a fill — solid yellow in the dark theme.
-     The cards are photographs and would fight a yellow plate behind them.
+     SAMO TRAKA. Dve .footer-cta kartice koje su ranije otvarale futer su
+     PRESELJENE u sekciju #razvoj ("Tvoj prostor za razvoj") na index.html, gde
+     su dobile svoj naslov i podnaslov. ⚠ Zato ih na listanje.html i
+     oglas-primer.html više nema uopšte — futer je tamo sada samo žuta traka.
+     Ako ikad zatrebaju i tamo, sekcija #razvoj se kopira, ne futer.
 
-     No .panel-overlap on the footer: the bar is a real coloured band, and a
-     visible top edge riding 48px up over the section above it would read as a
-     mistake — on listanje.html it would cover the bottom of the results panel.
-     Losing the overlap makes everything above the footer sit 48px looser, which
-     is why #proces above dropped its bottom padding by exactly that much.
+     No .panel-overlap: the bar is a real coloured band, and a visible top edge
+     riding 48px up over the section above it would read as a mistake — on
+     listanje.html it would cover the bottom of the results panel. Losing the
+     overlap makes everything above the footer sit 48px looser.
 
-     Both parts are FULL-BLEED (the bar's fill has to reach both screen edges),
-     so each keeps its own 1440/px-16 wrapper inside — that is what lines the
-     content up with every section above.
+     FULL-BLEED (the bar's fill has to reach both screen edges), with its own
+     1440/px-16 wrapper inside — that is what lines the content up with every
+     section above.
 ============================================================================ -->
-<footer class="relative z-20 pt-20">
+<footer class="relative z-20">
   <div class="max-w-[1440px] mx-auto px-8 md:px-16">
 
-    <!-- Two media CTAs opening the footer — lokali / centrala. Both slots used
-         to be one photo + one "Postani deo našeg tima?" text box; they are now
-         a matched pair of links (see .footer-cta in styles.css for the yellow
-         swing-up hover). The visuals deliberately reuse what already stands for
-         each track in the ŽIVOT mosaic: the lokal photo and the centrala clip
-         (same src, so the video costs no extra download). -->
-    <div class="reveal grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <a href="listanje.html" class="footer-cta">
-        <img class="footer-cta__media" src="assets/bb-zivot/storage-profili.png" alt="Balkan Bet lokal">
-        <div class="footer-cta__scrim"></div>
-        <div class="footer-cta__face"></div>
-        <div class="footer-cta__body">
-          <h2 class="footer-cta__title">Poslovi u lokalima</h2>
-          <p class="footer-cta__sub">Pogledaj otvorene pozicije u Balkan Betu.</p>
-          <!-- The extra span is not decoration: .footer-cta__pillwrap animates
-               grid-template-rows 0fr -> 1fr and the span is the row that has to
-               clip while collapsed. -->
-          <div class="footer-cta__pillwrap"><span>
-            <span class="footer-cta__pill">Saznaj više</span>
-          </span></div>
-        </div>
-      </a>
-
-      <a href="#" class="footer-cta">
-        <video class="footer-cta__media" src="assets/bb-zivot/8141231-uhd_2160_3840_25fps.mp4"
-               autoplay muted loop playsinline preload="metadata"></video>
-        <div class="footer-cta__scrim"></div>
-        <div class="footer-cta__face"></div>
-        <div class="footer-cta__body">
-          <h2 class="footer-cta__title">Posao u centrali</h2>
-          <p class="footer-cta__sub">Postani deo našeg tima</p>
-          <div class="footer-cta__pillwrap"><span>
-            <span class="footer-cta__pill">Saznaj više</span>
-          </span></div>
-        </div>
-      </a>
-    </div>
 
   </div>
 
@@ -432,7 +401,12 @@
 
        .footer-legal is the hook the dark theme needs: on the yellow band this
        text goes dark and the all-white Smartweb logo has to flip with it. -->
-  <div class="footer-bar mt-16 py-8 border-t border-white/20">
+  <!-- ⚠ BEZ mt-16. Ta margina je bila razmak od CTA kartica koje su nekad
+       otvarale futer; kartice su otišle u #razvoj, pa je ostajala kao čist
+       višak povrh razmaka koji sekcija iznad ionako ima (120px + 64px = 184px
+       do žute trake, čitalo se kao rupa). Razmak sada u celosti drži sekcija
+       iznad, kao i između svih ostalih sekcija. -->
+  <div class="footer-bar py-8 border-t border-white/20">
     <div class="max-w-[1440px] mx-auto px-8 md:px-16">
       <div class="reveal footer-legal grid grid-cols-1 sm:grid-cols-3 items-center gap-6 text-white/80 text-xs text-center">
         <p class="sm:justify-self-start">&copy;2026 Balkan Bet. Sva prava zadržana.</p>

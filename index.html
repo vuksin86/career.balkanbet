@@ -1,12 +1,15 @@
 ﻿<!DOCTYPE html>
-<!-- data-theme="dark" stoji U MARKUPU i NEMA IZLAZA IZ NJEGA: sajt je sada
-     samo taman. Svetla varijanta je povučena na zahtev — ranije se do nje
-     stizalo prekidačem i preko ?tema=light, oboje je uklonjeno, kao i ključ
-     bb-tema u localStorage-u.
+<!-- data-theme="dark" i data-var="2" STOJE U MARKUPU i važe od prvog pixela —
+     pre nego što se izvrši ijedna linija JS-a, i onda kad JS ne radi uopšte.
 
-     Prekidač dole desno više ne bira TEMU nego VARIJACIJU dizajna (#1 / #2);
-     njegov atribut je data-var i postavlja ga boot skript u <head>-u ispod. -->
-<html lang="sr" data-theme="dark">
+     TEMA: samo tamna. Svetla je povučena na zahtev; nema ni prekidača ni
+     ?tema=light, ni ključa bb-tema.
+
+     VARIJACIJA: **#2 JE SADA PODRAZUMEVANA** — na njoj se radi dalje. #1 je
+     original i ostaje samo kao poređenje; do njega se stiže prekidačem dole
+     desno ili preko ?var=1, i tada boot skript SKIDA data-var (isti obrazac
+     koji je ranije koristio izlaz iz tamne teme). -->
+<html lang="sr" data-theme="dark" data-var="2">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -55,12 +58,14 @@
 ========================================================================== -->
 <link rel="stylesheet" href="variation-2.css">
 <script>
-  /* PREKIDAČ VARIJACIJE — boot deo. Mora ostati u <head>-u i pre <body>-ja:
-     varijacija #2 menja ceo hero, pa bi postavljanje atributa kasnije (npr. na
-     DOMContentLoaded) dalo vidljiv blesak varijacije #1 pre nje.
+  /* PREKIDAČ VARIJACIJE — boot deo.
 
-     Podrazumevana je #1, pa se atribut samo DODAJE kad je tražena #2 — isti
-     obrazac koji je ranije koristio izlaz iz tamne teme.
+     Radi OBRNUTO od ranije verzije: varijacija #2 se više ne pali odavde (za to
+     je atribut u markupu, koji važi i pre JS-a i bez njega), nego se ovde SKIDA
+     kada je tražena #1.
+
+     Mora ostati u <head>-u i pre <body>-ja: skidanje atributa kasnije, npr. na
+     DOMContentLoaded, daje vidljiv blesak varijacije #2 pre #1.
 
      Prioritet: ?var= iz URL-a pobeđuje zapamćeni izbor, da se varijacija može
      nekome poslati kao link koji uvek otvara ono što u njemu piše. */
@@ -69,7 +74,7 @@
     var saved = null;
     try { saved = localStorage.getItem('bb-var'); } catch (e) { /* privatni režim */ }
     var v = url || saved;
-    if (v === '2') document.documentElement.setAttribute('data-var', '2');
+    if (v === '1') document.documentElement.removeAttribute('data-var');
     if (url) { try { localStorage.setItem('bb-var', url); } catch (e) {} }
   })();
 </script>
@@ -182,48 +187,17 @@
       <h1 id="hero-heading"
           class="uppercase font-medium text-white"
           style="font-size: 100px; line-height: 90px; letter-spacing: -6px;">
-        <!-- Only the FIRST sentence is wrapped. The rest keeps the h1's own
-             text-white and so needs no span: in the light theme the whole
-             headline is white, and in the dark one only this lead goes yellow
-             (see .hero-heading__lead in theme-dark.css). -->
-        <span class="hero-heading__lead">Uskoči u igru.</span><br>Budi deo Balkan<br>Bet tima.
+        <!-- DVA REDA, jedna rečenica po redu — traženo tako. Bila su tri
+             ("Uskoči u igru. / Budi deo Balkan / Bet tima."), pa je i tekst
+             promenjen: "Uskoči" -> "Uđi".
+             Samo PRVA rečenica je obavijena. Ostatak nasleđuje h1-ov text-white
+             i zato mu span ne treba; u tamnoj temi je žuta samo ova prva
+             (videti .hero-heading__lead u theme-dark.css).
+             ⚠ Prelom je NOSEĆI za varijaciju #2: ona iz ovog <br>-a izvodi dva
+             bloka koja se razilaze gore i dole (videti variation-2.js). -->
+        <span class="hero-heading__lead">Uđi u igru.</span><br>Budi deo tima.
       </h1>
     </div>
-
-    <!-- Scroll hint: the logo's ball, bouncing in place. Stands in for the
-         usual "scroll down" chevron. The outer element carries the scroll-driven
-         exit (set in updateHero, tied to the same headT as the headline so
-         the two leave together); the inner span owns the looping bounce, so
-         the CSS animation and the JS transform never fight over one element.
-
-         It is a real <button>, not a decorative div: clicking it jumps to the
-         snap-hold, the point where the video is fullscreen with the search bar
-         on it (see the handler at the bottom of this file). That makes it a
-         control, so it has to be reachable and announceable — hence the element
-         and the aria-label, and hence no aria-hidden. -->
-    <button type="button" id="hero-scroll-ball" aria-label="Pređi na pretragu poslova">
-      <span class="hero-scroll-ball__shadow"></span>
-      <!-- The ball is lifted verbatim out of BalkanBetLogo.svg: same circle
-           path, same radialGradient stops AND the same gradientTransform, in
-           a viewBox matching the logo's own user space (0 0 158.03 158.03).
-           That transform is the reason a CSS radial-gradient can't stand in
-           here — it rotates 72deg and scales the gradient off-centre, so any
-           `radial-gradient(circle at x% y%)` is only ever an approximation. -->
-      <svg class="hero-scroll-ball__dot" viewBox="0 0 158.03 158.03" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <radialGradient id="heroBallGradient" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse"
-                          gradientTransform="translate(58.2688 36.7026) rotate(71.9728) scale(117.678 116.136)">
-            <stop stop-color="#FFF75C"/>
-            <stop offset="0.32" stop-color="#FBC707"/>
-            <stop offset="0.531908" stop-color="#FBC707"/>
-            <stop offset="0.85" stop-color="#F89C0E"/>
-            <stop offset="1" stop-color="#FAB20B"/>
-          </radialGradient>
-        </defs>
-        <path d="M0 79.0146C0 122.652 35.376 158.027 79.0107 158.027C122.651 158.027 158.025 122.652 158.025 79.0146C158.025 35.376 122.651 0 79.0107 0C35.376 0 0 35.376 0 79.0146Z"
-              fill="url(#heroBallGradient)"/>
-      </svg>
-    </button>
 
     <!-- Media layer: single rectangle that rises, crosses the text, then grows to near-fullscreen -->
     <div id="hero-media-box">
@@ -291,61 +265,80 @@
 </section>
 
 <!-- ============================================================================
-     NAJNOVIJE POZICIJE — FIRST section after the hero: it is what the exiting
-     video uncovers, so it carries the #openings margin-top rule (see the
-     "HERO → FIRST SECTION OVERLAP" comment in the CSS). Deliberately has NO
-     background fill and no panel rounding — the orange aurora runs straight
-     through it, and the title/CTA are white against it, with only the job
-     cards reading as white boxes.
+     TVOJ PROSTOR ZA RAZVOJ — naslov + scroll-scrubbed podnaslov + dve CTA kartice
 
-     4 job cards, one-by-one left-to-right cascade reveal (see the OPENINGS
-     script block for the IntersectionObserver + per-card transition-delay,
-     and .opening-card in the CSS above for the travel/opacity tuning that
-     produces the diagonal cascade).
+     PRVA sekcija posle heroja — ona koju izlazeći video otkriva, pa NOSI
+     `margin-top: -130vh` (pravilo "HERO → FIRST SECTION OVERLAP" u styles.css;
+     pripada SLOTU, ne sekciji, i seli se ako se redosled opet menja).
+
+     Nastala je IZ FUTERA: dve .footer-cta kartice su ranije otvarale futer, bez
+     ikakvog uvoda. Sada imaju svoj naslov i isti tekst koji
+     se ispisuje na skrol kakav je do sada nosila sekcija "Život u Balkan Bet-u"
+     — ta mehanika je PRESELJENA ovamo, iz #impact je uklonjena.
+
+     ⚠ ID `#impact-heading` i klase `.impact-word` su ISTORIJSKI naziv te
+     mehanike, ne mesto gde ona stoji. Skript koji je vozi (IMPACT_LINES /
+     measureImpact / updateImpact na dnu fajla) je potpuno generičan i traži
+     samo taj jedan element, pa je preseljenje bilo pomeranje markupa i ništa
+     više. Ne preimenovati bez potrebe — ime nosi i CSS u styles.css.
+
+     ⚠ Kartice ostaju .footer-cta i po klasama i po ponašanju (žuti panel se
+     diže preko medija na hover). Klasa je isto istorijska; komponenta je ista,
+     samo više ne živi u futeru. Zato ih na listanje.html i oglas-primer.html
+     VIŠE NEMA — futer je tamo sada samo žuta traka.
 ============================================================================ -->
-<!-- Padding is asymmetric ON PURPOSE — both gaps still READ as 140px
-     (the old 200px, tightened by the requested 30%):
+<section id="razvoj" class="relative z-10 pt-[120px] pb-[120px]">
+  <div class="max-w-[1200px] mx-auto px-8 md:px-16 text-center">
+    <!-- Isti clamp kao naslovi "Najnovije pozicije" i "Život u Balkan Bet-u" —
+         sva tri treba da čitaju kao isti nivo, držati ih usklađene. -->
+    <h2 class="reveal uppercase font-medium tracking-tight text-white"
+        style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
+      Tvoj prostor za razvoj
+    </h2>
 
-     top = 119px. The 140px is measured from the video's bottom edge to the
-       TOP OF THE TITLE'S LETTERS, which is not where the H2's box starts.
-       Only ONE thing now sits in between:
-         21px — the H2's own leading: 84px line-height on a 56px font leaves
-                7px of half-leading, and the font's ascender clears its cap
-                height by another 14px. Measured off the font metrics, not
-                guessed — if the title's font-size or line-height changes,
-                re-measure and re-derive, because 140 - 21 = 119 only holds
-                for THIS type setting.
-       This was 89px while the media box stopped 30px short of the viewport's
-       bottom edge and that inset had to be subtracted too. The video now goes
-       FULL-BLEED at max size, so the inset is zero and the 30px came back onto
-       the padding — the gap the reader sees is unchanged.
-       Note the header still carries .reveal, so for the ~0.7s of its
-       translateY(24px) fade-in the gap reads up to 164px before settling.
+    <!-- Podnaslov — popunjava se reč po reč na skrol; markup pravi JS -->
+    <p id="impact-heading" class="font-bold leading-snug mt-7 text-white"
+       style="font-size: clamp(1.15rem, 2.1vw, 1.9rem);"></p>
+  </div>
 
-     bottom = the full 140px, measured from the last thing in the section
-       (now the "Pogledaj sve pozicije" link, which sits under the card row)
-       to the white panel's edge — two hard edges, nothing to compensate for. -->
-<section id="openings" class="relative z-10 pt-[119px] pb-[140px]">
-  <div class="max-w-[1440px] mx-auto px-8 md:px-16">
+  <div class="max-w-[1440px] mx-auto px-8 md:px-16 mt-16">
+  <!-- Two media CTAs opening the footer — lokali / centrala. Both slots used
+       to be one photo + one "Postani deo našeg tima?" text box; they are now
+       a matched pair of links (see .footer-cta in styles.css for the yellow
+       swing-up hover). The visuals deliberately reuse what already stands for
+       each track in the ŽIVOT mosaic: the lokal photo and the centrala clip
+       (same src, so the video costs no extra download). -->
+  <div class="reveal grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <a href="listanje.html" class="footer-cta">
+      <img class="footer-cta__media" src="assets/bb-zivot/storage-profili.png" alt="Balkan Bet lokal">
+      <div class="footer-cta__scrim"></div>
+      <div class="footer-cta__face"></div>
+      <div class="footer-cta__body">
+        <h2 class="footer-cta__title">Poslovi u lokalima</h2>
+        <p class="footer-cta__sub">Pogledaj otvorene pozicije u Balkan Betu.</p>
+        <!-- The extra span is not decoration: .footer-cta__pillwrap animates
+             grid-template-rows 0fr -> 1fr and the span is the row that has to
+             clip while collapsed. -->
+        <div class="footer-cta__pillwrap"><span>
+          <span class="footer-cta__pill">Saznaj više</span>
+        </span></div>
+      </div>
+    </a>
 
-    <!-- Header: title only, centered. mb/mt below the row are the old
-         64px/56px tightened by the requested 20%. -->
-    <div class="reveal text-center mb-[51px]">
-      <h2 class="uppercase font-medium tracking-tight text-white"
-          style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
-        Najnovije pozicije
-      </h2>
-    </div>
-
-    <!-- Job cards (rendered by JS, see OPENINGS array) -->
-    <div id="openings-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
-
-    <!-- Text CTA (white-underlined) — sits UNDER the row, not under the title -->
-    <div class="reveal text-center mt-[45px]">
-      <a href="listanje.html" class="inline-block font-medium uppercase text-white text-base border-b-2 border-white pb-0.5 hover:text-brand-dark hover:border-brand-dark transition-colors cursor-pointer">
-        Pogledaj sve pozicije
-      </a>
-    </div>
+    <a href="#" class="footer-cta">
+      <video class="footer-cta__media" src="assets/bb-zivot/8141231-uhd_2160_3840_25fps.mp4"
+             autoplay muted loop playsinline preload="metadata"></video>
+      <div class="footer-cta__scrim"></div>
+      <div class="footer-cta__face"></div>
+      <div class="footer-cta__body">
+        <h2 class="footer-cta__title">Posao u centrali</h2>
+        <p class="footer-cta__sub">Postani deo našeg tima</p>
+        <div class="footer-cta__pillwrap"><span>
+          <span class="footer-cta__pill">Saznaj više</span>
+        </span></div>
+      </div>
+    </a>
+  </div>
   </div>
 </section>
 
@@ -371,10 +364,6 @@
         style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
       Život u Balkan Bet-u
     </h2>
-
-    <!-- Subtitle — filled in word by word on scroll; markup comes from JS -->
-    <p id="impact-heading" class="font-bold leading-snug mt-7"
-       style="font-size: clamp(1.15rem, 2.1vw, 1.9rem);"></p>
   </div>
 
   <!-- Mosaic. items-start keeps the three columns independent heights
@@ -426,168 +415,78 @@
   </div>
 </section>
 
+
 <!-- ============================================================================
-     PROCES ZAPOŠLJAVANJA — the client's hand-lettered artwork, rebuilt as live
-     type and written on by scroll. No section background: the four steps are
-     drawn in brand-dark straight onto the animated aurora, exactly as in the
-     reference. Replaced an icon-disc + dot-nav slider (5 steps) — the artwork
-     says four, and the subtitle counts them, so keep the two in sync.
+     NAJNOVIJE POZICIJE — POSLEDNJA sekcija pre futera, traženo tako.
 
-     LAYOUT — #proces-stage is a fixed-ratio container-query box; the --x/--y
-     on each piece are percentages lifted off the artwork (origin at the step
-     band's top-left, 1380 x 290 of its units). All type sizes live in `cqw` in
-     styles.css, so the whole composition scales as one drawing. Steps sit on a
-     zigzag: 01 mid, 02 high, 03 low, 04 high.
+     Bila je PRVA posle heroja i zato je nosila `margin-top: -130vh` i asimetričan
+     padding izveden iz donje ivice videa. Oba su otišla sa slotom: negativnu
+     marginu sada nosi #razvoj (pravilo "HERO → FIRST SECTION OVERLAP" u
+     styles.css pripada PRVOM SLOTU posle heroja, ne ovoj sekciji), a padding je
+     ovde običan i simetričan jer joj iznad više nije video nego druga sekcija.
 
-     ORDER MATTERS — updateProcess() writes the pieces in DOCUMENT order, so
-     the markup below is authored in writing order (numeral, first label line,
-     second label line, then the arrow that leads to the next step). Reordering
-     these nodes reorders the animation.
+     ⚠ RITAM RAZMAKA JE UJEDNAČEN NA 120px i to je jedini razlog za ove brojeve:
+     #razvoj i #openings imaju py-[120px], a futer je izgubio svoj `pt-20`, pa
+     je razmak do žute trake sada isto 120px (bio je 140 + 80 = 220 i čitao se
+     kao rupa). Menja li se ritam, menja se na sva tri mesta odjednom.
+
+     Nema pozadinu ni zaobljeni panel — narandžasta aurora prolazi kroz nju, a
+     naslov i CTA su beli na njoj; samo kartice pozicija čitaju kao bele kutije.
+
+     4 kartice, kaskadni ulaz s leva na desno (videti OPENINGS skript blok za
+     IntersectionObserver + per-card transition-delay, i .opening-card u CSS-u
+     za štimovanje puta/neprozirnosti koje pravi dijagonalnu kaskadu).
 ============================================================================ -->
-<!-- Padding is ASYMMETRIC to come out visually SYMMETRIC — the section read as
-     cramped at the site's usual 96px py-24 rhythm, so its own target was raised
-     to 150px top and bottom. Measured edge-of-neighbour to edge-of-INK:
-       top    150 + 42 = 192  — .panel-overlap has already eaten 48px, and the
-                               first line is the SUBTITLE, whose box starts
-                               ~6px above its cap line
-       bottom 150 - 95 = 55   — what follows is not a background edge but the
-                               footer, which brings 80px of pt-20, plus ~15px of
-                               unused stage height under the lowest step
-     The two CORRECTIONS (+42 / -95) are properties of the neighbours and the
-     type, not of the target, so raising or lowering the 150 later means moving
-     both numbers by the same amount — do not re-derive them from scratch.
-     They are only valid for these type sizes and this stage ratio.
-     The bottom correction was -47 while the footer still carried .panel-overlap;
-     the footer went full-bleed and dropped it, so its -48px came straight off
-     this padding (103 → 55) and the gap on screen did not move. -->
-<section id="proces" class="relative z-20 panel-overlap section-panel pt-[192px] pb-[55px]">
-  <!-- Subtitle ABOVE the heading (it reads as a kicker) — the reference artwork
-       had them the other way round, this order was asked for afterwards. -->
-  <div class="max-w-[1200px] mx-auto px-8 md:px-16 text-center">
-    <!-- leading-tight / leading-[1.05] are doing the tightening, not the margin.
-         Both lines inherit line-height 1.5, which parks ~9px under the kicker's
-         baseline and ~10px over the heading's cap line; trimming the margin
-         alone barely moved the pair closer. -->
-    <p class="reveal text-white font-bold leading-tight" style="font-size: clamp(1.05rem, 1.9vw, 1.6rem);">
-      4 koraka do karijere u Balkan Bet-u
-    </p>
-    <h2 class="reveal text-white uppercase font-medium tracking-tight leading-[1.05] mt-3"
-        style="font-size: clamp(2rem, 4.5vw, 3.5rem);">
-      Proces zapošljavanja
-    </h2>
-  </div>
+<section id="openings" class="relative z-10 pt-[120px] pb-[120px]">
+  <div class="max-w-[1440px] mx-auto px-8 md:px-16">
 
-  <div class="max-w-[1200px] mx-auto px-8 md:px-16 mt-6 md:mt-8">
-    <div id="proces-stage">
+    <!-- Header: title only, centered. mb/mt below the row are the old
+         64px/56px tightened by the requested 20%. -->
+    <div class="reveal text-center mb-[51px]">
+      <h2 class="uppercase font-medium tracking-tight text-white"
+          style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
+        Najnovije pozicije
+      </h2>
+    </div>
 
-      <!-- The --x values were spread out along with the 0.85 size reduction:
-           each piece, in writing order, carries one more percent of the stage
-           than the one before it (s1 +0, a1 +1, s2 +2 … s4 +6), and the first
-           step was pulled 1% closer to the left edge. Shrinking the type freed
-           roughly 13% of the stage's width and this is where it went — the
-           composition now runs 1.2% → ~98% instead of 2.2% → 92%.
-           The --y zigzag is untouched. -->
-      <!-- 01 -->
-      <div class="proc-step" style="--x:1.2%; --y:31.3%">
-        <span class="proc-step__num proc-ink">01</span>
-        <span class="proc-step__label"><span class="proc-ink">Pronađi</span><span class="proc-ink">poziciju</span></span>
-      </div>
-      <svg class="proc-arrow proc-ink" viewBox="0 0 96 72" style="--x:27.4%; --y:43.1%" aria-hidden="true">
-        <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
-      </svg>
+    <!-- Job cards (rendered by JS, see OPENINGS array) -->
+    <div id="openings-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
 
-      <!-- 02 -->
-      <div class="proc-step" style="--x:30.6%; --y:4.7%">
-        <span class="proc-step__num proc-ink">02</span>
-        <span class="proc-step__label"><span class="proc-ink">Prijavi se</span><span class="proc-ink">online</span></span>
-      </div>
-      <svg class="proc-arrow proc-arrow--down proc-ink" viewBox="0 0 96 72" style="--x:54.4%; --y:23.4%" aria-hidden="true">
-        <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
-      </svg>
-
-      <!-- 03 -->
-      <div class="proc-step" style="--x:53.3%; --y:54.7%">
-        <span class="proc-step__num proc-ink">03</span>
-        <span class="proc-step__label"><span class="proc-ink">Razgovor</span><span class="proc-ink">sa timom</span></span>
-      </div>
-      <svg class="proc-arrow proc-ink" viewBox="0 0 96 72" style="--x:81.1%; --y:48.4%" aria-hidden="true">
-        <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
-      </svg>
-
-      <!-- 04 -->
-      <div class="proc-step" style="--x:77.7%; --y:6.3%">
-        <span class="proc-step__num proc-ink">04</span>
-        <span class="proc-step__label"><span class="proc-ink">Ponuda</span><span class="proc-ink">za posao</span></span>
-      </div>
-
+    <!-- Text CTA (white-underlined) — sits UNDER the row, not under the title -->
+    <div class="reveal text-center mt-[45px]">
+      <a href="listanje.html" class="inline-block font-medium uppercase text-white text-base border-b-2 border-white pb-0.5 hover:text-brand-dark hover:border-brand-dark transition-colors cursor-pointer">
+        Pogledaj sve pozicije
+      </a>
     </div>
   </div>
 </section>
 
-
 <!-- ============================================================================
-     FOOTER CTA — closing call-to-action + socials
+     FOOTER — zaključna žuta traka
 
      ⚠ SHARED BLOCK — same rule as the header above: this exact markup is
      duplicated BYTE-FOR-BYTE in listanje.html and oglas-primer.html.
      index.html is the source of truth; edit here, then copy this comment and
      the whole footer element across unchanged.
 
-     TWO PARTS, and the split is the point: the media CTAs sit on the page's own
-     background (aurora in the light theme, near-black in the dark one), and only
-     the closing .footer-bar carries a fill — solid yellow in the dark theme.
-     The cards are photographs and would fight a yellow plate behind them.
+     SAMO TRAKA. Dve .footer-cta kartice koje su ranije otvarale futer su
+     PRESELJENE u sekciju #razvoj ("Tvoj prostor za razvoj") na index.html, gde
+     su dobile svoj naslov i podnaslov. ⚠ Zato ih na listanje.html i
+     oglas-primer.html više nema uopšte — futer je tamo sada samo žuta traka.
+     Ako ikad zatrebaju i tamo, sekcija #razvoj se kopira, ne futer.
 
-     No .panel-overlap on the footer: the bar is a real coloured band, and a
-     visible top edge riding 48px up over the section above it would read as a
-     mistake — on listanje.html it would cover the bottom of the results panel.
-     Losing the overlap makes everything above the footer sit 48px looser, which
-     is why #proces above dropped its bottom padding by exactly that much.
+     No .panel-overlap: the bar is a real coloured band, and a visible top edge
+     riding 48px up over the section above it would read as a mistake — on
+     listanje.html it would cover the bottom of the results panel. Losing the
+     overlap makes everything above the footer sit 48px looser.
 
-     Both parts are FULL-BLEED (the bar's fill has to reach both screen edges),
-     so each keeps its own 1440/px-16 wrapper inside — that is what lines the
-     content up with every section above.
+     FULL-BLEED (the bar's fill has to reach both screen edges), with its own
+     1440/px-16 wrapper inside — that is what lines the content up with every
+     section above.
 ============================================================================ -->
-<footer class="relative z-20 pt-20">
+<footer class="relative z-20">
   <div class="max-w-[1440px] mx-auto px-8 md:px-16">
 
-    <!-- Two media CTAs opening the footer — lokali / centrala. Both slots used
-         to be one photo + one "Postani deo našeg tima?" text box; they are now
-         a matched pair of links (see .footer-cta in styles.css for the yellow
-         swing-up hover). The visuals deliberately reuse what already stands for
-         each track in the ŽIVOT mosaic: the lokal photo and the centrala clip
-         (same src, so the video costs no extra download). -->
-    <div class="reveal grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <a href="listanje.html" class="footer-cta">
-        <img class="footer-cta__media" src="assets/bb-zivot/storage-profili.png" alt="Balkan Bet lokal">
-        <div class="footer-cta__scrim"></div>
-        <div class="footer-cta__face"></div>
-        <div class="footer-cta__body">
-          <h2 class="footer-cta__title">Poslovi u lokalima</h2>
-          <p class="footer-cta__sub">Pogledaj otvorene pozicije u Balkan Betu.</p>
-          <!-- The extra span is not decoration: .footer-cta__pillwrap animates
-               grid-template-rows 0fr -> 1fr and the span is the row that has to
-               clip while collapsed. -->
-          <div class="footer-cta__pillwrap"><span>
-            <span class="footer-cta__pill">Saznaj više</span>
-          </span></div>
-        </div>
-      </a>
-
-      <a href="#" class="footer-cta">
-        <video class="footer-cta__media" src="assets/bb-zivot/8141231-uhd_2160_3840_25fps.mp4"
-               autoplay muted loop playsinline preload="metadata"></video>
-        <div class="footer-cta__scrim"></div>
-        <div class="footer-cta__face"></div>
-        <div class="footer-cta__body">
-          <h2 class="footer-cta__title">Posao u centrali</h2>
-          <p class="footer-cta__sub">Postani deo našeg tima</p>
-          <div class="footer-cta__pillwrap"><span>
-            <span class="footer-cta__pill">Saznaj više</span>
-          </span></div>
-        </div>
-      </a>
-    </div>
 
   </div>
 
@@ -607,7 +506,12 @@
 
        .footer-legal is the hook the dark theme needs: on the yellow band this
        text goes dark and the all-white Smartweb logo has to flip with it. -->
-  <div class="footer-bar mt-16 py-8 border-t border-white/20">
+  <!-- ⚠ BEZ mt-16. Ta margina je bila razmak od CTA kartica koje su nekad
+       otvarale futer; kartice su otišle u #razvoj, pa je ostajala kao čist
+       višak povrh razmaka koji sekcija iznad ionako ima (120px + 64px = 184px
+       do žute trake, čitalo se kao rupa). Razmak sada u celosti drži sekcija
+       iznad, kao i između svih ostalih sekcija. -->
+  <div class="footer-bar py-8 border-t border-white/20">
     <div class="max-w-[1440px] mx-auto px-8 md:px-16">
       <div class="reveal footer-legal grid grid-cols-1 sm:grid-cols-3 items-center gap-6 text-white/80 text-xs text-center">
         <p class="sm:justify-self-start">&copy;2026 Balkan Bet. Sva prava zadržana.</p>
@@ -681,7 +585,6 @@
   ========================================================================== */
   const heroSpacer = document.getElementById('hero-spacer');
   const heroMediaBox = document.getElementById('hero-media-box');
-  const heroScrollBall = document.getElementById('hero-scroll-ball');
   const heroHeading = document.getElementById('hero-heading');
   const heroSearchBlock = document.getElementById('hero-search-block');
 
@@ -837,21 +740,6 @@
     heroHeading.style.opacity = 1 - headT;
     heroHeading.style.transform = `translateY(${lerp(0, -vh * 0.18, headT)}px) scale(${headScale})`;
 
-    // Scroll-hint ball rides out on exactly the headline's headT — same fade,
-    // same upward travel — so the two clear the screen as one piece. It can
-    // afford the full duration because it paints under the media box (see
-    // #hero-scroll-ball's z-index), so the rising video simply covers it.
-    // translateX has to be restated: it lives in the CSS transform this
-    // declaration overwrites.
-    heroScrollBall.style.opacity = 1 - headT;
-    heroScrollBall.style.transform = `translateX(-50%) translateY(${lerp(0, -vh * 0.18, headT)}px)`;
-    // Now that it is a button it must stop existing once it has faded out, not
-    // just stop being visible: an opacity-0 control still takes Tab, and it
-    // would still be sitting under the pointer over the video. Guarded so this
-    // is a write on the two frames it flips, not on every scroll tick.
-    const ballGone = headT >= 1;
-    if (heroScrollBall.hidden !== ballGone) heroScrollBall.hidden = ballGone;
-
     // Search block: enters in phase 2 (same timing as heading exit), exits in phase 4
     const searchEnterY = lerp(vh * 0.5, 0, revealT);
     heroSearchBlock.style.opacity = revealT;
@@ -871,22 +759,6 @@
     updateHero(lenis.scroll);
   });
   updateHero(lenis.scroll);
-
-  /* Clicking the bouncing ball jumps to the SNAP-HOLD — the stretch where the
-     video is stretched across the whole screen with the search bar on it.
-
-     p2End is the exact frame it arrives there (p2End → p3End is the hold), so
-     it is the earliest scroll position that shows the finished picture; landing
-     any deeper would already be eating into the pause.
-
-     Derived from the same cached measurements updateHero runs on, and read at
-     click time rather than precomputed, so a resize in between needs nothing
-     kept in sync. Driven through lenis.scrollTo for the same reason every other
-     scroll read on this page goes through Lenis — a native scrollTo would jump
-     the smoothed value out from under the choreography. */
-  heroScrollBall.addEventListener('click', () => {
-    lenis.scrollTo(heroOffsetTop + HERO_PHASE.p2End * heroScrollable, { duration: 1.4 });
-  });
 
   /* ==========================================================================
      HERO SEARCH — three custom dropdowns; the job-type tab drives the rest
@@ -1060,10 +932,10 @@
      reading order so they don't all wipe in at the exact same instant.
   ========================================================================== */
   const IMPACT_LINES = [
-    [{ t: 'Ne' }, { t: 'pristajemo' }, { t: 'na' }, { t: 'nepravdu' }, { t: 'i' }, { t: 'menjamo' }, { t: 'stvari' }, { t: 'nabolje.' }],
-    [{ t: 'Cilj' }, { t: 'nam' }, { t: 'je' }, { t: 'jednostavan:' }, { t: 'fer' }, { t: 'izbor' }, { t: 'za' }, { t: 'milione' }, { t: 'ljudi.' }],
-    [{ t: 'Profit' }, { t: 'ne' }, { t: 'zadržavamo,' }, { t: 'već' }, { t: 'ga' }, { t: 'vraćamo' }, { t: 'zajednici.' }],
-    [{ t: 'Zajedno možemo mnogo više.', hl: true }],
+    [{ t: 'Balkan' }, { t: 'Bet' }, { t: 'čini' }, { t: 'više' }, { t: 'od' }, { t: '1.200' }, { t: 'kolega' }, { t: 'u' }, { t: '100' }, { t: 'lokala' }],
+    [{ t: 'i' }, { t: 'u' }, { t: 'centrali.' }, { t: 'Bilo' }, { t: 'da' }, { t: 'te' }, { t: 'inspiriše' }, { t: 'rad' }, { t: 'sa' }, { t: 'ljudima' }],
+    [{ t: 'ili' }, { t: 'razvoj' }, { t: 'u' }, { t: 'struci,' }, { t: 'imaš' }, { t: 'sjajne' }, { t: 'uslove' }, { t: 'za' }, { t: 'napredak.' }],
+    [{ t: 'Izaberi put u Balkan Bet-u.', hl: true }],
   ];
 
   let hlIndex = 0;
@@ -1609,86 +1481,6 @@
   benefitsGrid.querySelectorAll('.reveal').forEach((el) => revealObserver.observe(el));
 
   /* ==========================================================================
-     PROCES ZAPOŠLJAVANJA — scroll-written hand lettering
-
-     Replaced an auto-advancing icon+text slider with dot nav. Nothing here is
-     timed: the four steps are WRITTEN as the section scrolls, piece by piece
-     from the left, and un-write if the reader scrolls back up.
-
-     The pieces are simply every `.proc-ink` in DOCUMENT order — that is why
-     index.html authors the composition in writing order (01, "Pronađi",
-     "poziciju", arrow, 02, …) even though every piece is absolutely
-     positioned and DOM order has no effect on where it lands.
-
-     Each piece gets a --w of 0→1; the CSS decides what that means (a mask
-     sweeping across glyphs, a dashoffset drawing an arrow). Slots overlap by a
-     hair (PROC_SPAN is slightly wider than an even share) so the hand does not
-     stop dead between pieces, and the starts are spaced so the LAST piece
-     finishes exactly at progress 1 rather than running past the window.
-
-     Window length is derived, not fixed: the whole run has to fit in the
-     scroll distance over which the stage stays fully on screen, otherwise the
-     last step would be written above the top edge where nobody sees it. On a
-     ~900px viewport that works out to ~400px of scroll for all 15 pieces —
-     deliberately brisk, the client asked for the four steps not to drag.
-  ========================================================================== */
-  const procStage = document.getElementById('proces-stage');
-  const procInkEls = Array.from(procStage.querySelectorAll('.proc-ink'));
-  // Writing starts as soon as the TOP of the composition clears the bottom edge
-  // by this much. It used to wait for the whole stage to be on screen, which
-  // meant the reader had the four steps sitting there blank for a moment before
-  // anything happened.
-  const PROC_LEAD = 70;
-
-  // Arrows are drawn with stroke-dashoffset, which needs the path's real
-  // length — a guessed dasharray wraps the pattern and flashes the whole arrow
-  // in at once. Measured once here and handed to the CSS as --len.
-  procStage.querySelectorAll('.proc-arrow path').forEach((path) => {
-    path.style.setProperty('--len', path.getTotalLength().toFixed(1));
-  });
-
-  let procStart = 0;
-  let procRun = 1;
-  let procActive = procInkEls; // pieces currently on screen at all (see below)
-  let procSpan = 1;
-  let procGap = 1;
-
-  function measureProcess() {
-    const rect = procStage.getBoundingClientRect();
-    const top = rect.top + window.scrollY;
-    const vh = window.innerHeight;
-    procStart = top + PROC_LEAD - vh;
-    // Half a viewport of scroll for all 15 pieces. Short on purpose (the client
-    // asked for the four steps not to drag), and short enough that the run ends
-    // with the whole composition still comfortably in frame even though it now
-    // begins the moment the composition's top edge appears.
-    procRun = clamp(vh * 0.5, 280, 520);
-
-    // The stacked phone layout drops the arrows (display:none). They must drop
-    // out of the sequence too, or their slots become dead pauses between steps.
-    procActive = procInkEls.filter((el) => el.offsetParent !== null);
-    procInkEls.forEach((el) => {
-      if (!procActive.includes(el)) el.style.setProperty('--w', '1');
-    });
-    procSpan = Math.min(1, 1.15 / Math.max(1, procActive.length));
-    procGap = (1 - procSpan) / Math.max(1, procActive.length - 1);
-  }
-
-  function updateProcess(scrollY) {
-    const progress = wantsLessMotion ? 1 : clamp((scrollY - procStart) / procRun, 0, 1);
-    procActive.forEach((el, i) => {
-      el.style.setProperty('--w', clamp((progress - i * procGap) / procSpan, 0, 1).toFixed(3));
-    });
-  }
-
-  measureProcess();
-  lenis.on('scroll', ({ scroll }) => updateProcess(scroll));
-  window.addEventListener('resize', () => {
-    measureProcess();
-    updateProcess(lenis.scroll);
-  });
-
-  /* ==========================================================================
      SCROLL PROGRESS RAIL
 
      Reads its position from lenis.on('scroll') like everything else on this
@@ -1699,7 +1491,7 @@
 
      The scrollable distance is MEASURED AND CACHED rather than read per frame:
      scrollHeight forces a layout, and this runs on every scroll frame alongside
-     the hero, impact and process scrubbers. It is re-measured wherever those
+     the hero and impact scrubbers. It is re-measured wherever those
      are — resize, load, fonts — since anything that changes the page height
      changes this number too.
   ========================================================================== */
@@ -1729,15 +1521,13 @@
      openings grid is still empty and every offset it reads is ~300px short.
      Anything that changes the page height above the paragraph (cards, web
      fonts swapping in) invalidates it, so it is taken again once the document
-     and its fonts have actually settled. measureProcess() rides along for the
-     same reason — it sits even further down the page, and its own stage is
-     sized by two web fonts that have almost certainly not landed yet.
+     and its fonts have actually settled.
+     (Ovde je nekad išao i measureProcess() — sekcija "Proces zapošljavanja" je
+     uklonjena na zahtev, zajedno sa svojim markupom, skriptom i CSS-om.)
   ========================================================================== */
   function remeasureAll() {
     measureImpact();
     updateImpact(lenis.scroll);
-    measureProcess();
-    updateProcess(lenis.scroll);
     // The rail's own measurement is the page height, which is exactly what
     // these late-arriving cards and fonts change.
     measureProgress();

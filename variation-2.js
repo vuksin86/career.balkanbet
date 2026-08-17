@@ -2,24 +2,31 @@
    VARIJACIJA #2 — uvodna animacija naslovne
 
    Rekonstrukcija uvoda sa telescope.fyi: polje sitnih slika raspoređeno oko
-   naslova prolazi kroz kadar ka posmatraču, naslov se razmiče i gasi, a u
-   sredini se zumira glavni medij. Kod nas je taj medij POSTOJEĆI hero video sa
-   search barom, pa se na kraju animacije stiže na isti kadar kao u
-   varijaciji #1 — odatle nadalje (snap pauza, izlazak, #openings) obe
-   varijacije dele isti kod.
+   naslova prolazi kroz kadar ka posmatraču, naslov ide zajedno sa njima i izlazi
+   kroz kameru, a u sredini se zumira glavni medij. Kod nas je taj medij
+   POSTOJEĆI hero video sa search barom, pa se na kraju animacije stiže na isti
+   kadar kao u varijaciji #1 — odatle nadalje (snap pauza, izlazak, sekcija
+   ispod) obe varijacije dele isti kod.
+
+   TRI POKRETA, TRI IZVORA VREMENA:
+     1. UVODNI RASPORED  — vreme (rAF), jednom po učitavanju stranice
+     2. HOVER            — pokazivač (rAF lerp), samo dok je scena u mirovanju
+     3. LET KROZ KADAR   — SCROLL (updateHero iz index.html)
+   Sva tri pišu u ISTI transform po pločici, pa postoji jedan `render()` koji ih
+   sabira. Nikad ne dodavati četvrti pisac istog svojstva — to je najlakši način
+   da se animacije počnu međusobno preskakati.
 
    KAKO SE UKLAPA U POSTOJEĆI HERO
    Ovaj fajl NE pravi svoj scroll listener. index.html i dalje ima jedan
-   updateHero() koji Lenis zove na svaki tick; on na vrhu proveri
-   window.BB_VAR2 i, ako je aktivna, prosledi kadar ovamo. Time ostaju
-   zajednički: merenje spacera, izlazna faza (P4) i staklo headera — dakle
-   tačno ono što ne sme da se razilazi između varijacija.
+   updateHero() koji Lenis zove na svaki tick; on na vrhu proveri window.BB_VAR2
+   i, ako je aktivna, prosledi kadar ovamo. Time ostaju zajednički: merenje
+   spacera, izlazna faza (P4) i staklo headera — dakle tačno ono što ne sme da
+   se razilazi između varijacija.
 
-   ⚠ JEDNA SCENA, JEDNA PERSPEKTIVA. Ni pločice ni reči naslova nemaju
-   sopstvenu formulu za razmicanje: svi dobijaju samo translateZ, a to što se
-   šire ka ivicama kadra dok prilaze crta perspektiva. Ako se ovo ikad menja,
-   menjati DUBINU (z), ne x/y — čim se x/y anima ručno, pokret prestane da
-   izgleda kao jedan prostor i raspadne se na više nezavisnih animacija.
+   ⚠ JEDNA SCENA, JEDNA PERSPEKTIVA. Pločice nemaju sopstvenu formulu za
+   razmicanje: dobijaju samo translateZ, a to što se šire ka ivicama kadra dok
+   prilaze crta perspektiva. Ako se ovo ikad menja, menjati DUBINU (z), ne x/y —
+   čim se x/y anima ručno, pokret prestane da izgleda kao jedan prostor.
    ########################################################################## */
 (function () {
   'use strict';
@@ -34,17 +41,21 @@
   var heading = document.getElementById('hero-heading');
   var mediaBox = document.getElementById('hero-media-box');
   var searchBlock = document.getElementById('hero-search-block');
-  var scrollBall = document.getElementById('hero-scroll-ball');
   if (!stage || !heading || !mediaBox || !searchBlock) return;
 
   var clamp = function (v, a, b) { return Math.min(Math.max(v, a), b); };
   var lerp = function (a, b, t) { return a + (b - a) * t; };
-  // Ease-in-out: kreće lagano, ubrza po sredini i staje bez trzaja. Isti profil
-  // koji varijacija #1 dobija svojim easeOutCubic na kraju uvoda — bitno je da
-  // u snap pauzu uđe sa ~nultom brzinom, inače se pauza čita kao naglo kočenje.
+  // Ease-in-out za skrol: kreće lagano, ubrza po sredini i staje bez trzaja.
+  // Bitno je da u snap pauzu uđe sa ~nultom brzinom, inače se pauza čita kao
+  // naglo kočenje.
   var easeInOut = function (t) {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   };
+  // Ease-out sedmog reda — vrlo brz start, dug i mek doček. Ovo je krivulja
+  // uvodnog rasporeda: pločica "doleti" i skoro neprimetno se smiri, umesto da
+  // stigne i stane. Blaži eksponenti (cubic) ovde izgledaju kao da pločice
+  // klize u mesto.
+  var easeOutIntro = function (t) { return 1 - Math.pow(1 - t, 7); };
   // Glatko 0→1 na zadatom intervalu; koristi se za sve "od kad do kad" pragove
   // umesto lomljenih linearnih rampi.
   var span = function (v, a, b) { return clamp((v - a) / (b - a), 0, 1); };
@@ -56,7 +67,7 @@
      Menja se jedno, preračunava se drugo.
 
      p4End i razlika p4End−p3End (130vh) MORAJU ostati iste kao u varijaciji #1
-     u vh izrazu — na njima stoji margin-top: -130vh sekcije #openings.
+     u vh izrazu — na njima stoji margin-top: -130vh prve sekcije posle heroja.
   ========================================================================== */
   var SCROLLABLE_VH = 393;
   var PHASE = {
@@ -92,21 +103,21 @@
      širinu — tako je i na referenci, i zato se raspored ne prelama na drugim
      odnosima stranica.
 
-     ⚠ U MIROVANJU JE translateZ NULA, ne `d`. Ovo je bila ključna zabuna: `d`
-     jeste zapisano u njihovom CSS-u, ali čim se njihov skript upali, on piše
-     translateZ od nule naviše. Zato pločice na prvom ekranu stoje TAČNO na ovim
-     koordinatama — razasute preko celog kadra, raznih veličina, neke preko
-     naslova i neke odsečene ivicom ekrana (x = −0.05 je namerno van kadra).
-     `d` odlučuje SAMO koliko brzo koja poleti ka posmatraču kad skrol krene.
+     ⚠ U MIROVANJU JE translateZ NULA, ne `d`. `d` jeste zapisano u njihovom
+     CSS-u, ali čim se njihov skript upali, on piše translateZ od nule naviše.
+     Zato pločice posle uvodnog rasporeda stoje TAČNO na ovim koordinatama, a
+     `d` odlučuje samo koliko brzo koja poleti ka posmatraču kad skrol krene.
 
-     Zato su i vidljive odmah, bez skrola — traženo eksplicitno, i tako je i na
-     referenci.
+     ⚠ TRI POLOŽAJA SU POMERENA U ODNOSU NA REFERENCU, na zahtev — referenca
+     ima brend traku na DNU ekrana, a naša navigacija je na VRHU, pa su joj tri
+     pločice ulazile u posao:
+       i=4  spuštena sa y .050 na .150      — stajala je preko dugmeta
+                                              "Pronađi posao" u headeru
+       i=1  smanjena, levo i niže           — ove dve se preklapaju i zajedno
+       i=2  smanjena, levo i niže             su prekrivale nav linkove
+     Ostalih devet je netaknuto. Ako se ikad menja, menjaju se OVE tri, ne ceo
+     raspored — on je merenje, ne procena.
   ========================================================================== */
-  /* ⚠ SAMO FOTOGRAFIJE. assets/values/*.png i assets/bb-zivot/benefit-*.png su
-     ikonice — providni PNG-ovi sa sitnim žutim glifom — i u ovom polju se čitaju
-     kao prazni tamni pravougaonici, ne kao slike. Fotografija na sajtu ima
-     svega šest, pa se ciklus ponavlja; to se ne vidi jer pločice nikad nisu
-     istovremeno na istoj dubini ni istoj veličini. */
   var IMAGES = [
     'assets/bb-zivot/storage-profili.png',
     'assets/bb-zivot/1-Autor-Zeljko-Stevanovic.jpg',
@@ -118,10 +129,10 @@
 
   var TILES = [
     { x: -0.0500, y: 0.2100, w: 0.1150, ar: 1.00, d:  720 },
-    { x:  0.2900, y: 0.1500, w: 0.0920, ar: 1.40, d:  360 },
-    { x:  0.3600, y: 0.0300, w: 0.1150, ar: 1.10, d: 1080 },
+    { x:  0.2450, y: 0.2050, w: 0.0820, ar: 1.40, d:  360 },
+    { x:  0.3150, y: 0.1350, w: 0.1000, ar: 1.10, d: 1080 },
     { x:  0.6240, y: 0.1100, w: 0.0760, ar: 0.90, d:  360 },
-    { x:  0.8990, y: 0.0500, w: 0.0610, ar: 1.40, d:  360 },
+    { x:  0.8990, y: 0.1500, w: 0.0610, ar: 1.40, d:  360 },
     { x:  0.7980, y: 0.2800, w: 0.1320, ar: 0.90, d: 1080 },
     { x:  0.9680, y: 0.6041, w: 0.0470, ar: 1.10, d:  360 },
     { x:  0.7000, y: 0.7545, w: 0.1500, ar: 1.40, d:  720 },
@@ -139,8 +150,50 @@
      ono što pokretu daje dubinu umesto da celo polje ode u istom potezu. */
   var DEPTH_TRAVEL = 1.5;
 
+  /* ==========================================================================
+     UVODNI RASPORED — pločice dolete na svoja mesta pri učitavanju
+
+     Sve troje je IZMERENO na referenci (uzorkovanje computed style-a frejm po
+     frejm od trenutka učitavanja):
+       - polazna dubina je −1.25 × d          (d=720 → −900, d=1080 → −1350,
+                                               d=360 → −450, d=540 → −675)
+       - trajanje po pločici ~1.85s
+       - razmak između polazaka ~90ms, i to u OVOM redosledu, koji nije
+         pozicioni nego promešan — zato stoji kao spisak, a ne kao formula
+     INTRO_DELAY je naš: referenca ima svoj preloader pa joj prva pločica kreće
+     tek oko 760ms, a kod nas stranica odmah stoji, pa se čeka samo toliko da
+     prvi paint slegne.
+  ========================================================================== */
+  var INTRO_ORDER = [6, 9, 3, 1, 7, 2, 0, 4, 11, 8, 5, 10];
+  var INTRO_DELAY = 180;      // ms pre nego što prva pločica krene
+  var INTRO_STAGGER = 90;     // ms između polazaka
+  var INTRO_DUR = 1850;       // ms po pločici
+  var INTRO_START_DEPTH = -1.25;   // × d
+
+  /* ==========================================================================
+     HOVER — slika klizi za pokazivačem ("magnetni" efekat)
+
+     IZMERENO na referenci: unutrašnji omotač slike se pomera za 0.30 × koliko
+     je pokazivač odmakao od centra pločice, u ISTOM smeru. Zona osetljivosti je
+     15% veća od same pločice sa svake strane (kod njih zaseban `.hover` sloj,
+     kod nas `.v2-tile__hit`).
+
+     Pomeranje se ne radi CSS tranzicijom nego lerpom po frejmu: tranzicija na
+     svaki pomeraj miša stalno restartuje svoju krivulju i pokret ispadne
+     "stepenast", dok lerp uvek juri trenutni cilj i ostaje gladak.
+  ========================================================================== */
+  var HOVER_PULL = 0.30;      // koliko slika prati pokazivač
+  var HOVER_EASE = 0.14;      // koliko se približi cilju po frejmu
+  /* Preko ovog napretka skrola hover se GASI: pločice tada lete kroz kadar i
+     narastu preko pola ekrana, pa bi "magnetna" zona postala ogromna i hvatala
+     pokazivač nasred videa. */
+  var HOVER_LOCK_AT = 0.03;
+
   var tiles = [];
-  var words = [];
+  // Indeks pločice nad kojom je pokazivač (−1 = nijedna) i njegova pozicija.
+  // Stoje ovde, iznad izgradnje, jer ih listeneri koji se tamo kače zatvaraju.
+  var hovered = -1;
+  var pointerX = 0, pointerY = 0;
 
   /* ==========================================================================
      IZGRADNJA
@@ -148,68 +201,86 @@
 
   // Search bar se SELI unutar medija. To je ceo trik iza "video i search se
   // zumiraju zajedno": kutija je tačno viewport, bar u njoj stoji na svojih
-  // 96px od dna, pa jedan scale() na kutiji zumira oba i sleti na 1:1 bez
-  // ijednog dodatnog računa. U varijaciji #1 bar ostaje gde je bio.
+  // 96px od dna, pa jedan scale() zumira oba i sleti na 1:1 bez ijednog
+  // dodatnog računa. U varijaciji #1 bar ostaje gde je bio.
   mediaBox.appendChild(searchBlock);
 
-  // Reči naslova. Obavija se SAMO tekst — <br>-ovi i .hero-heading__lead
-  // ostaju netaknuti, pa prelom u tri reda i žuta prva rečenica dolaze iz
-  // postojećih pravila i ovde se ne ponavljaju.
-  function wrapWords(node) {
-    var kids = Array.prototype.slice.call(node.childNodes);
-    kids.forEach(function (child) {
-      if (child.nodeType === 1) { wrapWords(child); return; }   // npr. .hero-heading__lead
-      if (child.nodeType !== 3) return;
-      var text = child.nodeValue;
-      if (!text.trim()) return;
-      var frag = document.createDocumentFragment();
-      // Razmaci se čuvaju kao zasebni čvorovi: inline-block reč bez njih bi se
-      // slepila sa susednom.
-      text.split(/(\s+)/).forEach(function (part) {
-        if (!part) return;
-        if (!part.trim()) { frag.appendChild(document.createTextNode(part)); return; }
-        var s = document.createElement('span');
-        s.className = 'v2-word';
-        s.textContent = part;
-        frag.appendChild(s);
-      });
-      node.replaceChild(frag, child);
-    });
-  }
-  wrapWords(heading);
-  words = Array.prototype.slice.call(heading.querySelectorAll('.v2-word'));
+  /* NASLOV OSTAJE TAČNO KAKAV JE U MARKUPU — ni jedan čvor se ne dira.
+     Ranije su se redovi obavijali u <span class="v2-line"> da bi mogli da se
+     razmiču gore i dole; sada naslov izlazi kroz kameru kao celina, pa mu treba
+     samo jedan transform na samom h1 i nikakvo prepakivanje. */
 
   var scene = null;
   if (!PREFERS_REDUCED) {
     scene = document.createElement('div');
     scene.id = 'v2-scene';
-    scene.setAttribute('aria-hidden', 'true');   // čist ukras, ne sadržaj
 
     TILES.forEach(function (t, i) {
       var el = document.createElement('div');
       el.className = 'v2-tile';
+
+      // Omotač slike je ono što se pomera na hover; sama <img> miruje u njemu.
+      var wrap = document.createElement('div');
+      wrap.className = 'v2-tile__img';
       var img = document.createElement('img');
       img.src = IMAGES[i % IMAGES.length];
       img.alt = '';
       // Pločice su ukras i sve ih ima 12 odjednom — lazy bi ih dovukao tek kad
       // uđu u kadar, a tada je već kasno: pojavile bi se prazne usred leta.
       img.decoding = 'async';
-      el.appendChild(img);
+      wrap.appendChild(img);
+      el.appendChild(wrap);
+
+      // Zona osetljivosti, 15% šira od pločice sa svake strane (kao na
+      // referenci). Jedini element u sceni koji uopšte prima pokazivač.
+      var hit = document.createElement('div');
+      hit.className = 'v2-tile__hit';
+      el.appendChild(hit);
+
       scene.appendChild(el);
-      tiles.push({ el: el, def: t });
+      tiles.push({
+        el: el, wrap: wrap, def: t,
+        introAt: 0,               // trenutak polaska, popunjava se niže
+        hx: 0, hy: 0,             // trenutni pomeraj slike
+        tx: 0, ty: 0,             // ciljni pomeraj slike
+        cx: 0, cy: 0, w: 0, h: 0  // keširana geometrija za hover
+      });
+
+      /* ⚠ OBA listenera moraju da probude petlju. Ona se gasi čim se sve smiri,
+         a `pointermove` prestaje da stiže onog trenutka kad pokazivač napusti
+         scenu — bez buđenja na `pointerleave` slika ostane zauvek odgurnuta
+         tamo gde ju je pokazivač poslednji put ostavio. (Dogodilo se.) */
+      hit.addEventListener('pointerenter', function () { hovered = i; requestFrames(); });
+      hit.addEventListener('pointerleave', function () {
+        if (hovered === i) hovered = -1;
+        requestFrames();
+      });
     });
+
+    INTRO_ORDER.forEach(function (idx, k) {
+      if (tiles[idx]) tiles[idx].introAt = INTRO_DELAY + k * INTRO_STAGGER;
+    });
+
+    // Scena ide u stage; aria-hidden jer je čist ukras.
+    scene.setAttribute('aria-hidden', 'true');
     stage.appendChild(scene);
+  }
+
+  if (scene) {
+    scene.addEventListener('pointermove', function (e) {
+      pointerX = e.clientX; pointerY = e.clientY;
+      requestFrames();
+    });
   }
 
   /* ==========================================================================
      MERENJE
 
-     Sve što traži čitanje layouta radi se OVDE i kešira — update() ispod je
+     Sve što traži čitanje layouta radi se OVDE i kešira — render() ispod je
      čista aritmetika, jer ga Lenis zove na svaki scroll tick (isto pravilo po
      kom radi updateHero varijacije #1).
   ========================================================================== */
   var vw = 0, vh = 0;
-  var wordDirs = [];
 
   function measure() {
     vw = document.documentElement.clientWidth;
@@ -218,112 +289,137 @@
 
     /* Raspored je doslovno onaj sa reference: left/top su LEVA GORNJA IVICA i
        postavljaju se direktno, bez ijedne korekcije za dubinu. To sme baš zato
-       što je translateZ u mirovanju nula — pločica na prvom ekranu stoji tačno
-       ovde, u ovoj veličini. Perspektiva ulazi u igru tek kad skrol pomeri z.
-
-       (Ranija verzija je množila sve faktorom dubine k = (P − z)/P jer je
-       pločice startovala duboko u sceni; sa startom na nuli ta korekcija nema
-       šta da ispravlja i samo bi izobličila prepisane koordinate.) */
+       što je translateZ u mirovanju nula — pločica posle uvoda stoji tačno
+       ovde, u ovoj veličini. Perspektiva ulazi u igru tek kad z krene. */
     tiles.forEach(function (t) {
       var w = vw * t.def.w;
+      var h = w / t.def.ar;
       t.el.style.width = w + 'px';
-      t.el.style.height = (w / t.def.ar) + 'px';
+      t.el.style.height = h + 'px';
       t.el.style.left = (vw * t.def.x) + 'px';
       t.el.style.top = (vh * t.def.y) + 'px';
-    });
-
-    // Smer razmicanja reči: čita se JEDNOM, iz mirnog stanja naslova. Mora se
-    // meriti bez ijednog transforma na rečima, inače bi svako sledeće merenje
-    // (resize usred skrola) čitalo već pomerene reči i smer bi počeo da luta.
-    words.forEach(function (w) { w.style.transform = ''; });
-    var box = heading.getBoundingClientRect();
-    var mid = box.left + box.width / 2;
-    wordDirs = words.map(function (w) {
-      var r = w.getBoundingClientRect();
-      var d = (r.left + r.width / 2) - mid;
-      // Reč tačno na sredini nema smer — dobija znak po redosledu, da ne ostane
-      // da stoji dok se sve oko nje razilazi.
-      if (Math.abs(d) < 1) return 1;
-      return d < 0 ? -1 : 1;
+      // Centar u ekranskim koordinatama — hover se računa iz njega. Sme se
+      // uzeti iz CSS box-a jer je hover ugašen čim skrol pomeri dubinu.
+      t.w = w; t.h = h;
+      t.cx = vw * t.def.x + w / 2;
+      t.cy = vh * t.def.y + h / 2;
     });
   }
 
   /* ==========================================================================
      KADAR
+
+     render() je JEDINI pisac transformi. Sabira tri izvora (uvod, hover,
+     skrol), pa ga zovu i scroll listener i rAF petlja — koji god da je stigao,
+     slika je uvek dosledna.
   ========================================================================== */
-  function update(ctx) {
-    var p = ctx.p, exitY = ctx.exitY;
-    var e = clamp(p / PHASE.p2End, 0, 1);          // napredak uvoda 0→1
+  var lastP = 0, lastExitY = 0;
+  var introDone = PREFERS_REDUCED;
+  var t0 = performance.now();
 
-    /* ---- Kamera. Jedan broj vozi celu scenu: koliko je posmatrač odmakao
-       napred. Svaka pločica taj napredak množi SVOJOM dubinskom konstantom, pa
-       se polje ne pomera u bloku nego se raslojava — bliže lete brže. */
+  function render(now) {
+    var e = clamp(lastP / PHASE.p2End, 0, 1);          // napredak uvoda 0→1
     var camT = easeInOut(e);
+    var locked = e > HOVER_LOCK_AT;
 
-    /* ---- Pločice.
-       ⚠ NEMA ULAZNOG FADE-A. Pločice se vide od prvog paint-a, pre ijednog
-       piksela skrola — traženo eksplicitno, i tako je i na referenci. Jedino
-       gašenje je ono na kraju puta, kad pločica stigne do ravni kamere: bez
-       njega bi nestala punom neprozirnošću i pročitala se kao rez, a ne kao
-       prolazak pored posmatrača. */
+    if (scene) {
+      if (locked && !scene.classList.contains('is-locked')) scene.classList.add('is-locked');
+      else if (!locked && scene.classList.contains('is-locked')) scene.classList.remove('is-locked');
+    }
+
+    var stillAnimating = false;
+
     for (var i = 0; i < tiles.length; i++) {
       var t = tiles[i];
-      var tz = t.def.d * DEPTH_TRAVEL * camT;
+
+      /* --- 1. uvodni raspored (vreme) */
+      var intro = 1;
+      if (!introDone) {
+        intro = clamp((now - t0 - t.introAt) / INTRO_DUR, 0, 1);
+        if (intro < 1) stillAnimating = true;
+      }
+      var introEased = easeOutIntro(intro);
+      var introZ = lerp(INTRO_START_DEPTH * t.def.d, 0, introEased);
+
+      /* --- 2. let kroz kadar (skrol) */
+      var tz = introZ + t.def.d * DEPTH_TRAVEL * camT;
+
       // Stigla je do ravni kamere ili je prošla — nema šta da se crta.
       if (tz > PERSPECTIVE - 40) { t.el.style.opacity = '0'; continue; }
-      t.el.style.opacity = clamp((PERSPECTIVE - tz) / (PERSPECTIVE * 0.45), 0, 1).toFixed(3);
+
+      /* Neprozirnost: uvodno pojavljivanje (brže od pokreta, da pločica ne
+         "iskrsne" tek kad je već blizu) × gašenje pred ravni kamere (bez njega
+         bi nestala punom neprozirnošću i pročitala se kao rez). */
+      var opIn = introDone ? 1 : clamp(intro * 2.2, 0, 1);
+      var opNear = clamp((PERSPECTIVE - tz) / (PERSPECTIVE * 0.45), 0, 1);
+      t.el.style.opacity = (opIn * opNear).toFixed(3);
       t.el.style.transform = 'translateZ(' + tz.toFixed(1) + 'px)';
+
+      /* --- 3. hover (pokazivač) */
+      if (!locked && hovered === i) {
+        t.tx = (pointerX - t.cx) * HOVER_PULL;
+        t.ty = (pointerY - t.cy) * HOVER_PULL;
+      } else {
+        t.tx = 0; t.ty = 0;
+      }
+      if (Math.abs(t.tx - t.hx) > 0.05 || Math.abs(t.ty - t.hy) > 0.05) {
+        t.hx += (t.tx - t.hx) * HOVER_EASE;
+        t.hy += (t.ty - t.hy) * HOVER_EASE;
+        stillAnimating = true;
+        t.wrap.style.transform = 'translate3d(' + t.hx.toFixed(2) + 'px,' + t.hy.toFixed(2) + 'px,0)';
+      } else if (t.hx !== t.tx || t.hy !== t.ty) {
+        // Dovoljno blizu cilja da se lerp više ne isplati — sedni tačno na
+        // njega, jednim upisom, pa petlja može da stane.
+        t.hx = t.tx; t.hy = t.ty;
+        t.wrap.style.transform = 'translate3d(' + t.hx.toFixed(2) + 'px,' + t.hy.toFixed(2) + 'px,0)';
+      }
     }
 
-    /* ---- Naslov: razmicanje + gašenje.
-
-       Naslov i zum se NAMERNO PREKLAPAJU. Prvo su išli jedan za drugim (reči
-       odu, pa tek onda video počne da raste) i sredina kadra je ostajala prazna
-       nekoliko desetina skrola — čitalo se kao da se animacija pokvarila. Sada
-       video počne da raste dok se reči još razmiču, pa raste kroz procep koji
-       one otvaraju; to je i ono što se vidi na referenci.
-
-       Skala umesto translateZ: naslov nije u #v2-scene i nema perspektivnog
-       pretka, pa Z ovde ne bi radio ništa. Na ravnoj površini je dolazak
-       kamere ionako čisto uvećanje, tako da je rezultat isti a računica
-       vidljiva. */
-    var headT = span(e, 0.06, 0.72);
-    var headEased = easeInOut(headT);
-    heading.style.transform = 'scale(' + (1 + 0.5 * headEased).toFixed(4) + ')';
-    // Gasi se TEK pošto su reči već dobrano razmaknute — da se pamti kao
-    // "razišao se", a ne kao "nestao".
-    heading.style.opacity = String(1 - span(e, 0.42, 0.72));
-
-    for (var w = 0; w < words.length; w++) {
-      // vw * 0.5 je taman toliko da i najkraća reč izađe iz kadra do kraja.
-      var tx = wordDirs[w] * vw * 0.5 * headEased;
-      words[w].style.transform = 'translateX(' + tx.toFixed(1) + 'px)';
-    }
-
-    /* ---- Loptica ide sa naslovom, isto kao u varijaciji #1. */
-    if (scrollBall) {
-      var ballOp = 1 - span(e, 0.04, 0.30);
-      scrollBall.style.opacity = String(ballOp);
-      scrollBall.style.transform = 'translateX(-50%) translateY(' + (-vh * 0.18 * span(e, 0.04, 0.30)).toFixed(1) + 'px)';
-      var gone = ballOp <= 0;
-      if (scrollBall.hidden !== gone) scrollBall.hidden = gone;
-    }
+    if (!introDone && !stillAnimating) introDone = true;
 
     /* ---- Medij: zum iz tačke u sredini kadra do punog ekrana.
        Kreće posle pločica, pa se prvo vidi prostor a tek onda ono ka čemu se
-       ide. Skala ide kroz isti easeInOut da bi u snap pauzu ušla mirno. */
+       ide. Skala ide kroz isti easeInOut da bi u snap pauzu ušla mirno.
+
+       ⚠ BEZ RADIJUSA. Ranije je radijus bio konstantan u EKRANSKIM pikselima,
+       što je značilo deljenje sa skalom — a na skali od 0.02 to je davalo
+       radijus veći od same kutije, pa se video pojavljivao kao pilula/elipsa i
+       tek posle postajao pravougaonik. Traženo je da toga nema; referenca
+       ionako ima oštre uglove. */
     var zoomT = span(e, 0.16, 1);
     var zoomEased = easeInOut(zoomT);
     var scale = lerp(0.015, 1, zoomEased);
-    // Radijus prati skalu tako da IZGLEDA konstantan dok je kadar mali, pa
-    // sleti na 0 kad postane pun ekran — na punom ekranu zaobljeni uglovi
-    // seku četiri zareza u samom ekranu (isti razlog kao u varijaciji #1).
-    var radius = lerp(26, 0, span(zoomT, 0.75, 1));
+
+    /* ---- Naslov: IZLAZI KROZ KAMERU, kao i pločice.
+
+       ⚠ Ranije su se dva reda razmicala gore i dole. Promenjeno na zahtev:
+       naslov sada ne ide ni gore ni dole nego prilazi posmatraču i izlazi iz
+       kadra "prema nama", dakle isti pokret koji imaju pločice — jedna scena,
+       jedan prostor.
+
+       Vozi ga ISTI `zoomEased` koji vozi i zum videa, i to je poenta: naslov
+       tako raste u korak sa ivicama videa koji dolazi ispod njega i ne odlepi
+       se od njega. Da ima svoju krivulju, dva pokreta bi se razišla i pročitala
+       kao dve nezavisne animacije u istom kadru.
+
+       ⚠ 0.55 × P je KOLIKO DUBOKO IDE i taj broj je štimovan prema videu, ne
+       izabran zbog samog naslova. Prividna skala je P/(P − z), pa 0.55 daje
+       najviše 1/(1 − 0.55) ≈ 2.2×. Na 0.78 (≈4.5×) naslov je bežao daleko ispred
+       videa: na polovini uvoda bio je ~1640px širok naspram ~730px koliko je
+       tada video, pa se čitao kao da se odlepio i odleteo sam. Na 2.2× ivice
+       ostaju blizu ivicama videa koji dolazi i dvoje se čita kao jedan pokret.
+
+       Neprozirnost pada na nulu PRE nego što naslov stigne do ivice (traženo
+       tako): uvećan tekst preko videa smeta više nego što pomaže, pa se gasi
+       dok je još u kadru. */
+    var headZ = PERSPECTIVE * 0.55 * zoomEased;
+    heading.style.transform = 'translateZ(' + headZ.toFixed(1) + 'px)';
+    heading.style.opacity = (1 - span(zoomT, 0.08, 0.50)).toFixed(3);
 
     mediaBox.style.opacity = String(span(zoomT, 0, 0.06));
-    mediaBox.style.borderRadius = (radius / Math.max(scale, 0.02)).toFixed(1) + 'px';
+    mediaBox.style.borderRadius = '0';
     mediaBox.style.transform =
-      'translate(-50%, -50%) translateY(' + exitY.toFixed(1) + 'px) scale(' + scale.toFixed(4) + ')';
+      'translate(-50%, -50%) translateY(' + lastExitY.toFixed(1) + 'px) scale(' + scale.toFixed(4) + ')';
     mediaBox.style.zIndex = 20;
 
     // Search bar se ne anima zasebno — nosi ga skala kutije. Ostaje samo
@@ -331,14 +427,42 @@
     // prepisujemo.
     searchBlock.style.opacity = '1';
     searchBlock.style.transform = 'translateX(-50%)';
+
+    return stillAnimating;
+  }
+
+  /* ==========================================================================
+     rAF PETLJA — vrti se SAMO dok ima šta da se pomera
+
+     Uvod i hover su jedini pokreti koji teku po vremenu; skrol ionako stiže
+     kroz updateHero. Petlja se sama gasi kad se oba smire i ponovo pali na
+     pokret pokazivača, pa u mirovanju stranica ne troši nijedan frejm.
+  ========================================================================== */
+  var running = false;
+  function frame(now) {
+    var more = render(now);
+    if (more) requestAnimationFrame(frame);
+    else running = false;
+  }
+  function requestFrames() {
+    if (running || PREFERS_REDUCED) return;
+    running = true;
+    requestAnimationFrame(frame);
+  }
+
+  /* Kadar koji stiže sa skrola. Ne pokreće petlju — skrol i sam dolazi na
+     svaki tick, pa bi dodatni rAF bio dupli posao za isti frejm. */
+  function update(ctx) {
+    lastP = ctx.p;
+    lastExitY = ctx.exitY;
+    render(performance.now());
   }
 
   /* Završni kadar bez ijednog pokreta — za prefers-reduced-motion.
 
-     ⚠ IZLAZAK SE I OVDE MORA ODRADITI. Sve uvodno je ovde ugašeno, ali exitY
-     nije uvodna faza nego predaja sledećoj sekciji: bez njega video ostane
-     zalepljen preko #openings do kraja stranice. Zato ovo nije "ne radi ništa"
-     nego "odmah je na kraju uvoda, a dalje se ponaša normalno". */
+     ⚠ IZLAZAK SE I OVDE MORA ODRADITI. Sve uvodno je ugašeno, ali exitY nije
+     uvodna faza nego predaja sledećoj sekciji: bez njega video ostane zalepljen
+     preko nje do kraja stranice. */
   function settle(ctx) {
     var exitY = (ctx && ctx.exitY) || 0;
     heading.style.opacity = '0';
@@ -348,10 +472,43 @@
     mediaBox.style.zIndex = 20;
     searchBlock.style.opacity = '1';
     searchBlock.style.transform = 'translateX(-50%)';
-    if (scrollBall) scrollBall.hidden = true;
   }
 
   measure();
+
+  /* ==========================================================================
+     START UVODA — čeka se da slike budu tu
+
+     Skript stoji na dnu <body>-ja, dakle radi pre nego što se ijedna od 12
+     fotografija dovuče. Da sat krene odmah, prve pločice bi doletele PRAZNE i
+     slika bi im samo iskrsla na mestu — najuočljiviji mogući kvar baš na prvom
+     ekranu. Zato se t0 postavlja tek kad su sve slike gotove.
+
+     Tajmer je osigurač: jedna spora ili crknuta slika ne sme da zaustavi ceo
+     uvod, pa se posle IMG_WAIT_CAP kreće bez obzira na to gde su.
+  ========================================================================== */
+  var IMG_WAIT_CAP = 1600;   // ms
+
+  if (!PREFERS_REDUCED) {
+    render(performance.now());   // prvi kadar: pločice na polaznoj dubini, providne
+
+    var pending = tiles.length;
+    var started = false;
+    var begin = function () {
+      if (started) return;
+      started = true;
+      t0 = performance.now();    // sat uvoda kreće OVDE, ne pri parsiranju
+      requestFrames();
+    };
+    tiles.forEach(function (t) {
+      var img = t.wrap.firstChild;
+      if (img.complete) { if (--pending === 0) begin(); return; }
+      var done = function () { if (--pending === 0) begin(); };
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true });
+    });
+    setTimeout(begin, IMG_WAIT_CAP);
+  }
 
   window.BB_VAR2 = {
     active: true,

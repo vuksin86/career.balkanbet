@@ -78,12 +78,19 @@
   /* ========================================================================
      HERO
   ======================================================================== */
-  /* Naslov heroja je RAZDVOJEN po rečenicama: prva ("Uskoči u igru.") ide u
-     brend žutu, druga ("Budi deo Balkan Bet tima.") OSTAJE BELA. Zato se boji
-     samo .hero-heading__lead, a ne ceo #hero-heading — ostatak nasleđuje
-     Tailwindovu text-white iz markupa i tako je isti u obe varijante.
-     Kratko je ceo naslov bio žut; ne vraćati. */
-  [data-theme="dark"] .hero-heading__lead { color: #FDB813; }
+  /* Naslov heroja je RAZDVOJEN po rečenicama: prva ("Uđi u igru.") je BELA,
+     druga ("Budi deo tima.") je BREND ŽUTA.
+
+     ⚠ RASPORED BOJA JE OBRNUT u odnosu na raniju verziju (prva žuta, druga
+     bela) — promenjeno na zahtev, ne vraćati.
+
+     Zato se žuta piše na CEO #hero-heading a bela vraća samo na
+     .hero-heading__lead: obrnuto bi tražilo da se druga rečenica obavije u
+     svoj span, a ona ga u markupu nema. Selektor sa id-jem (1,1,0) uzgred
+     nadjačava Tailwindovu `text-white` (0,1,0) iz markupa, pa se markup ne
+     dira. */
+  [data-theme="dark"] #hero-heading { color: #FDB813; }
+  [data-theme="dark"] #hero-heading .hero-heading__lead { color: #FFFFFF; }
 
   /* CTA u navigaciji je žuta pilula sa BELIM slovima (eksplicitan izbor za
      svetlu temu). U tamnoj tekst ide u tamno — na žutoj podlozi koja u ovoj
@@ -115,29 +122,7 @@
     box-shadow: none;
   }
 
-  /* --- Senka loptice ----------------------------------------------------
-     U svetloj temi je to prava bačena senka: #231F20 na .05–.17 alfe, tj.
-     zatamnjenje narandžastog poda. Na #131011 nema šta da se zatamni, pa je
-     ovde ŽUTA i tražena je kao ODRAZ, a ne kao senka — loptica koja svetli
-     ostavlja mrvicu svog svetla na podu ispod sebe.
-
-     Zato ne ide samo promena boje nego i SVOJ set keyframe-ova: alfe iz svetle
-     teme (do .17) bi kao žuta bile jarka mrlja. Ove su oko 40% od njih.
-     ⚠ Stopovi (0/12/50/88/100), easing po stopu i trajanje 1.15s MORAJU ostati
-     identični sa hero-ball-bounce — to je jedino što drži odraz zaključan za
-     loptu umesto da kuca po svom ritmu. Ako se menja jedno, menja se i drugo.
-  --------------------------------------------------------------------- */
-  [data-theme="dark"] .hero-scroll-ball__shadow {
-    background: #FDB813;
-    animation-name: hero-ball-reflection;
-  }
-  @keyframes hero-ball-reflection {
-    0%   { transform: translateX(-50%) scale(0.70); opacity: .02; animation-timing-function: ease-out; }
-    12%  { transform: translateX(-50%) scale(0.80); opacity: .03; animation-timing-function: ease-out; }
-    50%  { transform: translateX(-50%) scale(1.30); opacity: .07; animation-timing-function: ease-in; }
-    88%  { transform: translateX(-50%) scale(0.80); opacity: .03; animation-timing-function: ease-in; }
-    100% { transform: translateX(-50%) scale(0.70); opacity: .02; }
-  }
+  /* Žuti odraz ispod loptice je otišao sa samom lopticom (uklonjena na zahtev). */
 
   /* SEARCH BAR NEMA NIJEDNO PRAVILO OVDE, NAMERNO — tražen je stilski identičan
      u obe varijante (žuti okvir, BELI tabovi, crno dugme "Pretraži", beli meni).
@@ -246,23 +231,8 @@
     border-color: var(--dk-ink);
   }
 
-  /* ========================================================================
-     PROCES ZAPOŠLJAVANJA — tuš se okreće u kredu
-
-     Brojevi, labeli i strelice su #231F20 direktno na pozadini; na tamnoj bi
-     bili nevidljivi.
-
-     KORACI I STRELICE SE OVDE RAZILAZE, i to je traženo: koraci (brojevi +
-     labeli) idu u ŽUTU, strelice ostaju BELE. Efekat je da žuto nosi sadržaj a
-     belo samo veze između njih, pa se čita redosled a ne jedna žuta masa.
-     Kratko su oboje bili beli — ne vraćati na to.
-
-     Debljina strelica (stroke-width 4.3) se NE dira — uparena je sa Lumierinim
-     perom i ne zavisi od boje.
-  ======================================================================== */
-  [data-theme="dark"] .proc-step__num,
-  [data-theme="dark"] .proc-step__label { color: #FDB813; }
-  [data-theme="dark"] .proc-arrow path { stroke: var(--dk-ink); }
+  /* Sekcija "Proces zapošljavanja" je uklonjena na zahtev — sa njom i njena
+     tri pravila (žuti brojevi/labeli, bele strelice). */
 
   /* ========================================================================
      FOOTER — PUNA ŽUTA TRAKA NA DNU
