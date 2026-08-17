@@ -871,6 +871,13 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
       namerno van kadra)
     * **VIDE SE ODMAH, BEZ SKROLA.** Nema ulaznog fade-a; jedino gašenje je ono na kraju 
       puta, kad pločica stigne do ravni kamere
+  ⚠ **POLJE I NASLOV VOZI ISTI LINEARAN POKRETAČ** (`e`). Pločice su ranije išle kroz
+  `easeInOut(e)` dok je naslov bio linearan — na 10% uvoda je to 0.004 naspram 0.1, dakle
+  25 puta sporije, pa je naslov kretao odmah a polje se praktično nije micalo do trećine
+  puta. Čitalo se kao da naslov ima svoju animaciju koja počinje mnogo pre kartica.
+  Brojke se sada lepo poklapaju: naslov prelazi HEAD_DEPTH × P = 945px dubine po jedinici
+  napretka, a pločice `d × 1.5` = 540 / 810 / 1080 / 1620 — naslov pada tačno u sredinu
+  tog raspona. IZMERENO na e = 0.10: naslov 1.195×, pločice 1.103× / 1.229× / 1.389×.
   `d` odlučuje SAMO koliko brzo koja poleti ka posmatraču. Do kraja uvoda svaka pređe 
   `1.5 × d` (izmereno: d=720 završi na 1080, d=360 na 540), pa one sa velikim `d` PROĐU 
   pored posmatrača a one sa malim samo narastu - to raslojavanje je ono što daje dubinu

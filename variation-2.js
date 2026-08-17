@@ -370,7 +370,22 @@
 
   function render(now) {
     var e = clamp(lastP / PHASE.p2End, 0, 1);          // napredak uvoda 0→1
-    var camT = easeInOut(e);
+    /* ⚠ LINEARNO, ISTI POKRETAČ KAO NASLOV (`e`), i to je noseće.
+
+       Ranije je ovde stajalo `easeInOut(e)`, dok je naslov išao linearno. Na 10%
+       uvoda to je 0.004 naspram 0.1 — 25 puta sporije — pa je naslov kretao
+       odmah a polje slika se praktično nije micalo do trećine puta. Čitalo se
+       kao da naslov ima svoju animaciju koja počinje mnogo pre kartica.
+
+       Sada obojica idu istom, ravnomernom brzinom od nule. Brojke se uzgred
+       lepo poklapaju: naslov prelazi HEAD_DEPTH × P = 945px dubine po jedinici
+       napretka, a pločice d × 1.5, dakle 540 / 810 / 1080 / 1620 — naslov pada
+       tačno u sredinu tog raspona i čita se kao još jedan sloj istog polja, a
+       ne kao zaseban element.
+
+       Ravnomeran dolazak u snap pauzu se ne vidi: do kraja uvoda je video pun
+       ekran (z-index 20) i pokriva pločice (12), pa nema šta da "naglo stane". */
+    var camT = e;
     var locked = e > HOVER_LOCK_AT;
 
     if (scene) {
