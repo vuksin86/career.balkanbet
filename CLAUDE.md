@@ -765,7 +765,19 @@ Dve stvari su ŽIVE u originalu a UGAŠENE u #2, i to je jedina razlika ispod he
 - **BOUNCING LOPTICA** (#hero-scroll-ball) - loptica iz logotipa koja poskakuje ispod
   naslova umesto "scroll down" strelice, i klik-prečica je na snap pauzu
 - **"PROCES ZAPOŠLJAVANJA"** (#proces) - rukom pisana kompozicija "4 koraka do karijere u
-  Balkan Bet-u" koja se ispisuje na skrol (LumieraHandwriting + PatrickHand)
+  Balkan Bet-u" koja se ispisuje na skrol (LumieraHandwriting + PatrickHand).
+  MESTO: IZMEĐU #impact i #openings, dakle odmah PRE "Najnovijih pozicija" (traženo tako).
+  Razmaci su u istom ritmu od 120px kao ostale sekcije: `pt-[120px]` i NIKAKAV pb - sekcija
+  ispod donosi svojih 120px odozgo, pa bi vlastiti donji padding razmak udvostručio na 240.
+  Raniji `pt-[192px] / pb-[55px]` + `.panel-overlap` pripadali su starom rasporedu (odmah
+  iznad futera) i otišli su sa premeštanjem.
+  ⚠ **ZAŠTO JE MORAO DA SE POMERI, a ne samo zbog redosleda:** dok je stajao poslednji pre
+  futera, iza njega nije ostajalo dovoljno stranice da se reveal završi. IZMERENO: progres
+  je tražio scrollY 6184, a dno stranice je bilo na 6076 - 108px manje - pa poslednje TRI
+  crte (broj "04" i obe linije njegove labele) nikad nisu dobile `--w > 0` i četvrti korak
+  se prosto nije iscrtavao. Nije se videlo kao greška nego kao "ne učita se".
+  U `measureProcess()` sada stoji i osigurač: `procStart` se klizne unazad taman toliko da
+  run uvek stane u preostali skrol, pa pomeranje sekcije niže ne može tiho da vrati bag
 
 Obe su kratko bile OBRISANE iz projekta, pa VRAĆENE: traženo je da nestanu samo iz nove
 verzije, a original mora ostati netaknut kao poređenje. Gase se sa dva selektora u
