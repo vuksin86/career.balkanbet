@@ -832,13 +832,19 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
   Vozi ga ISTI `zoomEased` koji vozi zum videa, i to je poenta: naslov raste u korak sa
   ivicama videa koji dolazi ispod njega i ne odlepi se od njega.
   Neprozirnost pada na nulu PRE nego što naslov stigne do ivice - traženo tako.
-  ⚠ **RAZMICANJE SE RAČUNA, NE BIRA.** Traženo je da naslov NIKAD ne dodirne video koji
-  raste u sredini, pa se pomeraj reda izvodi iz trenutne veličine videa:
-  `((vh/2) × scale + HEAD_CLEARANCE) / k`, gde je `k` perspektivno uvećanje naslova
+  ⚠ **RAZMICANJE VOZI IVICA VIDEA, NE SOPSTVENI TAJMER.** Red stoji tačno HEAD_CLEARANCE
+  (46px) ispred ivice videa i pomera se ISKLJUČIVO zato što ta ivica raste:
+  `((vh/2) × scale + HEAD_CLEARANCE) × videoOn / k`. `k` je perspektivno uvećanje naslova
   (deli se njime jer transform reda živi u lokalnom prostoru već uvećanog h1 - bez toga bi
-  razmak bio k puta prevelik). HEAD_CLEARANCE (46px) je jedina ručno birana vrednost.
-  Razmak zato ostaje isti na svakoj visini ekrana. IZMERENO: najmanji zazor dok su oba
-  stvarno vidljiva je 37px.
+  razmak bio k puta prevelik), a `videoOn` drži razmak na nuli dok se video ne vidi.
+  ⚠ Ovde NEMA nikakvog `e` člana i ne sme se dodavati. Razmicanje je ranije imalo svoj
+  ravnomeran hod (`vh × HEAD_SPLIT × e`) a ivica videa je bila samo osigurač — posledica je
+  bila da se naslov razmakne davno pre nego što se video pojavi, pa se dvoje nije čitalo
+  kao uzrok i posledica. Ako razmicanje treba da bude izraženije, menja se HEAD_CLEARANCE
+  ili brzina zuma.
+  ⚠ REDOSLED: video kreće na e = 0.04, naslov (dubina) tek na 0.10 — video mora da vodi.
+  IZMERENO: od e ≈ 0.125 nadalje zazor je zaključan na tačno 46px, dakle redovi doslovno
+  jašu na ivici videa.
   ⚠ Osigurač se MNOŽI sa vidljivošću videa (`videoOn`). Bez toga važi i dok je video još
   potpuno nevidljiv, pa na prvi skrol odmah traži svojih ~52px i naslov odskoči umesto da
   krene ravnomerno - tačno onaj trzaj zbog kog je blok i prepisan.
@@ -921,8 +927,9 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
   PNG sa sitnim žutim glifom) i čitaju se kao prazni tamni pravougaonici - probano, 
   izbačeno. Fotografija ima svega šest pa se ciklus ponavlja
 - TAJMING (razlomci uvodnog napretka `e`): pločice su vidljive od nule i nemaju ulaznu
-  rampu na skrol (imaju je samo pri učitavanju, videti UVODNI RASPORED); zum ide 0.16→1.0,
-  a naslov ga prati istom krivuljom i gasi se na 0.08→0.50 tog zuma
+  rampu na skrol (imaju je samo pri učitavanju, videti UVODNI RASPORED); zum videa ide
+  0.04→1.0 kroz `smoothstep` (osetno brži start od kubnog easeInOut - na t = 0.2 daje
+  0.104 naspram 0.032), naslov kreće u dubinu na 0.10 i gasi se na 0.30→0.66
 - SPACER je 493vh (naspram 373vh u #1): P0 1vh | uvod 252vh | snap 10vh | izlazak 130vh. 
   ⚠ **IZLAZAK MORA OSTATI 130vh** - na njemu stoji `margin-top: -130vh` sekcije #openings. 
   Produžen je samo uvod. Razlomke drži `PHASE` u variation-2.js

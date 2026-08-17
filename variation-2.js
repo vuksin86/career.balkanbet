@@ -57,6 +57,11 @@
   // stigne i stane. Blaži eksponenti (cubic) ovde izgledaju kao da pločice
   // klize u mesto.
   var easeOutIntro = function (t) { return 1 - Math.pow(1 - t, 7); };
+  /* Smoothstep — kreće i staje sa nultom brzinom, ali je na početku OSETNO brži
+     od kubnog easeInOut (na t = 0.2 daje 0.104 naspram 0.032). Time vozi zum
+     videa: traženo je da video krene da ulazi ranije, a i dalje mora da sleti u
+     snap pauzu bez trzaja. */
+  var smoothstep = function (t) { return t * t * (3 - 2 * t); };
   // Glatko 0→1 na zadatom intervalu; koristi se za sve "od kad do kad" pragove
   // umesto lomljenih linearnih rampi.
   var span = function (v, a, b) { return clamp((v - a) / (b - a), 0, 1); };
@@ -212,12 +217,10 @@
   var HEAD_DEPTH = 1.05;
   var HEAD_DEPTH_MAX = 0.88;
 
-  /* Koliko se red naslova razmakne do kraja uvoda, kao udeo visine kadra —
-     mereno u EKRANSKIM pikselima, pa je razmak isti na svakom ekranu.
-     0.70 × vh je štimovano tako da ravnomerni pokret uvek ostane ispred ivice
-     videa u celom prozoru dok je naslov vidljiv, pa osigurač u render() nikad
-     ne mora da se umeša. */
-  var HEAD_SPLIT = 0.70;
+  /* NEMA HEAD_SPLIT-a. Razmicanje reda nema svoj tempo — vozi ga ivica videa
+     (videti "Razmak reda" u render()). Ranije je ovde stajao udeo visine kadra
+     po jedinici napretka; uklonjen je jer je baš on terao naslov da se razmakne
+     mnogo pre nego što se video uopšte pojavi. */
 
   var tiles = [];
   var lines = [];
@@ -452,14 +455,18 @@
        radijus veći od same kutije, pa se video pojavljivao kao pilula/elipsa i
        tek posle postajao pravougaonik. Traženo je da toga nema; referenca
        ionako ima oštre uglove. */
-    var zoomT = span(e, 0.16, 1);
+    /* ⚠ ZUM KREĆE SKORO ODMAH (0.04), a ne na 0.16. Traženo je da video ulazi
+       ranije od naslova, jer razmicanje naslova treba da se čita kao POSLEDICA
+       videa koji se probija između redova — a ne kao nešto što se desilo samo
+       od sebe pa je video kasnije stigao. */
+    var zoomT = span(e, 0.04, 1);
     /* ⚠ MORA se računati OVDE, iznad bloka naslova — naslov je koristi za svoj
        osigurač razmaka. Dok je stajala niže, uz sam upis neprozirnosti, `var`
        ju je hoist-ovao ali bez vrednosti: osigurač je dobijao undefined, cela
        računica je davala NaN i browser je ćutke odbacivao transform, pa se
        redovi uopšte nisu razmicali. */
     var videoOn = span(zoomT, 0, 0.14);
-    var zoomEased = easeInOut(zoomT);
+    var zoomEased = smoothstep(zoomT);
     var scale = lerp(0.015, 1, zoomEased);
 
     /* ---- Naslov: OBA POKRETA ODJEDNOM, od prvog piksela skrola.
@@ -483,34 +490,35 @@
 
        Neprozirnost pada na nulu PRE nego što naslov stigne do ivice (traženo
        tako): uvećan tekst preko videa smeta više nego što pomaže. */
-    var headT = e;
+    /* ⚠ NASLOV KREĆE KASNIJE OD VIDEA (0.10 naspram 0.04). Prvo se video pojavi
+       i počne da raste između dva reda, pa tek onda naslov krene da uzmiče u
+       dubinu. Obrnut redosled (naslov prvi) je i bio problem: razmicanje se
+       čitalo kao samostalna animacija, a video je stizao mnogo posle. */
+    var headT = span(e, 0.10, 1);
     var headZ = PERSPECTIVE * Math.min(HEAD_DEPTH * headT, HEAD_DEPTH_MAX);
     var k = PERSPECTIVE / (PERSPECTIVE - headZ);        // perspektivno uvećanje
     heading.style.transform = 'translateZ(' + headZ.toFixed(1) + 'px)';
-    heading.style.opacity = (1 - span(e, 0.28, 0.62)).toFixed(3);
+    heading.style.opacity = (1 - span(e, 0.30, 0.66)).toFixed(3);
 
-    /* ---- Razmak reda.
+    /* ---- Razmak reda — VOZI GA IVICA VIDEA, ne sopstveni tajmer.
 
-       Meri se u EKRANSKIM pikselima pa se deli sa `k`: transform reda živi u
-       lokalnom prostoru h1 koji je perspektiva već uvećala, a bez tog deljenja
-       bi razmak bio k puta veći nego što izgleda i redovi bi odleteli mnogo pre
-       videa.
+       Ovo je poenta cele izmene. Ranije je razmicanje imalo svoj ravnomeran hod
+       (`vh × HEAD_SPLIT × e`), a ivica videa je bila samo osigurač; posledica je
+       bila da se naslov razmakne davno pre nego što se video uopšte pojavi, pa
+       se dvoje nije čitalo kao uzrok i posledica. Sada je obrnuto: red stoji
+       tačno HEAD_CLEARANCE piksela ispred ivice videa i pomera se ISKLJUČIVO
+       zato što ta ivica raste. Video se doslovno probija između dva reda.
 
-       `Math.max` je OSIGURAČ, ne glavni put. Glavni put je ravnomerno
-       razmicanje (`vh × HEAD_SPLIT × e`), a osigurač garantuje da red nikad ne
-       priđe ivici videa bliže od HEAD_CLEARANCE — čak i ako se brojevi iznad
-       kasnije menjaju. IZMERENO: u celom prozoru dok je naslov vidljiv
-       (e ≤ 0.58) ravnomerni član je veći, pa osigurač ne stupa na scenu i
-       nigde nema promene brzine.
+       Zato ovde nema nikakvog `e` člana — ako razmicanje ikad treba da bude
+       izraženije, menja se HEAD_CLEARANCE ili brzina zuma, ne dodaje se drugi
+       pokretač.
 
-       ⚠ Osigurač se MNOŽI sa `videoOn`. Bez toga važi i dok je video još
-       potpuno nevidljiv, pa na prvi skrol odmah traži svojih ~52px i naslov
-       odskoči umesto da krene ravnomerno — tačno onaj trzaj zbog kog je ceo
-       ovaj blok i prepisan. Nema videa na ekranu, nema ni od čega da se čuva
-       razmak. */
+       Množi se sa `videoOn` da razmak ne postoji pre nego što se video vidi, i
+       deli sa `k` jer transform reda živi u lokalnom prostoru h1 koji je
+       perspektiva već uvećala — bez tog deljenja bi razmak bio k puta veći nego
+       što izgleda. */
     var videoEdge = (vh / 2) * scale;
-    var floor = (videoEdge + HEAD_CLEARANCE) * videoOn;
-    var lineShift = Math.max(vh * HEAD_SPLIT * headT, floor) / k;
+    var lineShift = (videoEdge + HEAD_CLEARANCE) * videoOn / k;
     for (var L = 0; L < lines.length; L++) {
       var dir = L === 0 ? -1 : 1;                       // prvi red gore, drugi dole
       lines[L].style.transform = 'translateY(' + (dir * lineShift).toFixed(1) + 'px)';
