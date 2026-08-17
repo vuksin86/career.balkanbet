@@ -1,0 +1,7 @@
+{
+  "name": "bb-tools",
+  "private": true,
+  "type": "module",
+  "description": "Alat za proveru — Playwright harness za snimke scroll-driven stranica.",
+  "dependencies": { "playwright": "^1.56.0" }
+}

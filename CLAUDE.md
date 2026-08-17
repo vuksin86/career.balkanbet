@@ -977,18 +977,25 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
    Ceo sajt je scroll-driven, a headless Chrome ne ume da skroluje - sa njim se hero uopšte 
    ne može proveriti bez sakaćenja stranice privremenom kopijom. Playwright ume, i ume da 
    klikne, izmeri i pročita konzolu u istom prolazu.
-   - `npm i playwright` u scratchpad folder, pa `chromium.launch({channel:'chrome'})` - 
-     koristi VEĆ INSTALIRAN Google Chrome, pa nema preuzimanja browsera. ⚠ `npx playwright 
-     install` NE TREBA i ume da promaši: keširani browseri na ovoj mašini su novijeg builda 
-     od onog koji npm paket očekuje, pa `launch()` bez `channel` puca na "Executable 
-     doesn't exist"
+   - **Harness je U PROJEKTU: `tools/shot.mjs`** (ranije je stajao u scratchpad-u, koji je
+     vezan za jednu sesiju i nestaje sa njom). Priprema jednom:
+     `cd tools && npm i`
+     Upotreba:
+     `node tools/shot.mjs <url> <prefix> <razlomci> --var=1 --w=1440 --h=900`
+     gde su `<razlomci>` pozicije skrola 0..1 kroz hero (npr. `0,0.12,0.3,0.64`).
+   - ⚠ `chromium.launch({channel:'chrome'})` - koristi VEĆ INSTALIRAN Google Chrome, pa
+     nema preuzimanja browsera. `npx playwright install` NE TREBA i ume da promaši:
+     keširani browseri na ovoj mašini su novijeg builda od onog koji npm paket očekuje, pa
+     `launch()` bez `channel` puca na "Executable doesn't exist"
    - Server je `preview_start {name:'static-preview'}` na `http://localhost:4173`
    - ⚠ SCROLL SE MORA SAČEKATI. Lenis izglađuje vrednost koju hero čita, pa snimak odmah 
      posle `window.scrollTo` uhvati kadar na pola puta. NE spavati fiksno i NE dodavati 
      `window.lenis` u produkcijski kod - čekati IZLAZ: poll-uj `transform` na 
      `#hero-media-box` i `#hero-heading` dok se ne poklope u dva uzastopna frejma
-   - Harness koji sve to radi: `shot.mjs` u scratchpad folderu 
-     (`node shot.mjs <url> <prefix> <razlomci> --var=2 --w=1440 --h=900`)
+     (`settle()` u shot.mjs to već radi)
+   - ⚠ `.reveal` elementi startuju sa `translateY(24px)`. Ako se mere RAZMACI između
+     sekcija, prvo prošetati kroz celu stranicu da svi sednu - inače merenje ispadne 24px
+     kraće od stvarnog
 4. Ne diraj animiranu pozadinu (.animated-bg) osim ako se eksplicitno ne traži
 5. ⚠ U HTML KOMENTARIMA NE PISATI DOSLOVAN ZATVARAJUĆI NIZ KOMENTARA. Komentar se prekida
    na prvom takvom nizu, pa ostatak banner-a iscuri u stranicu kao goli tekst. DOGODILO SE:
