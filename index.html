@@ -139,14 +139,25 @@
 <header class="fixed top-0 inset-x-0 z-50">
   <div class="w-full flex items-center justify-between gap-5
               bg-brand-dark/40 backdrop-blur-md border-b border-white/20
-              pl-[30px] pr-[30px] py-3">
+              pl-5 pr-5 md:pl-[30px] md:pr-[30px] py-5 md:py-3">
 
     <!-- Logo — 60px tall, asked for directly (it was 51.2px: 2x the original,
          then reduced 20%). The bar has no fixed height of its own: it is the
          logo plus the wrapper's py-3, so raising the logo is what raises the
-         header, from ~76px to ~85px. -->
+         header, from ~76px to ~85px.
+         NA TELEFONU IDE DRUGI FAJL — SEKUNDARNI, HORIZONTALNI OBLIK logotipa
+         (BalkanBetLogo-horizontal.svg): lopta levo, "BALKAN BET" u jednom redu,
+         "PUN POGODAK" ispod. To je klijentov sekundarni oblik iz brend knjige, i
+         nije nov crtež nego isti path-evi iz osnovnog fajla, samo premešteni.
+         Visina je 41px — traženo je uvećanje od 20% nad prvobitna 34px (34 × 1.2 =
+         40.8, zaokruženo). Onih 34px je bila visina na kojoj su SLOVA ISTE
+         VELIČINE kao u složenom logotipu na 48px; sada su za petinu krupnija.
+         Traka time meri 20 + 41 + 20 = 81px.
+         ⚠ DVA <img>-a, a ne jedan sa CSS-om: header je duplikat na tri stranice
+         i mora ostati byte-identičan, pa je bolje da sve svoje nosi u markupu. -->
     <a href="index.html" class="flex items-center shrink-0" aria-label="Balkan Bet početna">
-      <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[60px] w-auto">
+      <img src="assets/logo/BalkanBetLogo-horizontal.svg" alt="Balkan Bet" class="md:hidden h-[41px] w-auto">
+      <img src="assets/logo/BalkanBetLogo.svg" alt="" aria-hidden="true" class="hidden md:block h-[60px] w-auto">
     </a>
 
     <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case -->
@@ -164,9 +175,27 @@
          CTA on the page that is NOT set uppercase.
          This is one of the entry points into the listing page (together with
          every "Pretraži" / "Pogledaj sve pozicije" on the site). -->
-    <a href="listanje.html" class="bg-brand-cta shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
+    <a href="listanje.html" class="hidden md:block bg-brand-cta shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
       Pronađi posao
     </a>
+
+    <!-- BURGER — stoji TAČNO NA MESTU CTA dugmeta, samo na telefonu: ispod md
+         se "Pronađi posao" gasi (`hidden`) a ovo se pali. Tri oble debele crte i
+         ništa više, traženo tako.
+         ⚠ Sve je pisano Tailwind klasama, bez ijednog pravila u styles.css —
+         header je duplikat na tri stranice i mora ostati byte-identičan, pa je
+         jedan izvor (markup) manje mesta gde stranice mogu da se raziđu.
+         Za sada NE OTVARA meni (mobilna navigacija još ne postoji); `aria-expanded`
+         stoji da bi ga imalo šta menjati kad panel stigne.
+         Mere su 24x18px sa crtama od 3px — to je prethodnih 34x26/4px umanjeno za
+         30%, traženo tako. Razmak crta drži `justify-between`, pa ostaje tačno
+         (18 − 3×3) / 2 = 4.5px i ne mora da se zaokružuje na celu vrednost. -->
+    <button type="button" aria-label="Otvori meni" aria-expanded="false"
+            class="md:hidden flex flex-col justify-between w-6 h-[18px] shrink-0 cursor-pointer">
+      <span class="block w-full h-[3px] rounded-full bg-white"></span>
+      <span class="block w-full h-[3px] rounded-full bg-white"></span>
+      <span class="block w-full h-[3px] rounded-full bg-white"></span>
+    </button>
   </div>
 </header>
 
@@ -183,10 +212,9 @@
   <div id="hero-stage" class="sticky top-0 w-full overflow-hidden">
 
     <!-- Headline layer -->
-    <div id="hero-heading-wrap" class="flex items-center justify-center text-center px-6">
+    <div id="hero-heading-wrap" class="flex items-center justify-center text-center px-10 md:px-6">
       <h1 id="hero-heading"
-          class="uppercase font-medium text-white"
-          style="font-size: 100px; line-height: 90px; letter-spacing: -6px;">
+          class="uppercase font-medium text-white">
         <!-- DVA REDA, jedna rečenica po redu — traženo tako. Bila su tri
              ("Uskoči u igru. / Budi deo Balkan / Bet tima."), pa je i tekst
              promenjen: "Uskoči" -> "Uđi".
@@ -339,7 +367,8 @@
        style="font-size: clamp(1.15rem, 2.1vw, 1.9rem);"></p>
   </div>
 
-  <div class="max-w-[1440px] mx-auto px-8 md:px-16 mt-16">
+  <!-- `cta-pair` je kuka za mobilni blok u styles.css (10px od ivica ekrana). -->
+  <div class="cta-pair max-w-[1440px] mx-auto px-8 md:px-16 mt-16">
   <!-- Two media CTAs opening the footer — lokali / centrala. Both slots used
        to be one photo + one "Postani deo našeg tima?" text box; they are now
        a matched pair of links (see .footer-cta in styles.css for the yellow
@@ -407,7 +436,8 @@
   <!-- Mosaic. items-start keeps the three columns independent heights
        instead of stretching them to the tallest one.
        mt-16 here and on the CTA below: the old 80px, tightened by 20%. -->
-  <div class="max-w-[1440px] mx-auto px-8 md:px-16 mt-16">
+  <!-- `zivot-wrap` je kuka za mobilni blok u styles.css (10px od ivica panela). -->
+  <div class="zivot-wrap max-w-[1440px] mx-auto px-8 md:px-16 mt-16">
     <div id="zivot-mosaic" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
       <div id="zivot-col-0" class="flex flex-col gap-6"></div>
       <div id="zivot-col-1" class="flex flex-col gap-6 lg:mt-10"></div>
@@ -1150,7 +1180,24 @@
       hlIndex += 1;
       return `<span class="impact-word impact-word--hl" style="--hl-delay:${delay}ms">${w.t}</span>`;
     }).join(' '))
-    .join('<br>');
+    /* ⚠ PRELOMI NISU SVI ISTI. Onaj ISPRED markirane rečenice je tvrd i ostaje
+       na svakoj širini — tražena je posebno u svom redu. Ostala tri su samo
+       željeni prelom pasusa na širokom ekranu i nose klasu `impact-br`, koju
+       styles.css na telefonu gasi (`display: none`), pa se pasus tamo prelama
+       sam. Bez toga se svaki od tih redova na uskom ekranu prelomi još jednom i
+       dobije se stepenasti, poluprazan pasus. */
+    .map(function (html, i) {
+      if (i === 0) return html;
+      var hard = IMPACT_LINES[i].some(function (w) { return w.hl; });
+      /* ⚠ RAZMACI OKO PRELOMA SU OBAVEZNI. Meki <br> se na telefonu gasi sa
+         `display: none`, pa ako uz njega nema razmaka, poslednja reč jednog
+         reda i prva reč sledećeg se SLEPE ("100 lokalai u centrali"). Reči
+         unutar reda su spojene sa ' ' iz istog razloga; ovde samo nedostaje
+         isti taj razmak na šavu. Kad je <br> vidljiv, razmak na prelomu reda
+         ionako propada, pa desktop ne oseti razliku. */
+      return ' ' + (hard ? '<br>' : '<br class="impact-br">') + ' ' + html;
+    })
+    .join('');
 
   const impactWordEls = Array.from(impactHeading.querySelectorAll('.impact-word'));
   const impactHlEls = Array.from(impactHeading.querySelectorAll('.impact-word--hl'));

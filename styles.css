@@ -711,6 +711,57 @@
   }
 
   /* ========================================================================
+     HERO H1 — veličina je ovde, a ne u inline style-u markupa
+
+     Ranije je stajala kao `style="font-size:100px; line-height:90px;
+     letter-spacing:-6px"` na samom h1. Inline style pobeđuje svaki stylesheet,
+     pa se mobilna veličina bez !important nije mogla napisati; preseljeno je
+     ovamo da mobilni blok ispod bude običan override, bez ijednog !important.
+     Vrednosti su NEPROMENJENE — desktop kadar je isti do piksela.
+  ======================================================================== */
+  #hero-heading {
+    font-size: 100px;
+    line-height: 90px;
+    letter-spacing: -6px;
+  }
+
+  /* ------------------------------------------------------------------------
+     TELEFON — naslov u DVA REDA, po jedna rečenica u redu
+
+     Na uskom ekranu se "Uđi u igru. / Budi deo tima." lomilo u pet redova i
+     punilo ceo ekran. Traženo je: dva reda, i font taman toliki da red stane u
+     širinu, sa ~40px vazduha levo i desno.
+
+     Zato `white-space: nowrap` (prelom ostaje isključivo na `<br>` iz markupa,
+     odnosno na `.v2-line` omotačima u varijaciji #2) i font-size izveden iz
+     RASPOLOŽIVE ŠIRINE umesto zadat brojem:
+
+         font-size = (100vw − 2×40px) / (širina najdužeg reda u em)
+
+     Delilac je IZMEREN, ne procenjen: pri `letter-spacing: -0.06em` red
+     "BUDI DEO TIMA." u NeoSansW1G Medium meri 6.444em (izmereno), pa u
+     delilac ide 6.45 — dlaka rezerve da red ne dodirne padding. Ako se tekst naslova
+     ikad promeni, PREMERITI ga i upisati novi broj — sve ostalo se preračuna
+     samo. Onih 40px sa strane nosi `px-10` na #hero-heading-wrap.
+
+     ⚠ PLAFON OD 64px JE NOSEĆI, nije kozmetika. Bez njega naslov raste linearno
+     sa širinom, pa na gornjoj ivici ovog opsega (767px, dakle tablet — nav je i
+     tu sakriven i burger je taj koji se vidi) dobije 106px i uleti pravo u polje
+     pločica, koje je raspoređeno po telefonskim proporcijama. IZMERENO: pet
+     preklapanja sa pločicama na 767px, nijedno na 64px. Iznad ~493px širine
+     naslov zato prestaje da raste i bočni vazduh postaje veći od 40px — traženih
+     40px važi na telefonskim širinama, gde red i jeste najtešnji.
+  ------------------------------------------------------------------------ */
+  @media (max-width: 767px) {
+    #hero-heading {
+      white-space: nowrap;
+      font-size: min(64px, calc((100vw - 80px) / 6.45));
+      line-height: 0.9;
+      letter-spacing: -0.06em;
+    }
+  }
+
+  /* ========================================================================
      HERO SCROLL HINT — the logo's ball, bouncing, in place of a chevron.
      Sits below the headline (a scroll cue in the dead centre would land on
      top of the h1). z-index 3 is deliberately UNDER the media box's starting
@@ -855,6 +906,26 @@
        poslovnica" in the position tab. */
     max-width: 66rem;
     will-change: transform, opacity;
+  }
+
+  /* ------------------------------------------------------------------------
+     TELEFON — bar je od tri ivice PODJEDNAKO odmaknut: 20px levo, desno i dole.
+
+     `calc(100% - 40px)` umesto procenta: roditelj je pun kadar u obe varijacije
+     (#hero-stage u #1, #hero-media-box u #2, i oba su široka koliko i ekran), pa
+     je 40px oduzeto od širine tačno 2x20px vazduha. `max-width` mora da padne na
+     `none` — inače bi na 66rem opet počeo da se centrira sa većim marginama.
+
+     ⚠ `bottom` OVDE VAŽI SAMO ZA VARIJACIJU #1. Varijacija #2 ga prepisuje
+     svojim `[data-var="2"] #hero-search-block` (specifičnost 0,2,0), pa isti
+     20px mora da stoji i u variation-2.css — videti tamo.
+  ------------------------------------------------------------------------ */
+  @media (max-width: 767px) {
+    #hero-search-block {
+      width: calc(100% - 40px);
+      max-width: none;
+      bottom: 20px;
+    }
   }
   /* ========================================================================
      HERO SEARCH — booking-style bar: a yellow frame holding three separate
@@ -1869,6 +1940,122 @@
      element is simply shown in its finished state. The hero choreography on
      index.html is scroll-driven rather than timed, so it is left alone.
   ======================================================================== */
+  /* ========================================================================
+     TELEFON — RASPORED SEKCIJA ISPOD HEROJA
+
+     Sve u ovom bloku važi SAMO ispod 768px, i to je isti prelom koji nose i
+     Tailwindov `md:` u markupu i mobilni raspored pločica u variation-2.js.
+
+     ⚠ SELEKTORI SU NAMERNO VEZANI ZA ID SEKCIJE (#razvoj, #impact, #openings).
+     Vrednosti koje se ovde prepisuju dolaze iz Tailwind klasa (`px-8`,
+     `rounded-[32px]`, `rounded-xl`, `gap-5`), a Tailwind Play CDN ubacuje svoj
+     <style> u <head> pa se redosled fajlova ne sme uzimati zdravo za gotovo.
+     Id diže specifičnost na (1,x,y) i pravilo pobeđuje bez obzira na redosled —
+     zato nigde u ovom bloku nema !important.
+  ======================================================================== */
+  @media (max-width: 767px) {
+    /* --- Podnaslov "Tvoj prostor za razvoj": meki prelomi se gase.
+       Vidi komentar uz IMPACT_LINES u index.html — tvrdi <br> ispred markirane
+       rečenice NEMA ovu klasu i ostaje, pa "Izaberi put u Balkan Bet-u." i na
+       telefonu počinje svoj red. */
+    .impact-br { display: none; }
+
+    /* --- Kartice "Poslovi u lokalima" / "Posao u centrali": 20px od ivica
+       ekrana, radijus 20px. Padding omotača se spušta sa 32px (`px-8`) na 20px;
+       kartice su jedina stvar u njemu, pa je to i njihov odmak od ivice. */
+    #razvoj .cta-pair {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+    #razvoj .footer-cta { border-radius: 20px; }
+
+    /* --- "Život u Balkan Bet-u": panel 10px od ivica ekrana, radijus 20px.
+       `.section-panel` inače drži 30px margine, a `rounded-[32px]` radijus. */
+    #impact {
+      margin-left: 10px;
+      margin-right: 10px;
+      border-radius: 20px;
+    }
+    /* Mozaik 20px od ivica PANELA (opet umesto `px-8`), a same kartice na 15px
+       radijusa umesto 12. Naslov sekcije NIJE dirán — on je centriran tekst, ne
+       kutija, pa mu tešnji padding samo skraćuje red. */
+    #impact .zivot-wrap {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+    #impact .zivot-tile { border-radius: 15px; }
+
+    /* --- RAZMAK IZMEĐU SEKCIJA: SVUDA 60px, traženo tako.
+
+       Na desktopu se sekcije razmiču sopstvenim vertikalnim paddingom, i to u
+       tri različite mere: #razvoj i #openings nose `pt-[120px] pb-[120px]`, a
+       #impact `py-24` (96px). Pošto nijedna od njih nema spoljnu marginu, razmak
+       koji se VIDI između dve susedne sekcije je prosto donji padding gornje +
+       gornji padding donje... ne — sekcije se dodiruju, pa je vidljivi razmak
+       zbir ta dva samo tamo gde su obe providne. #impact je panel sa vidljivom
+       ivicom, pa je kod njega padding UNUTRAŠNJI vazduh, a razmak do suseda ono
+       što sused ostavi. Zato izjednačavanje znači da SVE TRI dobiju istih 60px:
+       razvoj↓ do panela 60, panel↓ do naslova "Najnovije pozicije" 60, i tako
+       redom do futera.
+
+       Menja se samo ovde — desktop zadržava svojih 120/96. */
+    #razvoj,
+    #openings {
+      padding-top: 60px;
+      padding-bottom: 60px;
+    }
+    #impact {
+      padding-top: 60px;
+      padding-bottom: 60px;
+    }
+
+    /* ----------------------------------------------------------------------
+       "Najnovije pozicije" — JEDAN RED KOJI SE SKROLUJE VODORAVNO
+
+       Traženo: jedna kartica dominantno u kadru, od sledeće samo delić, prva
+       10px od leve ivice ekrana.
+
+       Geometrija je izvedena, ne pogođena: vidljivi pojas ide od 10px do ivice
+       ekrana, pa je širina kartice
+           100vw − 10px (levi odmak) − 10px (razmak) − 30px (delić sledeće)
+       = `calc(100vw - 50px)`. Menja se jedan član, preračunava se drugi.
+
+       Omotač sekcije nosi `px-8` (32px), a red mora da izađe iz njega na obe
+       strane: −22px ga spušta na traženih 10px levo, −32px ga vodi do same
+       ivice desno. Naslov i CTA ostaju u omotaču i zadržavaju svoj padding.
+    ---------------------------------------------------------------------- */
+    #openings-grid {
+      display: flex;
+      gap: 10px;
+      margin-left: -22px;
+      margin-right: -32px;
+      /* Rep da poslednja kartica može da se snapuje na početak reda. */
+      padding-right: 40px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      /* Skrolbar se ne crta — red je gest, ne kontrola. */
+      scrollbar-width: none;
+    }
+    #openings-grid::-webkit-scrollbar { display: none; }
+
+    #openings .opening-card {
+      flex: 0 0 auto;
+      width: calc(100vw - 50px);
+      scroll-snap-align: start;
+      border-radius: 15px;
+    }
+
+    /* ⚠ ULAZNA ANIMACIJA SE NA TELEFONU SVODI NA FADE, i to je noseće, ne ukus.
+       `.opening-card` inače kreće sa `translateY(380px)`. Čim red postane
+       `overflow-x: auto`, računata vrednost `overflow-y` prestaje da bude
+       `visible` i postaje `auto` — pa bi tih 380px otvorilo VERTIKALNI skrol
+       unutar samog reda i kartice bi se sekle o njegovu donju ivicu.
+       Bez pomeraja nema ni prekoračenja; kaskada (`--stagger-delay`) ostaje. */
+    #openings .opening-card { transform: none; }
+    #openings .opening-card.is-revealed { transform: none; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .reveal,
     .opening-card,

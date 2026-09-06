@@ -101,14 +101,25 @@
 <header class="fixed top-0 inset-x-0 z-50">
   <div class="w-full flex items-center justify-between gap-5
               bg-brand-dark/40 backdrop-blur-md border-b border-white/20
-              pl-[30px] pr-[30px] py-3">
+              pl-5 pr-5 md:pl-[30px] md:pr-[30px] py-5 md:py-3">
 
     <!-- Logo — 60px tall, asked for directly (it was 51.2px: 2x the original,
          then reduced 20%). The bar has no fixed height of its own: it is the
          logo plus the wrapper's py-3, so raising the logo is what raises the
-         header, from ~76px to ~85px. -->
+         header, from ~76px to ~85px.
+         NA TELEFONU IDE DRUGI FAJL — SEKUNDARNI, HORIZONTALNI OBLIK logotipa
+         (BalkanBetLogo-horizontal.svg): lopta levo, "BALKAN BET" u jednom redu,
+         "PUN POGODAK" ispod. To je klijentov sekundarni oblik iz brend knjige, i
+         nije nov crtež nego isti path-evi iz osnovnog fajla, samo premešteni.
+         Visina je 41px — traženo je uvećanje od 20% nad prvobitna 34px (34 × 1.2 =
+         40.8, zaokruženo). Onih 34px je bila visina na kojoj su SLOVA ISTE
+         VELIČINE kao u složenom logotipu na 48px; sada su za petinu krupnija.
+         Traka time meri 20 + 41 + 20 = 81px.
+         ⚠ DVA <img>-a, a ne jedan sa CSS-om: header je duplikat na tri stranice
+         i mora ostati byte-identičan, pa je bolje da sve svoje nosi u markupu. -->
     <a href="index.html" class="flex items-center shrink-0" aria-label="Balkan Bet početna">
-      <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[60px] w-auto">
+      <img src="assets/logo/BalkanBetLogo-horizontal.svg" alt="Balkan Bet" class="md:hidden h-[41px] w-auto">
+      <img src="assets/logo/BalkanBetLogo.svg" alt="" aria-hidden="true" class="hidden md:block h-[60px] w-auto">
     </a>
 
     <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case -->
@@ -126,9 +137,27 @@
          CTA on the page that is NOT set uppercase.
          This is one of the entry points into the listing page (together with
          every "Pretraži" / "Pogledaj sve pozicije" on the site). -->
-    <a href="listanje.html" class="bg-brand-cta shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
+    <a href="listanje.html" class="hidden md:block bg-brand-cta shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
       Pronađi posao
     </a>
+
+    <!-- BURGER — stoji TAČNO NA MESTU CTA dugmeta, samo na telefonu: ispod md
+         se "Pronađi posao" gasi (`hidden`) a ovo se pali. Tri oble debele crte i
+         ništa više, traženo tako.
+         ⚠ Sve je pisano Tailwind klasama, bez ijednog pravila u styles.css —
+         header je duplikat na tri stranice i mora ostati byte-identičan, pa je
+         jedan izvor (markup) manje mesta gde stranice mogu da se raziđu.
+         Za sada NE OTVARA meni (mobilna navigacija još ne postoji); `aria-expanded`
+         stoji da bi ga imalo šta menjati kad panel stigne.
+         Mere su 24x18px sa crtama od 3px — to je prethodnih 34x26/4px umanjeno za
+         30%, traženo tako. Razmak crta drži `justify-between`, pa ostaje tačno
+         (18 − 3×3) / 2 = 4.5px i ne mora da se zaokružuje na celu vrednost. -->
+    <button type="button" aria-label="Otvori meni" aria-expanded="false"
+            class="md:hidden flex flex-col justify-between w-6 h-[18px] shrink-0 cursor-pointer">
+      <span class="block w-full h-[3px] rounded-full bg-white"></span>
+      <span class="block w-full h-[3px] rounded-full bg-white"></span>
+      <span class="block w-full h-[3px] rounded-full bg-white"></span>
+    </button>
   </div>
 </header>
 

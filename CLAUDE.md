@@ -95,7 +95,26 @@ verzali ~0.66em), pa brojevi imaju font-size 18.2cqw a labeli 3.64cqw - isti fon
 nacrtao brojeve upola manje od reference.
 
 ### Logo
-BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK" tekst
+BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK" tekst.
+Osnovni (složeni) oblik: lopta levo, "BALKAN" / "BET" / "PUN POGODAK" u tri reda.
+Koristi se na DESKTOPU.
+
+**BalkanBetLogo-horizontal.svg - SEKUNDARNI (HORIZONTALNI) OBLIK, koristi se na TELEFONU.**
+Lopta levo, "BALKAN BET" u jednom redu, "PUN POGODAK" ispod - klijentov sekundarni oblik iz
+brend knjige.
+⚠ NIJE NOV CRTEŽ. To su ISTI path-evi iz BalkanBetLogo.svg, samo premešteni: svaki blok
+nosi samo `translate`, a lopta uz to i uniformno `scale(0.677)`. Nijedna kriva nije dirana i
+nijedna nije nesrazmerno skalirana. **Ako se ikad promeni osnovni logotip, ovaj se NE
+POPRAVLJA RUČNO nego se ponovo izvede iz njega istim rasporedom** (razmaci i računica stoje
+u komentaru na vrhu samog fajla; mere su bbox-evi originala očitani getBBox-om).
+- odnos lopta:tekst je uzet sa klijentove slike - visina teksta je ~0.82 prečnika lopte,
+  pa je lopta ovde relativno manja nego u složenom obliku
+- gradijenti su `userSpaceOnUse`, pa `transform` na `<g>`-u pomera i njih - lopta i "BET"
+  zadržavaju svoje prelive bez ijedne izmene u `<defs>`
+- ⚠ `®` JE NADIGNUT DESNO OD "BET". U osnovnom logotipu stoji levo od "BALKAN", uvučen u
+  loptu; u horizontalnom obliku tamo za njega nema mesta a da se razmak lopta→reč ne
+  razvuče preko onog sa klijentove slike (na kojoj se ® i ne vidi). Ako klijent traži da ga
+  nema, briše se poslednji `<g>` i suzi viewBox
 
 ## Struktura HOMEPAGE-a (index.html, redosled sekcija)
 0. **SCROLL PROGRESS RAIL** (`.scroll-progress`) - tanka traka od 2px prikovana za sam vrh 
@@ -145,6 +164,30 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      kadar. Ako logo ikad stigne u potpuno beloj varijanti za ovo stanje, senka može da ode
    BalkanBetLogo je visok 60px (ranije 51.2px). Traka NEMA svoju fiksnu visinu - ona je logo 
    + py-3 wrappera, pa dizanje logotipa je ono što diže header, sa ~76px na ~85px. 
+   **NA TELEFONU (< 768px):**
+   - LOGO JE DRUGI FAJL - `assets/logo/BalkanBetLogo-horizontal.svg`, sekundarni
+     (horizontalni) oblik iz brend knjige: lopta levo, "BALKAN BET" u jednom redu,
+     "PUN POGODAK" ispod. Videti "Logo" niže. Visok je **41px** (`md:hidden h-[41px]`) - to je 34px
+     uvećanih za 20% na zahtev (34 × 1.2 = 40.8, zaokruženo). Onih 34px je bila visina na
+     kojoj su slova iste veličine kao u složenom logotipu na 48px; sada su za petinu
+     krupnija. Širina mu je 205.5px, pa i na najužem telefonu (320px) ostaje ~50px praznog
+     do burgera.
+     ⚠ DVA `<img>`-a u istom `<a>`-u, prebacuju se Tailwind klasama (`md:hidden` /
+     `hidden md:block`), a ne jednim `<img>`-om i CSS-om - header je duplikat na tri
+     stranice i mora ostati byte-identičan, pa je bolje da sve svoje nosi u markupu.
+     Desktop `<img>` nosi `alt=""` + `aria-hidden` da čitač ekrana ne pročita ime dvaput
+   - bočni padding je 20px umesto 30px (`pl-5 pr-5 md:pl-[30px] md:pr-[30px]`), a vertikalni
+     20px umesto 12px (`py-5 md:py-3`) - traženo je da logo bude 20px od gornje ivice.
+     Traka time meri 20 + 41 + 20 = 81px (82 sa donjim okvirom)
+   - CTA "Pronađi posao" se GASI (`hidden md:block`) a na njegovo mesto dolazi BURGER -
+     `<button>` sa tri `<span>`-a, oble debele crte, `md:hidden`. Mere su **24x18px sa
+     crtama od 3px**, tj. prvobitnih 34x26/4px umanjeno za 30% (traženo). Razmak crta drži
+     `justify-between`, pa ostaje tačno (18 − 3×3) / 2 = 4.5px i ne mora da se zaokružuje.
+     Burger za sada NE OTVARA ništa (mobilna navigacija još ne postoji); `aria-expanded="false"`
+     stoji da bi ga imalo šta menjati kad panel stigne
+   ⚠ SVE JE PISANO TAILWIND KLASAMA U MARKUPU, nijedno pravilo nije u styles.css - header je 
+   duplikat na tri stranice i mora ostati byte-identičan, pa je jedan izvor manje mesta gde 
+   stranice mogu da se raziđu. 
    **NAV LINKOVI, tačan redosled (traženo eksplicitno):** „O kompaniji", „Život u Balkan 
    Betu", „Poslovi u lokalima", „Poslovi u centrali", „CSR", „Kontakt". Šest ih je, ranije 
    pet (Poslovi u lokalima / Posao u centrali / O nama / Život u Balkan Betu / Kontakt) - 
@@ -159,6 +202,23 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    h1 naslov **"USKOČI U IGRU." / "BUDI DEO TIMA."** - DVA REDA, jedna rečenica po
    redu (traženo tako; bila su tri reda i pisalo je "Uskoči"). Bold, letter-spacing
    -0.06em; u tamnoj temi je prva rečenica žuta a druga bela.
+   ⚠ VELIČINA NASLOVA JE U styles.css (`#hero-heading`), NE u inline style-u markupa.
+   Bila je tamo (`style="font-size:100px; line-height:90px; letter-spacing:-6px"`), pa se
+   mobilna veličina bez !important nije mogla napisati - inline pobeđuje svaki stylesheet.
+   Vrednosti su nepromenjene, desktop kadar je isti do piksela.
+   ⚠ NA TELEFONU (< 768px) naslov MORA da stane u DVA REDA: `white-space: nowrap` (prelom
+   ostaje samo na `<br>` iz markupa, odnosno na `.v2-line` omotačima u #2) + font-size
+   izveden iz raspoložive širine, `min(64px, calc((100vw - 80px) / 6.45))`, uz
+   `line-height: .9` i `letter-spacing: -.06em`. Onih 80px je 2x40px bočnog vazduha
+   (traženo), i nosi ih `px-10 md:px-6` na `#hero-heading-wrap`.
+   - 6.45 je IZMERENO, ne procenjeno: najduži red ("BUDI DEO TIMA.") u NeoSansW1G Medium
+     pri -0.06em meri 6.444em. Ako se tekst naslova menja, PREMERITI i upisati novi broj
+   - PLAFON OD 64px JE NOSEĆI. Bez njega naslov raste linearno sa širinom, pa na gornjoj
+     ivici opsega (767px - tablet, gde je nav i dalje sakriven i vidi se burger) dobije
+     106px i uleti pravo u polje pločica varijacije #2. IZMERENO: pet preklapanja sa
+     pločicama na 767px, nijedno na 64px. Iznad ~493px širine naslov zato prestaje da
+     raste i bočni vazduh postaje veći od 40px - traženih 40px važi na telefonskim
+     širinama, gde je red i najtešnji
    ⚠ PRVA REČENICA SE RAZLIKUJE PO VARIJACIJI: markup nosi "Uskoči u igru." (original),
    a varijacija #2 ga menja u "Uđi u igru." iz svog skripta. Tako se #1 ne oslanja ni na
    jedan JS. Druga rečenica je ista u obe.
@@ -194,7 +254,16 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
      "pobegao gore za 1px". Prelaz se ne vidi jer je roditelj overflow:hidden
    - search blok je SPUŠTEN DOLE (CSS bottom: 96px, NIJE više top:50%). Zato updateHero 
      za njega koristi samo translateX(-50%) - ne vraćati vertikalni -50%, vratio bi ga 
-     na sredinu videa
+     na sredinu videa.
+     ⚠ NA TELEFONU (< 768px) bar je od TRI IVICE PODJEDNAKO odmaknut: 20px levo, desno i 
+     dole (traženo tako). Širina je `calc(100% - 40px)` uz `max-width: none` - roditelj je 
+     pun kadar u obe varijacije (#hero-stage u #1, #hero-media-box u #2, oba široka koliko 
+     i ekran), pa je 40px oduzeto od širine tačno 2x20px vazduha; bez gašenja `max-width`-a 
+     bi se na 66rem opet počeo centrirati sa većim marginama.
+     ⚠ `bottom: 20px` MORA DA STOJI NA DVA MESTA - u styles.css (važi za varijaciju #1) i u 
+     variation-2.css (`[data-var="2"] #hero-search-block`, specifičnost 0,2,0, pa bi inače 
+     pobedio mobilni blok u styles.css bez obzira na redosled fajlova). Širina se piše samo 
+     jednom, jer je varijacija #2 ne dira
    - search je u JEDNOM redu, po uzoru na booking-style bar: ŽUTI okvir (#FDB913 - 
      NAJSVETLIJA od tri brend žute, luminancija 187.5 vs 186.8 i 173.8) u kome su TRI 
      ODVOJENA BELA TABA + CRNO dugme "Pretraži" (#231F20). Tabovi: (1) Vrsta posla - 
@@ -240,6 +309,9 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    Dve .footer-cta kartice ("Poslovi u lokalima" / "Posao u centrali") su ranije otvarale
    futer bez ikakvog uvoda; sada imaju svoj naslov i podnaslov, a cela sekcija je
    dignuta ODMAH ISPOD intro videa (traženo tako - ranije je stajala ispod #impact).
+   ⚠ NA TELEFONU su dve .footer-cta kartice 20px od leve i desne ivice ekrana (umesto 32px
+   iz `px-8`) i radijusa 20px umesto 24. Kuka je klasa `cta-pair` na njihovom omotaču, koja
+   tamo postoji SAMO zbog tog pravila.
    ⚠ Kao PRVI SLOT posle heroja nosi `margin-top: -130vh` (pravilo "HERO → FIRST SECTION
    OVERLAP" u styles.css). Ono pripada SLOTU, ne sekciji - slot je do sada menjao vlasnika
    tri puta (#openings → #impact → #razvoj), pa se margina seli sa njim. Puna 130vh je
@@ -247,10 +319,33 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    svakoj visini ekrana i sekcija se čita kao da je video gura gore.
    - naslov h2 "Tvoj prostor za razvoj" - isti clamp kao ostala dva naslova sekcija
      (clamp(1.75rem, 4.4vw, 3.5rem)); sva tri treba da čitaju kao isti nivo
+   - ⚠ MOBILNI RASPORED SVE TRI SEKCIJE ISPOD HEROJA (#razvoj, #impact, #openings) živi u
+     JEDNOM bloku u styles.css, `@media (max-width: 767px)`, odmah iznad
+     prefers-reduced-motion bloka. Selektori su NAMERNO vezani za ID sekcije: vrednosti
+     koje se prepisuju dolaze iz Tailwind klasa (`px-8`, `rounded-[32px]`, `rounded-xl`,
+     `gap-5`), a Tailwind Play CDN ubacuje svoj `<style>` u `<head>`, pa se redosled fajlova
+     ne sme uzimati zdravo za gotovo. Id diže specifičnost na (1,x,y) i pravilo pobeđuje bez
+     obzira na redosled - zato u celom bloku NEMA nijednog !important. Ne prepisivati te
+     selektore na klase.
+     Šta blok radi: podnaslov #razvoj se na telefonu prelama sam; .footer-cta kartice idu na
+     20px od ivica ekrana i radijus 20px; #impact panel na 10px od ivica ekrana i radijus
+     20px, sa mozaikom 20px od svojih ivica i karticama na 15px; #openings postaje vodoravni
+     skroler; a razmak IZMEĐU sekcija se svuda spušta na 60px.
+     Detalji su uz svaku stavku niže.
    - PODNASLOV je scroll-scrubbed reveal reč-po-reč, PRESELJEN iz #impact: reči kreću
      prigušene i popunjavaju se kako sekcija prolazi kroz svoj prozor, a TEK kad se sve
      popuni, poslednja rečenica "Izaberi put u Balkan Bet-u." dobija žuti marker.
      Tekst je prelomljen u 3 reda + markirana rečenica.
+     ⚠ PRELOMI NISU SVI ISTI, i to je noseće. Onaj ISPRED markirane rečenice je TVRD
+     (`<br>` bez klase) i ostaje na svakoj širini - traženo je da "Izaberi put u Balkan
+     Bet-u." bude sama u svom redu. Ostala tri su samo željeni prelom pasusa na širokom
+     ekranu, nose klasu `impact-br`, i mobilni blok ih gasi sa `display: none` - na uskom
+     ekranu bi se svaki od tih redova prelomio JOŠ jednom i pasus bi ispao stepenast i
+     poluprazan (tako je i izgledalo).
+     ⚠ RAZMACI OKO PRELOMA SU OBAVEZNI (`' ' + <br> + ' '` u petlji koja gradi markup).
+     Ugašen `<br>` ne ostavlja razmak za sobom, pa se poslednja reč jednog reda i prva
+     sledećeg SLEPE ("100 lokalai u centrali"). Kad je `<br>` vidljiv, razmak na prelomu
+     reda ionako propada, pa desktop ne oseti razliku.
      TAJMING: popunjavanje NE počinje dok ceo pasus nije na ekranu - start je zakačen za
      trenutak kad poslednji red pređe donju ivicu (+32px), kraj kad pasus dođe 350px ispod
      headera; na niskim ekranima se run poda na IMPACT_MIN_RUN (260px).
@@ -273,6 +368,13 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    - ⚠ NEMA VIŠE PODNASLOVA. Scroll-scrubbed pasus koji se ispisivao reč po reč je
      PRESELJEN u sekciju "Tvoj prostor za razvoj" (tačka 4) - ovde ostaje samo h2.
      Traženo tako. Mehanika je ista i nepromenjena, samo živi jedan blok niže
+   - ⚠ NA TELEFONU je panel 10px od leve i desne ivice EKRANA (umesto 30px iz
+     `.section-panel`) i radijusa 20px (umesto 32). Mozaik je 20px od ivica PANELA - kuka je
+     klasa `zivot-wrap` na njegovom omotaču, koja tamo postoji SAMO zbog ovog pravila - a
+     kartice su na 15px radijusa. Naslov sekcije NIJE diran: on je centriran tekst, ne
+     kutija, pa mu tešnji padding samo skraćuje red.
+     (Izmereno 21px od spoljne ivice panela, ne 20 - panel u tamnoj temi ima okvir od 1px,
+     pa je 20px mereno od njegove UNUTRAŠNJE ivice. Nije greška.)
    - MOZAIK multimedijalnih kartica (#zivot-mosaic, renderuje JS iz ZIVOT_TILES niza). 
      RADIJUS KARTICA JE 12px, isti kao .opening-card/.job-card (Tailwind rounded-xl) - 
      traženo da mozaik i kartice pozicija čitaju kao ista porodica radijusa; bio je 18px. 
@@ -383,6 +485,27 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
    običan `pt-[120px] pb-[140px]` jer joj iznad više nije video nego druga sekcija.
    Unutrašnji razmaci su stegnuti za 20%: naslov→kartice 51px (mb-[51px]),
    kartice→link 45px (mt-[45px]).
+   ⚠ NA TELEFONU JE RAZMAK IZMEĐU SVIH SEKCIJA 60px, traženo tako. Mobilni blok u styles.css
+   spušta vertikalni padding na 60px na sve tri sekcije ispod heroja: #razvoj i #openings sa
+   120px, #impact sa 96px (`py-24`). Nijedna od njih nema spoljnu marginu, pa je vidljivi
+   razmak upravo taj padding. IZMERENO posle izmene: kartice #razvoj → panel #impact 60,
+   panel → naslov "Najnovije pozicije" 60, CTA link → futer 60. Desktop zadržava 120/96.
+   ⚠ **NA TELEFONU RED KARTICA POSTAJE VODORAVNI SKROLER** - jedna kartica dominantno u
+   kadru, od sledeće samo delić, prva 10px od leve ivice ekrana (traženo tako). Radijus je
+   tamo 15px umesto 12.
+   - geometrija je IZVEDENA, ne pogođena: vidljivi pojas ide od 10px do ivice ekrana, pa je
+     širina kartice `calc(100vw - 50px)` = 100vw − 10 (levi odmak) − 10 (razmak) − 30
+     (delić sledeće). Menja se jedan član, preračunava se drugi
+   - omotač sekcije nosi `px-8` (32px), a red mora da izađe iz njega na OBE strane:
+     `margin-left: -22px` ga spušta na traženih 10px levo, `margin-right: -32px` ga vodi do
+     same ivice desno. Naslov i CTA ostaju u omotaču i zadržavaju svoj padding.
+     `padding-right: 40px` na samom redu je rep, da poslednja kartica može da se snapuje na
+     početak
+   - ⚠ ULAZNA ANIMACIJA SE TAMO SVODI NA FADE (`transform: none` u oba stanja), i to je
+     noseće a ne ukus. `.opening-card` inače kreće sa `translateY(380px)`; čim red postane
+     `overflow-x: auto`, računata vrednost `overflow-y` prestaje da bude `visible` i postaje
+     `auto` - pa bi tih 380px otvorilo VERTIKALNI skrol unutar samog reda i kartice bi se
+     sekle o njegovu donju ivicu. Kaskada (`--stagger-delay`) ostaje
    Sekcija NEMA pozadinu 
    ni zaobljeni panel (aurora se vidi kroz nju), naslov i link su BELI: naslov centriran 
    iznad, a "POGLEDAJ SVE POZICIJE" (beo caps-lock tekst link sa belom podvlakom 
@@ -915,6 +1038,26 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
   pored posmatrača a one sa malim samo narastu - to raslojavanje je ono što daje dubinu
 - ⚠ Pločice nemaju ni radijus ni senku - i to je sa reference (izmereno `border-radius: 0`). 
   Sa 10px radijusa i senkom su se čitale kao UI kartice, a ne kao slike u prostoru
+- ⚠ **TELEFON IMA SVOJU TABELU RASPOREDA** (`TILES_M` u variation-2.js, bira se u
+  `measure()` preko `matchMedia('(max-width: 767px)')`, isti prelom kao Tailwindov `md:`
+  u markupu i `@media` u styles.css). Referenca ima zaseban raspored ispod svog mobilnog
+  preloma - istih 12 elemenata, ali krupnijih i drugačije razbacanih; desktop razlomci bi
+  na 390px dali pločice od 20-50px, koje se čitaju kao mrlje.
+  Izmereno istim postupkom kao desktop (getComputedStyle nad njihovih 12 `.media`), na
+  390x844 i 414x896 - razlomci su na oba ISPALI IDENTIČNI do 4 decimale, čime je potvrđen
+  isti zakon skaliranja (x i w po ŠIRINI, y po VISINI, perspektiva tačno 100vh: 844px na
+  kadru visokom 844, 896px na 896).
+  `d` se NE MERI (u mirovanju je translateZ nula i ovde) - to su ISTI elementi, samo
+  drugačije postavljeni, pa svaki zadržava dubinsku konstantu iz desktop tabele. Zato je
+  let kroz kadar identičan: ista raslojenost, isti DEPTH_TRAVEL, ista animacija.
+  ⚠ TRI POLOŽAJA SU I OVDE POMERENA U ODNOSU NA REFERENCU, iz istog razloga (njihova brend
+  traka je na DNU, naša navigacija na VRHU): `i=0` y .020 -> .100 i w .25 -> .22 (stajala
+  preko logotipa), `i=2` y .030 -> .098 (preko burgera), `i=11` w .360 -> .345 (pri vrhu
+  opsega, ~700px, taknula prvi red naslova). Ostalih devet je netaknuto.
+  ⚠ POJAS y 0.44-0.56 MORA OSTATI PRAZAN - tu stoji naslov u dva reda. Sredina kadra je i
+  na referenci prazna, pa to nije bio kompromis nego zatečeno stanje. Provera je merenjem:
+  presek pravougaonika svake pločice sa logotipom, burgerom i sa oba reda naslova mora
+  biti nula na svakoj širini od 320 do 767px
 - ⚠ TRI POLOŽAJA SU POMERENA U ODNOSU NA REFERENCU, na zahtev. Referenca ima brend traku
   na DNU ekrana, a naša navigacija je na VRHU, pa su joj tri pločice ulazile u posao:
   `i=4` spuštena sa y .050 na .150 (stajala je preko dugmeta "Pronađi posao"), a `i=1` i

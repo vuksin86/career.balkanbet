@@ -198,6 +198,14 @@
   will-change: transform;
 }
 
+/* Telefon — 20px od dna, isto koliko i sa strana (širinu postavlja styles.css).
+   Mora da stoji OVDE zato što pravilo iznad ima specifičnost 0,2,0 i pobedilo bi
+   mobilni blok u styles.css bez obzira na redosled fajlova. Prelom je isti broj
+   koji nose i Tailwindov `md:` i ostali mobilni blokovi (768px). */
+@media (max-width: 767px) {
+  [data-var="2"] #hero-search-block { bottom: 20px; }
+}
+
 /* ==========================================================================
    REDUCED MOTION
 

@@ -148,6 +148,63 @@
     { x:  0.0750, y: 0.4630, w: 0.0520, ar: 1.20, d:  360 }
   ];
 
+  /* ==========================================================================
+     RASPORED PLOČICA NA TELEFONU — takođe PREPISAN SA telescope.fyi
+
+     Referenca ima ZASEBAN raspored ispod svog mobilnog preloma: 12 istih
+     elemenata, ali krupnijih i drugačije razbacanih (na 390px širine desktop
+     raspored bi dao pločice od 20-50px, koje se čitaju kao mrlje).
+
+     Izmereno istim postupkom kao i desktop — getComputedStyle nad njihovih 12
+     `.media` elemenata, na DVA viewport-a (390x844 i 414x896). Razlomci ispod
+     su na oba ISPALI IDENTIČNI do 4 decimale, čime je potvrđeno da važi isti
+     zakon skaliranja kao gore: `x` i `w` prate ŠIRINU kadra, `y` prati VISINU,
+     visina pločice ide iz `ar`, a perspektiva je opet tačno 100vh (izmereno:
+     844px na kadru visokom 844, 896px na 896).
+
+     `d` se NE MERI — u mirovanju je translateZ nula i na telefonu (videti isti
+     zapis kod desktop tabele). To su ISTI elementi, samo drugačije postavljeni,
+     pa svaki zadržava dubinsku konstantu koju ima u desktop tabeli iznad. Time
+     je i let kroz kadar identičan: ista raslojenost, isti DEPTH_TRAVEL.
+
+     ⚠ TRI POLOŽAJA SU POMERENA U ODNOSU NA REFERENCU, iz istog razloga iz kog
+     su na desktopu pomerena tri — njihova brend traka je na DNU ekrana, a naša
+     navigacija na VRHU:
+       i=0  y .020 -> .100 i w .25 -> .22   — stajala je preko logotipa
+       i=2  y .030 -> .098                  — stajala je preko burger dugmeta
+       i=11 w .360 -> .345                  — pri vrhu opsega (~700px širine),
+                                              gde je naslov već na plafonu od
+                                              64px a pločice i dalje rastu sa
+                                              širinom, njen desni ugao je taknuo
+                                              prvi red naslova
+     Spušteni su taman ispod trake (48px logo + 2×12px = 72px, pa ~10px vazduha)
+     i staju u prazninu koju referenca ionako ostavlja između trake i naslova.
+     Ostalih devet je netaknuto. Sredina kadra je i na referenci prazna, pa
+     naslov u dva reda nijedna pločica ne dodiruje — ne stavljati ništa u pojas
+     y 0.44-0.56.
+  ========================================================================== */
+  var TILES_M = [
+    { x: -0.0500, y: 0.1000, w: 0.2200, ar: 1.00, d:  720 },
+    { x:  0.2600, y: 0.1500, w: 0.2800, ar: 1.40, d:  360 },
+    { x:  0.4800, y: 0.0980, w: 0.3600, ar: 1.10, d: 1080 },
+    { x:  0.8900, y: 0.2500, w: 0.1600, ar: 0.90, d:  360 },
+    { x:  0.7600, y: 0.3000, w: 0.1400, ar: 1.40, d:  360 },
+    { x:  0.5800, y: 0.6530, w: 0.1500, ar: 0.90, d: 1080 },
+    { x:  0.7600, y: 0.7072, w: 0.3400, ar: 1.10, d:  360 },
+    { x:  0.5400, y: 0.9442, w: 0.2600, ar: 1.40, d:  720 },
+    { x:  0.2500, y: 0.7222, w: 0.1600, ar: 1.40, d:  540 },
+    { x: -0.1000, y: 0.7956, w: 0.3200, ar: 1.10, d:  360 },
+    { x: -0.0500, y: 0.5877, w: 0.1800, ar: 1.15, d:  720 },
+    { x: -0.1500, y: 0.2000, w: 0.3450, ar: 1.20, d:  360 }
+  ];
+
+  /* Prelom je ISTI broj koji nosi Tailwindov `md:` u markupu (768px) i
+     `@media (max-width: 767px)` u styles.css — ista granica na sva tri mesta,
+     da se raspored pločica ne prelomi na jednoj širini a header i naslov na
+     drugoj. Čita se u measure(), pa se promena orijentacije sama sredi. */
+  var MOBILE_MQ = window.matchMedia('(max-width: 767px)');
+  function layoutFor(i) { return MOBILE_MQ.matches ? TILES_M[i] : TILES[i]; }
+
   /* Koliko daleko svaka pločica odleti do kraja uvoda, kao višekratnik svoje
      dubinske konstante. IZMERENO na referenci: pločica sa d=720 završi na
      translateZ 1080, ona sa d=360 na 540 — dakle 1.5 × d u oba slučaja.
@@ -354,7 +411,11 @@
        postavljaju se direktno, bez ijedne korekcije za dubinu. To sme baš zato
        što je translateZ u mirovanju nula — pločica posle uvoda stoji tačno
        ovde, u ovoj veličini. Perspektiva ulazi u igru tek kad z krene. */
-    tiles.forEach(function (t) {
+    tiles.forEach(function (t, i) {
+      /* Tabela se bira OVDE, a ne pri izgradnji: measure() se zove i na resize,
+         pa prelazak preko 768px (rotacija telefona, promena veličine prozora)
+         sam prebaci raspored. render() ispod ionako čita samo t.def. */
+      t.def = layoutFor(i);
       var w = vw * t.def.w;
       var h = w / t.def.ar;
       t.el.style.width = w + 'px';
