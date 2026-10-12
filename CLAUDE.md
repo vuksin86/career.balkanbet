@@ -996,15 +996,24 @@ Mehanika je namerno ista kao kod teme, jer je dokazano dobra na ovom projektu:
   lokala / 25+ godina iskustva ("Deo Merkur grupe" UKLONJENO na zahtev). ⚠ Brojke se NE 
   slažu sa tekstom u #razvoj ("1.200 kolega u 100 lokala") - proveriti sa klijentom. 
   #direktor NEMA margin-bottom: #impact kreće odmah ispod.
-  **NA TELEFONU PO KLIJENTOVOM PRILOGU**: citat (18px) u levoj koloni od 52%, fotografija 
-  desno APSOLUTNO, 360px, prikovana za dno bloka (sedi na liniji) i pomerena preko desne 
-  ivice (`right: -44px`, beli rub fajla se seče - `overflow-x: hidden` na #direktor). Potpis 
-  u DVA reda, a ", Balkan Bet" se gasi (`.direktor-sign__org`). Brojke: tri u redu, broj i 
-  jedinica u dva reda, BEZ opisnih rečenica (`.direktor-stat__sub` sakriven)
+  **NA TELEFONU IDENTIČNO KLIJENTOVOM PRILOGU** (odnos slike i teksta, prelomi, položaj):
+  mere su izvedene iz priloga (629px = ekran 390, faktor 1.613) i iz fajla fotografije
+  (PROVIDNA pozadina; lik zauzima 10.9–86.7% širine, vrh glave 3.9% visine - izmereno po
+  pikselima). Fotografija LEVO, apsolutno, **85vw** visoka, `left: calc(-20px - 1.4vw)`,
+  prikovana za dno bloka (sedi na liniji). Citat i potpis DESNO u koloni od 50%, BEZ žute
+  linije. Font citata = kolona / 10.3 (najduži red "iskreno da napreduju." meri 10.15em) -
+  17px na 390. **PRELOMI SU ZAKUCANI**: svaki red citata je `<span class="dq">` (inline na
+  desktopu, block na telefonu), devet redova kao na prilogu. Svi razmaci u bloku su u vw,
+  pa je VRH GLAVE U RAVNI SA VRHOM NAVODNIKA na svakoj širini - IZMERENO −3/0/+2/+5px na
+  320/360/390/430. Lik 19–186px od leve ivice na 390 (prilog 18.6–186). Potpis u DVA reda, ", Balkan Bet" se gasi (`.direktor-sign__org`). 
+  Brojke: tri u redu, broj i jedinica u dva reda, BEZ opisnih rečenica. **"O kompaniji" je 
+  CENTRIRANO ISPOD BROJKI** - to je DRUGI primerak dugmeta u markupu (`.direktor-cta-m`, 
+  posle `.direktor-stats`); onaj uz citat (`.direktor-cta`) se na telefonu gasi, a ovaj na 
+  desktopu
 - **HERO SEARCH BAR NA TELEFONU (#3, ali pravilo je na `#hero-search-block`, pa važi u 
   svim varijacijama)**: labele "Vrsta posla / Lokacija / Pozicija" sakrivene SAMO VIZUELNO 
-  (čitač ekrana ih i dalje čita), sva četiri elementa tačno **45px**, "Pretraži" 16px. 
-  Bar meri 210px 
+  (čitač ekrana ih i dalje čita). Tri padajuća polja su **40px** sa vrednošću od **14px**,
+  "Pretraži" **45px / 16px**. Bar meri 217px  
   (bio 279). Bar na listanje.html (`.search-band`) NIJE diran
 - **MOZAIK U #3: SVE KARTICE ISTE** - desktop portret 4:5 u DVA PORAVNATA REDA po tri 
   (pomeraj srednje kolone `lg:mt-10` ugašen), telefon KVADRATI 1:1. Da bi CSS to uopšte 
@@ -1025,18 +1034,20 @@ Mehanika je namerno ista kao kod teme, jer je dokazano dobra na ovom projektu:
   (role=tablist, strelice levo/desno), slajdovi naslagani u istoj ćeliji grida pa je 
   promena samo cross-fade. Podaci u nizu LJUDI u index.html; slike u `assets/ljudi/`. 
   ⚠ Imena/pozicije/staž/izjave su PLACEHOLDER osim Ane (sa reference).
-  **NA TELEFONU**: redosled je naslov → FOTOGRAFIJA → SLIČICE (KVADRATI) → IZJAVA, a 
-  tagova nema (traženo). Sličice su u markupu iznad slajdova, pa se to radi gridom: 
+  **NA TELEFONU**: naslov → FOTOGRAFIJA **PORTRET 4:5** sa **SLIČICAMA (KVADRATI) U SVOM DNU** →  
+  IZJAVA sa POTPISOM ispod (ime + pozicija, `.ljudi-card__sign` - postoji u kartici, ali se 
+  vidi samo na telefonu). Natpis preko fotografije (sa "N godina u Balkan Bet-u") i tagovi 
+  se na telefonu gase. Sličice su u istoj ćeliji grida kao fotografija, `align-self: end`, 
+  z-index iznad naslaganih fotografija. Sličice su u markupu iznad slajdova, pa se to radi gridom: 
   `.ljudi-wrap` je grid od jedne kolone, a `.ljudi-stage` i `.ljudi-slide` su 
   `display: contents`, pa su fotografije i kartice svih slajdova direktna deca grida, 
   naslagane u svoje redove. ⚠ Element sa `display: contents` ne crta opacity, pa se aktivni 
   slajd na telefonu prikazuje preko DECE slajda (`.ljudi-slide > *`). ⚠ Ranija varijanta 
   (slajd kao grid) je na 320px puštala fotografiju 29px van ekrana - posle svake izmene ovde 
   izmeriti scrollWidth na 320/390.
-  ⚠ NA DESKTOPU STAJE U JEDAN EKRAN: visina fotografije je `clamp(300px, 100vh − 370px, 
+  ⚠ NA DESKTOPU STAJE U JEDAN EKRAN: visina fotografije je `clamp(300px, 100vh − 392px, 
   520px)`, kartica sa izjavom je iste visine (stretch, sadržaj centriran). IZMERENO na 1440: 
-  staje na prozorima 720/780/900/1080 uz 33-43px rezerve. Menja li se išta iznad slajda, 
-  premeriti onih 370. `pt-[120px]` i bez donjeg paddinga (sekcija ispod donosi svojih 120)
+  34px rezerve na prozorima 780 i 900. Menja li se išta iznad slajda, premeriti onih 392. `pt-[120px]` i bez donjeg paddinga (sekcija ispod donosi svojih 120)
 - **#razvoj "Tvoj prostor za razvoj"** je ISTA sekcija (naslov, tekst koji se ispisuje na 
   skrol, obe kartice), samo SPUŠTENA na pretposlednje mesto, iznad futera. Premešta je 
   variation-3.js (markup ostaje u redosledu #1, koja ne sme da zavisi od JS-a), PRE glavnog 
@@ -1220,6 +1231,31 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
 - ŠTA JE ZAJEDNIČKO: `updateHero()` u index.html i dalje je jedini scroll listener. Na vrhu 
   računa izlaznu fazu i staklo headera, pa tek onda preda kadar varijaciji #2 - tako se to 
   dvoje ne može razići između varijacija
+
+## HERO SEARCH BAR - TAMNI PROVIDNI SKIN (sve varijacije, telefon i desktop)
+Po klijentovoj referenci: bar je tamno staklo (rgba(14,13,14,.55) + blur 14px, okvir
+white/12, radijus 16), polja su tamna providna (rgba(0,0,0,.35), okvir white/14), tekst u
+poljima NIJE bold (400) i beo, "Pretraži" je ŽUTO dugme #ffbb1a sa tamnim bold tekstom.
+Raniji žuti okvir sa belim pločicama je otišao. ⚠ Sve je vezano za `#hero-search-block` -
+isti komponent na listanje.html ZADRŽAVA žuti okvir. Širine su i dalje JEDNAKE (raniji
+zahtev); na referenci je dugme uže. Labele polja na desktopu ostaju (white/55). Meni ostaje beo.
+
+## Ujednačenost naslova i razmaka (varijacija #3, IZMERENO)
+- naslovi sekcija (h2) nose klasu **`.section-title`** (styles.css) - veličina više NIJE u
+  inline stilu, jer se mobilna nije mogla napisati bez !important. Desktop clamp(1.75rem,
+  4.4vw, 3.5rem) = 56px, prored 1.5; **TELEFON 34px, prored 1.15** (traženo; duži naslovi
+  se lome u dva reda). Medium. Klasu nose #razvoj, #impact, #ljudi i #openings
+- od početka sekcije do naslova: **60px telefon / 120px desktop** u #impact, #ljudi i 
+  #razvoj (#impact je u #3 dobio 120px; panel #1/#2 ima 96px iz py-24)
+- između sekcija: 60px telefon / 120px desktop; tamo gde se dve pozadine dodiruju (hero → 
+  #direktor → #impact) razmak je nula, namerno
+- podnaslovi: desktop 30px (#ljudi) / 30.24px (#razvoj, clamp) - praktično isto; telefon 
+  OBA `min(30px, (100vw − 40px) / 22.6)` (~15.5px na 390), jer #ljudi mora u jedan red. 
+  ⚠ Zato je veličina `#impact-heading` PRESELJENA iz inline stila u styles.css (inline bi 
+  pobedio mobilno pravilo). Težina se razlikuje (500 / 700) i to je ostavljeno: #razvoj je 
+  bold rečenica koja se ispisuje na skrol
+- NIJE ujednačeno (nije traženo): razmak od naslova do sadržaja (#impact i #razvoj 64px, 
+  #ljudi 24px do fotografije)
 
 ## Pravila za dalji rad
 1. Pre bilo koje vizuelne izmene, PROVERI trenutno stanje u index.html (ne pretpostavljaj 

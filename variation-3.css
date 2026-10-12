@@ -122,13 +122,13 @@ html:not([data-var="3"]) #ljudi { display: none; }
    tom pojasu. Tačne ivice upisuje skript (layoutHeroV3 u index.html), jer
    visina bara zavisi od fonta i od preloma (na telefonu je bar u četiri
    reda). Ove vrednosti su samo prvi paint pre skripta — IZMERENE na 1440
-   (header 73px; bar 75px + 50px = 125) i na 390 (header 81px sa oba
-   logotipa; bar 210px u četiri reda od 45px + 20px = 230). Sa skriptom je
-   razmak naslov↔header i naslov↔bar izmeren jednak: 261/261px na 1440x900,
-   221/221px na 390x844, 235/235px na 320x844. */
-[data-var="3"] #hero-heading-wrap { top: 73px; bottom: 125px; }
+   (header 73px; tamni bar 95px + 50px = 145) i na 390 (header 81px sa oba
+   logotipa; bar 217px u četiri reda + 20px = 237). Sa skriptom je razmak
+   naslov↔header i naslov↔bar izmeren jednak: 251/251px na 1440x900,
+   220/220px na 390x844, 233/233px na 320x844. */
+[data-var="3"] #hero-heading-wrap { top: 73px; bottom: 145px; }
 @media (max-width: 767px) {
-  [data-var="3"] #hero-heading-wrap { top: 81px; bottom: 230px; }
+  [data-var="3"] #hero-heading-wrap { top: 81px; bottom: 237px; }
 }
 
 /* ==========================================================================
@@ -147,6 +147,14 @@ html:not([data-var="3"]) #ljudi { display: none; }
   border: 0;
   border-radius: 0;
   background: #0e0d0e;
+  /* 120px gore i dole na desktopu, kao #ljudi i #razvoj — od početka
+     sekcije do naslova svuda isto (bilo 96, iz panelskog py-24). Na
+     telefonu ostaje 60px iz mobilnog bloka u styles.css. */
+  padding-top: 120px;
+  padding-bottom: 120px;
+}
+@media (max-width: 767px) {
+  [data-var="3"] #impact { padding-top: 60px; padding-bottom: 60px; }
 }
 
 /* --- Mozaik u "Balkan Bet izbliza": SVE KARTICE ISTE ----------------------

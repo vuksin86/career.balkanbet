@@ -377,16 +377,15 @@
 ============================================================================ -->
 <section id="razvoj" class="relative z-10 pt-[120px] pb-[120px]">
   <div class="max-w-[1200px] mx-auto px-8 md:px-16 text-center">
-    <!-- Isti clamp kao naslovi "Najnovije pozicije" i "Život u Balkan Bet-u" —
-         sva tri treba da čitaju kao isti nivo, držati ih usklađene. -->
-    <h2 class="reveal uppercase font-medium tracking-tight text-white"
-        style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
+    <!-- .section-title — ista veličina za SVE naslove sekcija (styles.css). -->
+    <h2 class="section-title reveal uppercase font-medium tracking-tight text-white">
       Tvoj prostor za razvoj
     </h2>
 
     <!-- Podnaslov — popunjava se reč po reč na skrol; markup pravi JS -->
-    <p id="impact-heading" class="font-bold leading-snug mt-7 text-white"
-       style="font-size: clamp(1.15rem, 2.1vw, 1.9rem);"></p>
+    <!-- Veličina je u styles.css (#impact-heading), ne u inline stilu: inline
+         bi pobedio mobilno pravilo koje je izjednačava sa podnaslovom #ljudi. -->
+    <p id="impact-heading" class="font-bold leading-snug mt-7 text-white"></p>
   </div>
 
   <!-- `cta-pair` je kuka za mobilni blok u styles.css (10px od ivica ekrana). -->
@@ -460,7 +459,11 @@
              potpis je odmah ispod citata, ime i funkcija u istom redu. -->
         <figure class="direktor-quote">
           <blockquote>
-            <p>Ne gradimo samo poslovanje — gradimo mesto gde ljudi mogu iskreno da napreduju. Transparentnost i poverenje nisu fraze kod nas, to je način na koji radimo svaki dan.</p>
+            <!-- Svaki red je svoj <span class="dq">: na desktopu su obični
+                 inline (razmaci između njih su pravi razmaci, tekst teče), a
+                 na telefonu `display: block`, pa su prelomi TAČNO kao u
+                 klijentovom prilogu (traženo "identično"). -->
+            <p><span class="dq">Ne gradimo samo</span> <span class="dq">poslovanje — gradimo</span> <span class="dq">mesto gde ljudi mogu</span> <span class="dq">iskreno da napreduju.</span> <span class="dq">Transparentnost i</span> <span class="dq">poverenje nisu fraze</span> <span class="dq">kod nas, to je način</span> <span class="dq">na koji radimo svaki</span> <span class="dq">dan.</span></p>
           </blockquote>
           <figcaption class="direktor-sign">
             <span class="direktor-sign__name">Bojan Šćekić</span><span class="direktor-sign__role">Generalni direktor<span class="direktor-sign__org">, Balkan Bet</span></span>
@@ -489,6 +492,16 @@
         <p class="direktor-stat__sub">Gradimo poverenje od 1999. godine.</p>
       </div>
     </div>
+
+    <!-- ISTO DUGME, DRUGO MESTO — na telefonu "O kompaniji" stoji centrirano
+         ISPOD brojki (klijentov prilog), na desktopu uz citat. Dva elementa a
+         ne premeštanje, jer je jedno unutar bloka sa citatom, a drugo posle
+         brojki; CSS pokazuje po jedno (videti mobilni blok). -->
+    <div class="direktor-cta-m">
+      <a href="#" class="inline-block bg-brand-cta text-brand-dark rounded-full px-7 py-3.5 text-base font-bold hover:brightness-95 transition-all cursor-pointer">
+        O kompaniji
+      </a>
+    </div>
   </div>
 </section>
 
@@ -508,13 +521,11 @@
 ============================================================================ -->
 <section id="impact" class="relative z-20 section-panel rounded-[32px] bg-white py-24">
   <div class="max-w-[1200px] mx-auto px-8 md:px-16 text-center">
-    <!-- Same type scale as the "Najnovije pozicije" heading — the two section
-         titles are meant to read as one level, so keep these clamps in sync. -->
+    <!-- .section-title — ista veličina za SVE naslove sekcija (styles.css). -->
     <!-- Naslov se razlikuje po varijaciji: u #3 je "Balkan Bet izbliza" (ime
          "Život u Balkan Betu" tamo nosi sekcija sa pričama zaposlenih). Obe
          verzije stoje u markupu, variation-3.css pokazuje jednu. -->
-    <h2 class="reveal uppercase font-medium tracking-tight text-brand-dark"
-        style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
+    <h2 class="section-title reveal uppercase font-medium tracking-tight text-brand-dark">
       <span class="v3-hide">Život u Balkan Bet-u</span><span class="v3-only">Balkan Bet izbliza</span>
     </h2>
   </div>
@@ -595,8 +606,7 @@
        izjave — videti mobilni blok u styles.css). -->
   <div class="ljudi-wrap max-w-[1440px] mx-auto px-8 md:px-16">
     <div class="text-center">
-      <h2 class="reveal uppercase font-medium tracking-tight text-white"
-          style="font-size: clamp(1.75rem, 4.4vw, 3.5rem); line-height: 1.1;">
+      <h2 class="section-title reveal uppercase font-medium tracking-tight text-white">
         Život u Balkan Betu
       </h2>
       <!-- JEDAN RED, 30px (traženo) — na telefonu se font smanjuje da red
@@ -763,8 +773,7 @@
     <!-- Header: title only, centered. mb/mt below the row are the old
          64px/56px tightened by the requested 20%. -->
     <div class="reveal text-center mb-[51px]">
-      <h2 class="uppercase font-medium tracking-tight text-white"
-          style="font-size: clamp(1.75rem, 4.4vw, 3.5rem);">
+      <h2 class="section-title uppercase font-medium tracking-tight text-white">
         Najnovije pozicije
       </h2>
     </div>
@@ -2171,6 +2180,9 @@
           <p class="ljudi-card__line">${p.line}</p>
           <p class="ljudi-card__text">${p.text}</p>
           <ul class="ljudi-tags">${p.tags.map((t) => `<li>${t}</li>`).join('')}</ul>
+          <!-- Potpis ispod citata — vidi se SAMO NA TELEFONU (tamo je natpis
+               preko fotografije ugašen, a sličice stoje u dnu fotografije). -->
+          <p class="ljudi-card__sign"><span>${p.name}</span>${p.role}</p>
         </div>
       </article>`).join('');
 

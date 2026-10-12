@@ -194,6 +194,18 @@
      fully finished — i.e. after the words have already turned dark, not
      at the same time.
   ======================================================================== */
+  /* NASLOVI SEKCIJA (#razvoj, #impact, #ljudi, #openings) — jedna veličina za
+     sve. Stajala je kao isti clamp u inline stilu na svakom h2, pa je mobilna
+     veličina (34px, videti mobilni blok) bez !important bila nemoguća. */
+  .section-title { font-size: clamp(1.75rem, 4.4vw, 3.5rem); }
+  /* Redovi citata direktora: na desktopu tekst teče normalno, na telefonu je
+     svaki red blok (prelomi kao u prilogu — videti mobilni blok). */
+  .dq { display: inline; }
+
+  /* Veličina podnaslova "Tvoj prostor za razvoj" — preseljena iz inline stila
+     (vrednost nepromenjena), da bi je mobilni blok mogao izjednačiti sa
+     podnaslovom #ljudi bez !important. */
+  #impact-heading { font-size: clamp(1.15rem, 2.1vw, 1.9rem); }
   .impact-word {
     color: rgba(35, 31, 32, 0.28); /* brand-dark at low opacity — unrevealed */
     /* No transition: words snap straight to solid dark as they activate —
@@ -1109,6 +1121,52 @@
      the homepage and on listanje.html — three tabs and a submit, nothing else.
      Do not add a page-specific tile back into it. */
 
+  /* ========================================================================
+     HERO SEARCH — TAMNI PROVIDNI SKIN (samo bar u heroju, sve varijacije,
+     telefon i desktop). Traženo po referenci: tamna providna podloga bara,
+     tamna providna polja, tekst u poljima NIJE bold, a "Pretraži" je žuto
+     dugme sa bold tekstom. Raniji žuti okvir sa belim pločicama je otišao.
+     ⚠ Vezano za #hero-search-block — isti komponent na listanje.html
+     (.search-band) zadržava žuti okvir i bele pločice.
+     Žuta je #ffbb1a (brand.cta), ista kao svako drugo žuto dugme na sajtu.
+     Širine polja i dugmeta su i dalje JEDNAKE (raniji eksplicitan zahtev) —
+     na referenci je dugme uže; to je jedna linija (grid-template-columns).
+     Padajući meni ostaje beo: otvara se preko videa, a beo panel sa tamnim
+     tekstom je čitljiv na svakom kadru.
+  ======================================================================== */
+  #hero-search-block .hero-search {
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 16px;
+    background: rgba(14,13,14,.55);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 20px 44px rgba(0,0,0,.25);
+  }
+  #hero-search-block .hero-search__tab {
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 10px;
+    background: rgba(0,0,0,.35);
+    transition: border-color .2s ease, background-color .2s ease;
+  }
+  #hero-search-block .hero-search__tab:hover,
+  #hero-search-block .hero-search__tab.is-open {
+    border-color: rgba(255,255,255,.32);
+    background: rgba(0,0,0,.5);
+  }
+  #hero-search-block .hero-search__trigger { border-radius: 10px; }
+  #hero-search-block .hero-search__label { color: rgba(255,255,255,.55); }
+  #hero-search-block .hero-search__value { color: #FFFFFF; font-weight: 400; }
+  #hero-search-block .hero-search__chevron { color: #FFFFFF; }
+  #hero-search-block .hero-search__submit {
+    border-radius: 10px;
+    background: #ffbb1a;
+    color: #231F20;
+    font-weight: 700;
+  }
+  #hero-search-block .hero-search__submit:hover { filter: brightness(1.06); }
+
   /* One full-width row per control. grid-auto-flow: row + auto rows, so each
      tile is as tall as it needs to be instead of sharing one track height. */
   @media (max-width: 860px) {
@@ -2018,6 +2076,7 @@
     color: #6F6A6B;
   }
   .direktor-cta { margin-top: 36px; }
+  .direktor-cta-m { display: none; }
 
   .direktor-stats {
     display: grid;
@@ -2059,14 +2118,15 @@
 
      ⚠ NA DESKTOPU CELA SEKCIJA STAJE U JEDAN EKRAN (traženo). Zato visina
      slajda nije fiksna nego izvedena iz visine prozora: sve iznad slajda
-     (naslov, podnaslov, sličice i razmaci) meri ~265px, header 73px i još
-     ~30px vazduha, pa je ostatak ekrana (100vh − 370px) visina fotografije,
+     (naslov, podnaslov, sličice i razmaci) meri ~287px — naslov ima isti
+     prored 1.5 kao naslovi ostalih sekcija — header 73px i još ~30px
+     vazduha, pa je ostatak ekrana (100vh − 392px) visina fotografije,
      u granicama 300–520px. Kartica sa izjavom je iste visine (stretch).
      IZMERENO na 1440 širine (posle podnaslova od 30px i headera od 73px):
      staje na prozorima visokim 780 i 900px sa 34 i 44px rezerve (na
      1080 fotografija stane na plafon od 520px pa rezerve ima više). Ispod
      ~690px fotografija udari u pod od 300px i sekcija počinje da prelazi
-     ekran. Menja li se išta iznad slajda, PREMERITI onih 370.
+     ekran. Menja li se išta iznad slajda, PREMERITI onih 392.
 
      Tamna je bez teme: sekcija stoji na tamnoj aurori kao i #openings, pa je
      kartica sa izjavom isto staklo (#0e0d0e na .6) koje nosi #impact.
@@ -2142,7 +2202,7 @@
   }
   .ljudi-photo {
     position: relative;
-    height: clamp(300px, calc(100vh - 370px), 520px);
+    height: clamp(300px, calc(100vh - 392px), 520px);
     border-radius: 20px;
     overflow: hidden;
     margin: 0;
@@ -2217,6 +2277,9 @@
     line-height: 1.6;
   }
   .ljudi-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  /* Potpis u kartici — samo telefon (videti mobilni blok); na desktopu ime i
+     pozicija stoje preko fotografije. */
+  .ljudi-card__sign { display: none; }
   .ljudi-tags li {
     padding: 8px 15px;
     border: 1px solid rgba(255,255,255,.16);
@@ -2403,9 +2466,9 @@
 
     /* ----------------------------------------------------------------------
        HERO SEARCH BAR NA NASLOVNOJ — NIŽI (traženo): labele ("Vrsta posla",
-       "Lokacija", "Pozicija") se gase, ostaje samo vrednost, a sva četiri
-       elementa (tri padajuća + "Pretraži") su visoka tačno 45px. Bar time meri
-       4×45 + 3×6 + 2×6 = 210px umesto 279.
+       "Lokacija", "Pozicija") se gase, ostaje samo vrednost. Tri padajuća
+       polja su 40px sa vrednošću od 14px, "Pretraži" je 45px i 16px. Bar
+       time meri 3×40 + 45 + 3×8 + 2×10 + 2 (okvir) = 211px.
        ⚠ Vezano za #hero-search-block, pa ISTA komponenta na listanje.html
        (.search-band) ostaje kakva jeste.
        Labela se krije SAMO VIZUELNO (ne display: none) — čitač ekrana i dalje
@@ -2421,61 +2484,91 @@
     }
     #hero-search-block .hero-search__trigger,
     #hero-search-block .hero-search__submit {
-      height: 45px;
       padding-top: 0;
       padding-bottom: 0;
     }
-    #hero-search-block .hero-search__value { font-size: 16px; }
-    #hero-search-block .hero-search__submit { font-size: 16px; }
+    #hero-search-block .hero-search { gap: 8px; padding: 10px; border-radius: 14px; }
+    #hero-search-block .hero-search__trigger { height: 40px; }
+    #hero-search-block .hero-search__value { font-size: 14px; }
+    #hero-search-block .hero-search__submit { height: 45px; font-size: 16px; }
 
     /* ----------------------------------------------------------------------
-       REČ DIREKTORA (samo varijacija #3) — PO KLIJENTOVOM PRILOGU:
-       citat levo u uskoj koloni, fotografija desno, PRIKOVANA za dno bloka tako
-       da donja ivica sedi na liniji iznad brojki (kao na desktopu). Ispod tri
-       brojke u jednom redu, BEZ opisnih rečenica.
+       NASLOVI SEKCIJA: 34px na telefonu (traženo; bilo 28). Na 34px se duži
+       naslovi lome u dva reda, pa prored pada sa 1.5 na 1.15 — inače bi dva
+       reda stajala kao dva naslova. Isti prored za sve, pa je i razmak od vrha
+       sekcije do slova svuda isti.
+    ---------------------------------------------------------------------- */
+    .section-title { font-size: 34px; line-height: 1.15; }
 
-       Fotografija je apsolutno pozicionirana i ne zauzima mesto u toku: visinu
-       bloka diktira kolona sa tekstom. Fajl je izrez na BELOJ podlozi (lik
-       zauzima ~11–87% širine fajla), pa je slika pomerena desno i preko ivice
-       ekrana (right: −44px) — beli rub se seče o ivicu sekcije (overflow-x:
-       hidden na #direktor), a lik dolazi skoro do same ivice. Tekst sme da
-       pređe preko belog ruba fajla, ne preko lika: kolona je 52% širine.
-       Na potpisu se ", Balkan Bet" gasi i funkcija ide u svoj red (prilog).
+    /* ----------------------------------------------------------------------
+       REČ DIREKTORA (samo varijacija #3) — IDENTIČNO KLIJENTOVOM PRILOGU:
+       odnos slike i teksta, prelomi i položaj teksta prema slici.
+
+       Mere su IZVEDENE iz priloga (629px širine = ekran od 390px, faktor
+       1.613) i iz samog fajla fotografije (providna pozadina; lik zauzima
+       10.9–86.7% širine, vrh glave je na 3.9% visine — izmereno po pikselima):
+         - fotografija: lik ~19px od leve ivice ekrana, visok ~317px ⇒ fajl
+           je visok 85vw (331px na 390) i pomeren levo za 20px + 1.4vw
+         - VRH GLAVE U RAVNI SA VRHOM NAVODNIKA (kao na prilogu): fotografija
+           je prikovana za dno bloka, a padding ispod teksta je štimovan tako
+           da se to poklopi — IZMERENO posle izmene
+         - tekst: kolona počinje na sredini (50%), citat ~17px na 390 sa
+           proredom 1.3 (prilog ~17.7px / 22px). Veličina je izvedena iz
+           širine kolone — najduži red "iskreno da napreduju." meri 10.15em,
+           pa je font = kolona / 10.3 — da odnos slike i teksta ostane isti i
+           na drugim širinama telefona
+         - PRELOMI SU ZAKUCANI: svaki red citata je <span class="dq">, ovde
+           `display: block` (devet redova, kao na prilogu)
+         - potpis je sitniji od citata (~13px na 390, kao na prilogu)
+       "O kompaniji" je ispod brojki (.direktor-cta-m), onaj uz citat se gasi.
     ---------------------------------------------------------------------- */
     #direktor { overflow-x: hidden; }
     #direktor .max-w-\[1440px\] { padding-left: 20px; padding-right: 20px; }
     #direktor .direktor-top {
       position: relative;
       display: block;
-      padding-top: 40px;
+      padding-top: 50px;
     }
     #direktor .direktor-photo {
       position: absolute;
-      right: -44px;
+      left: calc(-20px - 1.4vw);
       bottom: 0;
       z-index: 0;
     }
-    #direktor .direktor-photo img { height: 360px; }
+    #direktor .direktor-photo img { height: 85vw; }
     #direktor .direktor-body {
       position: relative;
       z-index: 1;
-      width: 52%;
+      width: 50%;
       max-width: none;
-      padding-bottom: 20px;
+      margin-left: 50%;
+      /* vw a ne px — kao i slika (85vw), pa poravnanje glava/navodnici
+         ostaje isto na svakoj širini telefona: 20px na 390. */
+      padding-bottom: 5.1vw;
     }
-    #direktor .direktor-mark { width: 32px; }
-    #direktor .direktor-quote { margin-top: 18px; padding-left: 14px; }
-    #direktor .direktor-quote blockquote { font-size: 18px; line-height: 1.3; }
-    #direktor .direktor-sign { display: block; margin-top: 14px; font-size: 15px; line-height: 1.35; }
+    #direktor .direktor-mark { width: 8vw; }
+    #direktor .direktor-quote { margin-top: 5.1vw; padding-left: 0; border-left: 0; }
+    #direktor .direktor-quote blockquote {
+      font-size: calc((100vw - 40px) / 2 / 10.3);
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+    }
+    #direktor .dq { display: block; }
+    #direktor .direktor-sign {
+      display: block;
+      margin-top: 4.6vw;
+      font-size: calc((100vw - 40px) / 26.9);
+      line-height: 1.35;
+    }
     #direktor .direktor-sign__name,
     #direktor .direktor-sign__role { display: block; }
     #direktor .direktor-sign__role::before { content: none; }
     #direktor .direktor-sign__org { display: none; }
-    #direktor .direktor-cta { margin-top: 22px; padding: 10px 22px; font-size: 15px; }
+    #direktor .direktor-cta { display: none; }
     #direktor .direktor-stats {
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 16px;
-      padding: 34px 0 44px;
+      padding: 34px 0 0;
     }
     #direktor .direktor-stat::before { width: 44px; margin-bottom: 22px; }
     /* Broj i jedinica UVEK u dva reda: u uskoj koloni "89 lokala" staje u red
@@ -2484,11 +2577,18 @@
     #direktor .direktor-stat__num { font-size: 34px; }
     #direktor .direktor-stat__unit { font-size: 17px; line-height: 1.1; }
     #direktor .direktor-stat__sub { display: none; }
+    #direktor .direktor-cta-m {
+      display: block;
+      padding: 36px 0 44px;
+      text-align: center;
+    }
+    #direktor .direktor-cta-m a { padding: 10px 22px; font-size: 15px; }
 
     /* ----------------------------------------------------------------------
        ŽIVOT U BALKAN BETU (samo varijacija #3) — na telefonu redosled je
-       naslov → FOTOGRAFIJA → SLIČICE → IZJAVA (traženo: sličice između glavne
-       fotografije i citata), sličice su KVADRATI, a tagova nema.
+       naslov → FOTOGRAFIJA 1:1 sa SLIČICAMA U SVOM DNU → IZJAVA sa potpisom
+       ispod (ime i pozicija). Natpis preko fotografije i "N godina u Balkan
+       Bet-u" se gase, tagova nema, sličice su kvadrati. Sve traženo.
 
        Sličice su u markupu IZNAD slajdova, a fotografija i izjava su UNUTAR
        svakog slajda — pa se red ne može promeniti premeštanjem jednog bloka.
@@ -2514,11 +2614,27 @@
        različita puta kroz Balkan Bet." u NeoSansW1G Medium meri 22.553em, pa
        ide 22.6. Na 390px to je ~15.5px. Ako se tekst menja, PREMERITI. */
     #ljudi .ljudi-lead { font-size: min(30px, calc((100vw - 40px) / 22.6)); }
+    /* ⚠ ISTA VELIČINA ZA PODNASLOV "Tvoj prostor za razvoj" (traženo: svi
+       podnaslovi iste veličine). Ovaj iznad mora da stane u jedan red, pa je
+       on taj koji diktira; bez ovoga je #razvoj na telefonu bio 18.4px naspram
+       15.5px (izmereno na 390). Menja li se delilac gore, menja se i ovde. */
+    #razvoj #impact-heading { font-size: min(30px, calc((100vw - 40px) / 22.6)); }
     #ljudi .ljudi-stage,
     #ljudi .ljudi-slide { display: contents; }
     #ljudi .ljudi-photo { grid-row: 2; grid-column: 1; margin-top: 24px; }
-    #ljudi .ljudi-picker { grid-row: 3; gap: 8px; margin-top: 12px; }
-    #ljudi .ljudi-card { grid-row: 4; grid-column: 1; margin-top: 12px; }
+    /* Sličice u ISTOJ ćeliji kao fotografija, prikovane za njeno dno, iznad
+       svih naslaganih fotografija (z-index) — tamni gradijent fotografije
+       (.ljudi-photo::after) im je podloga. */
+    #ljudi .ljudi-picker {
+      grid-row: 2;
+      grid-column: 1;
+      align-self: end;
+      position: relative;
+      z-index: 2;
+      gap: 8px;
+      margin: 0 12px 12px;
+    }
+    #ljudi .ljudi-card { grid-row: 3; grid-column: 1; margin-top: 12px; }
     #ljudi .ljudi-slide > * {
       opacity: 0;
       visibility: hidden;
@@ -2536,10 +2652,28 @@
       aspect-ratio: 1 / 1;
       border-radius: 12px;
     }
+    /* PORTRET 4:5 (traženo; kratko je bio kvadrat). */
     #ljudi .ljudi-photo { height: auto; aspect-ratio: 4 / 5; border-radius: 15px; }
-    #ljudi .ljudi-photo figcaption { left: 20px; right: 20px; bottom: 20px; }
+    #ljudi .ljudi-photo figcaption { display: none; }
+    #ljudi .ljudi-thumb { border-radius: 10px; }
     #ljudi .ljudi-card { padding: 26px 22px; border-radius: 15px; }
     #ljudi .ljudi-tags { display: none; }
+    #ljudi .ljudi-card__sign {
+      display: block;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.7);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    #ljudi .ljudi-card__sign span {
+      display: block;
+      margin-bottom: 2px;
+      color: #FFFFFF;
+      font-size: 17px;
+      font-weight: 700;
+    }
 
     /* --- Futer, gornji deo: HORIZONTALNI logo (markup) i opis, pa tri kolone
        kao HARMONIKA (traženo) — red sa naslovom i chevronom, linkovi se
