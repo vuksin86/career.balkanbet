@@ -112,9 +112,9 @@
          header is 48 + 24 = 72px (+1px bottom hairline) on desktop.
          NA TELEFONU je to ISTI, SLOŽENI oblik ("BALKAN" i "BET" u dva reda) —
          traženo; horizontalni oblik (BalkanBetLogo-horizontal.svg) se sada
-         koristi samo u futeru na telefonu. Visina je min(44px, 11.3vw): 44px
-         na 390px, a na užim ekranima pada sa širinom da oba logotipa i burger
-         uvek stanu u red (videti računicu ispod). -->
+         koristi samo u futeru na telefonu. Visina je min(40px, 10.2vw): ~40px
+         na 390px (bilo 44, smanjeno 10% na zahtev), a na užim ekranima pada sa
+         širinom da oba logotipa i burger uvek stanu u red (računica ispod). -->
     <!-- GENERALNI SPONZOR OLIMPIJSKOG TIMA SRBIJE — drugi logo, desno od
          našeg, odvojen tankom belom linijom na 50% (traženo tako). Nije deo
          linka na početnu: to je oznaka sponzorstva, ne naš znak.
@@ -123,18 +123,18 @@
            separator + znak od 34px (172px) + dva razmaka od 18px još 209px —
            ukupno ~1380px, pa između 768 i 1400px za njega nema mesta
          - telefon: nav i CTA su sakriveni, u redu su samo logotipi i burger.
-           BB 44px (120px širine) + 12+1+12 + znak 24px (122px) = 267px; na
-           390px ostaje ~59px vazduha do burgera. Obe visine su vezane i za vw
-           (11.3vw / 6.2vw), pa na 320px padnu na ~36/20px i vazduh ostaje ~32px.
+           BB ~40px (108px širine) + 12+1+12 + znak ~26px (132px; uvećan 10% na
+           zahtev) = ~265px. Obe visine su vezane i za vw (10.2vw / 6.7vw), pa
+           odnos ostaje isti i na 320px.
          ⚠ Sve je u klasama, nijedno pravilo u styles.css — header je duplikat
          na tri stranice i mora ostati byte-identičan. -->
     <div class="flex items-center shrink-0">
       <a href="index.html" class="flex items-center shrink-0" aria-label="Balkan Bet početna">
-        <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[min(44px,11.3vw)] md:h-[48px] w-auto">
+        <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[min(40px,10.2vw)] md:h-[48px] w-auto">
       </a>
       <span class="block md:hidden min-[1400px]:block w-px h-[min(30px,7.7vw)] md:h-10 mx-3 md:mx-[18px] bg-white/50" aria-hidden="true"></span>
       <img src="assets/logo/olimp-generalni-sponzor.svg" alt="Generalni sponzor Olimpijskog tima Srbije"
-           class="block md:hidden min-[1400px]:block h-[min(24px,6.2vw)] md:h-[34px] w-auto">
+           class="block md:hidden min-[1400px]:block h-[min(26px,6.7vw)] md:h-[34px] w-auto">
     </div>
 
     <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case.
