@@ -30,6 +30,10 @@ kaže drugačije.
 - **variation-2.css** / **variation-2.js** - VARIJACIJA #2 dizajna, za sada samo hero 
   naslovne. Sva pravila su pod `[data-var="2"]`, pa bez tog atributa fajlovi ne rade 
   ništa i varijacija #1 (original) ostaje netaknuta. Videti sekciju "Varijacije dizajna"
+- **variation-3.css** / **variation-3.js** - **VARIJACIJA #3 - PODRAZUMEVANA (PRIMARNA)**. 
+  Statičan hero + drugačiji raspored sekcija ispod njega. Videti "Varijacija #3" niže - 
+  ⚠ opis strukture u "Struktura HOMEPAGE-a" je opis #1/#2; #3 ga menja na mestima 
+  navedenim u svojoj sekciji
 - **brand-setup.js** - Tailwind (Play CDN) config sa brend tokenima, učitava se odmah 
   posle CDN skripte na sve tri stranice
 - **job-filter.js** - custom dropdown-i za filter barove + srpska množina za brojive 
@@ -99,7 +103,8 @@ BalkanBetLogo.svg - žuta lopta/krug sa gradijentom + "BALKAN BET / PUN POGODAK"
 Osnovni (složeni) oblik: lopta levo, "BALKAN" / "BET" / "PUN POGODAK" u tri reda.
 Koristi se na DESKTOPU.
 
-**BalkanBetLogo-horizontal.svg - SEKUNDARNI (HORIZONTALNI) OBLIK, koristi se na TELEFONU.**
+**BalkanBetLogo-horizontal.svg - SEKUNDARNI (HORIZONTALNI) OBLIK, koristi se SAMO U FUTERU 
+NA TELEFONU.** (Header na telefonu je od skora SLOŽENI oblik - traženo.)
 Lopta levo, "BALKAN BET" u jednom redu, "PUN POGODAK" ispod - klijentov sekundarni oblik iz
 brend knjige.
 ⚠ NIJE NOV CRTEŽ. To su ISTI path-evi iz BalkanBetLogo.svg, samo premešteni: svaki blok
@@ -117,6 +122,9 @@ u komentaru na vrhu samog fajla; mere su bbox-evi originala očitani getBBox-om)
   nema, briše se poslednji `<g>` i suzi viewBox
 
 ## Struktura HOMEPAGE-a (index.html, redosled sekcija)
+⚠ Ovo je redosled varijacija #1 i #2. PRIMARNA #3 ima svoj: hero (statičan) → #direktor → 
+#impact ("Balkan Bet izbliza") → #ljudi ("Život u Balkan Betu") → #razvoj → futer. 
+Videti "Varijacija #3" u sekciji "Varijacije dizajna".
 0. **SCROLL PROGRESS RAIL** (`.scroll-progress`) - tanka traka od 2px prikovana za sam vrh 
    ekrana, IZNAD headera (z-60 naspram headerovih z-50, pa se crta preko gornje ivice 
    trake). Podloga je brend žuta na 10% alfe i stoji tu od prvog paint-a; popuna 
@@ -162,23 +170,20 @@ u komentaru na vrhu samog fajla; mere su bbox-evi originala očitani getBBox-om)
      "BET" u logotipu se bez tamnog stakla iza sebe gubi na narandžastoj aurori (ranije je 
      čitao naspram stakla, ne naspram stranice), a preko videa se svetlina menja iz kadra u 
      kadar. Ako logo ikad stigne u potpuno beloj varijanti za ovo stanje, senka može da ode
-   BalkanBetLogo je visok 60px (ranije 51.2px). Traka NEMA svoju fiksnu visinu - ona je logo 
-   + py-3 wrappera, pa dizanje logotipa je ono što diže header, sa ~76px na ~85px. 
+   BalkanBetLogo je na desktopu visok **48px** (60px umanjeno za 20% na zahtev; 60 je bilo 
+   51.2 uvećano). Traka NEMA svoju fiksnu visinu - ona je logo + py-3 wrappera, pa je 
+   header sada 48 + 24 + 1 = **73px** na desktopu (bio ~85). Mobilni logo (41px) NIJE diran.
+   **NAV STOJI DESNO, UZ CTA** (`ml-auto md:mr-3` na `<nav>`): ranije ga je justify-between 
+   centrirao između logotipa i dugmeta. Razmak nav→CTA je 20 + 12 = 32px. 
    **NA TELEFONU (< 768px):**
-   - LOGO JE DRUGI FAJL - `assets/logo/BalkanBetLogo-horizontal.svg`, sekundarni
-     (horizontalni) oblik iz brend knjige: lopta levo, "BALKAN BET" u jednom redu,
-     "PUN POGODAK" ispod. Videti "Logo" niže. Visok je **41px** (`md:hidden h-[41px]`) - to je 34px
-     uvećanih za 20% na zahtev (34 × 1.2 = 40.8, zaokruženo). Onih 34px je bila visina na
-     kojoj su slova iste veličine kao u složenom logotipu na 48px; sada su za petinu
-     krupnija. Širina mu je 205.5px, pa i na najužem telefonu (320px) ostaje ~50px praznog
-     do burgera.
-     ⚠ DVA `<img>`-a u istom `<a>`-u, prebacuju se Tailwind klasama (`md:hidden` /
-     `hidden md:block`), a ne jednim `<img>`-om i CSS-om - header je duplikat na tri
-     stranice i mora ostati byte-identičan, pa je bolje da sve svoje nosi u markupu.
-     Desktop `<img>` nosi `alt=""` + `aria-hidden` da čitač ekrana ne pročita ime dvaput
+   - LOGO JE ISTI SLOŽENI OBLIK kao na desktopu ("BALKAN" i "BET" u dva reda) - traženo; 
+     horizontalni je otišao u futer. JEDAN `<img>` (`h-[min(40px,10.2vw)] md:h-[48px]`).
+     Desno od njega tanka bela linija na 50% pa **OLIMPIJSKI LOGO** - na telefonu se VIDI 
+     (između 768 i 1400px ne), `h-[min(26px,6.7vw)]`. BB je smanjen 10% (44→40), olimpijski 
+     uvećan 10% (24→26), na zahtev. IZMERENO ~61px vazduha do burgera na 390px, ~33px na 320px
    - bočni padding je 20px umesto 30px (`pl-5 pr-5 md:pl-[30px] md:pr-[30px]`), a vertikalni
      20px umesto 12px (`py-5 md:py-3`) - traženo je da logo bude 20px od gornje ivice.
-     Traka time meri 20 + 41 + 20 = 81px (82 sa donjim okvirom)
+     Traka time meri 20 + 40 + 20 = 80px (81 sa donjim okvirom)
    - CTA "Pronađi posao" se GASI (`hidden md:block`) a na njegovo mesto dolazi BURGER -
      `<button>` sa tri `<span>`-a, oble debele crte, `md:hidden`. Mere su **24x18px sa
      crtama od 3px**, tj. prvobitnih 34x26/4px umanjeno za 30% (traženo). Razmak crta drži
@@ -516,7 +521,22 @@ u komentaru na vrhu samog fajla; mere su bbox-evi originala očitani getBBox-om)
    naslov ~26px, dugme "Prijavi se" (NIJE caps-lock, za razliku od ostalih CTA na sajtu 
    - eksplicitan zahtev). Stagger kaskada s leva na desno; PONAVLJA SE svaki put kad se 
    sekcija vrati u vidno polje
-6. Footer - IZBRENDIRAN, kompletno na srpskom. **FULL-BLEED i BEZ `.panel-overlap`**: ide 
+6. Footer - DVA DELA: **gornji** (`.footer-main` > `.footer-top`: BalkanBetLogo + opis 
+   "Karijerni sajt Balkan Bet-a...", kolone Karijera / Kompanija / Kontakt) po klijentovoj 
+   referenci, na PUNOJ TAMNOJ podlozi #0e0d0e od ivice do ivice (ista boja kao "Balkan Bet 
+   izbliza"); red "Igra samo za punoletne..." / "18+ | Samoregulacija..." je UKLONJEN na 
+   zahtev. Pa **žuta traka** opisana niže. Linkovi su isti 
+   `#` placeholderi kao u headeru - menjati na OBA mesta. 768-1023px: tri kolone.
+   **NA TELEFONU**: logo je HORIZONTALNI oblik ("BALKAN BET" u jednom redu; dva `<img>`-a, 
+   `md:hidden` / `hidden md:block`), a kolone Karijera / Kompanija / Kontakt su **HARMONIKA** 
+   (kreću zatvorene). Naslov kolone je `<button class="footer-col__toggle">` sa chevronom; 
+   linkovi su u `.footer-col__panel > div`, a visina se animira kroz grid-template-rows 
+   0fr → 1fr; zatvoren panel je i `visibility: hidden` da linkovi ne primaju Tab. 
+   ⚠ SKRIPT HARMONIKE STOJI U SAMOM FUTERU (inline `<script>` pred zatvaranjem), ne u 
+   skriptu stranice - futer je byte-identičan na sve tri stranice, pa se ponašanje kopira 
+   sa njim. Na desktopu su kolone uvek otvorene (CSS), dugme je van Tab redosleda 
+   (tabindex -1) i nosi aria-expanded="true".
+   Footer - IZBRENDIRAN, kompletno na srpskom. **FULL-BLEED i BEZ `.panel-overlap`**: ide 
    od ivice do ivice, bez 30px inseta (`.section-panel`) i bez radijusa, isti potez kao 
    header. Unutrašnji wrapper i dalje nosi `max-w-[1440px] px-8 md:px-16`, pa se sadržaj 
    poravnava sa svim sekcijama iznad - "full širina" se odnosi na TRAKU, ne na sadržaj.
@@ -920,13 +940,15 @@ variation-2.css:
 prostor pomerio sva merenja ispod). Markup, CSS i skriptovi oba ostaju u fajlovima i rade
 u #1 - NE brisati ih ponovo.
 
-## Varijacije dizajna (variation-2.css / variation-2.js)
+## Varijacije dizajna (variation-2.* / variation-3.*)
 Prekidač dole desno (kružno dugme 44px, `.var-toggle`) više NE bira temu nego DIZAJN. U 
-krugu stoji `#1` ili `#2`.
-⚠ **#2 JE PODRAZUMEVANA I NA NJOJ SE RADI DALJE.** Atribut `data-var="2"` stoji ZAKUCAN
-u markupu sve tri stranice, pa važi od prvog pixela. #1 je original i ostaje samo kao
-poređenje; do njega se stiže prekidačem ili preko `?var=1`, i tada boot skript SKIDA
-atribut (isti obrazac koji je ranije koristio izlaz iz tamne teme).
+krugu stoji `#1`, `#2` ili `#3`; klik ide u krug 3 → 1 → 2 → 3.
+⚠ **#3 JE PODRAZUMEVANA (PRIMARNA) I NA NJOJ SE RADI DALJE.** Atribut `data-var="3"` stoji
+ZAKUCAN u markupu sve tri stranice. #1 (original) i #2 (telescope uvod) ostaju kao
+poređenje: `?var=1` → boot skript SKIDA atribut, `?var=2` → PREPISUJE ga na "2".
+⚠ localStorage ključ je sada `bb-varijacija` (bio `bb-var`) - namerno nov, da onaj ko je
+ranije prekidačem izabrao #2 ne ostane zaglavljen na njoj i nikad ne vidi #3.
+(Ispod stoji raniji opis mehanike iz vremena dve varijacije - i dalje važi, samo uz #3.)
 - **#1** je original - hero opisan u tački 2 gore. Nema `data-var` atributa.
 - **#2** menja SAMO HERO NASLOVNE; sve ispod heroja i cele druge dve stranice su
   identične u obe.
@@ -943,6 +965,99 @@ Mehanika je namerno ista kao kod teme, jer je dokazano dobra na ovom projektu:
   značilo rušenje i ponovno dizanje pola stranice
 - prekidač postoji i na listanju i na oglasu, iako tamo ne menja ništa - da izbor ne bi 
   ispario kad se napusti naslovna, i da broj u krugu bude tačan
+
+### Varijacija #3 - PRIMARNA (variation-3.css / variation-3.js)
+- **HERO JE STATIČAN**: video preko celog ekrana od prvog piksela, naslov ("Uđi u igru. / 
+  Budi deo tima.") u sredini, search bar pri dnu (96px desktop / 20px telefon - pravila iz 
+  styles.css). Nema pinovanja ni faza: `#hero-spacer` je `100vh` pa `100svh` (svh da bar na 
+  telefonu ne padne ispod adresne trake). Ravnomeran veo `rgba(0,0,0,.28)` preko videa 
+  (`#hero-media-box::after`) jer naslov sada stoji NA videu.
+  Preko vrha videa ide i GORNJI VEO (`#hero-media-box::before`): blag tamni prelaz da se 
+  header izdvoji, alfa .50 → 0 kroz 11 tačaka po ease-out krivulji (NE linearno od dve 
+  tačke - to ima vidljiv lom gde stane), visina max(260px, 30%) / telefon max(200px, 26%).
+  updateHero() u #3 (`heroVar3`) NE PIŠE NIJEDAN STIL - kadar drži CSS - i samo pali 
+  `.is-solid` na headeru **ČIM SKROL KRENE** (`scrollY > 0`, traženo i za telefon i za 
+  desktop; ranije tek kad sadržaj stigne do headera - `heroSolidAt` je ostao izmeren). `heroScrollable` je `max(1, …)` jer bi u #3 bio nula (deli se njime)
+- **HERO RASPORED (#3)**: search bar je **50px od dna** (telefon ostaje 20px - mora da 
+  stoji i u variation-3.css, jer `[data-var="3"] #hero-search-block` (0,2,0) pobeđuje 
+  mobilni blok). **Naslov je PODJEDNAKO udaljen od headera i od bara**: 
+  `#hero-heading-wrap` nije više `inset: 0` nego pojas od donje ivice headera do gornje 
+  ivice bara, a flex ga centrira. Ivice upisuje `layoutHeroV3()` (u measureHero, pa i u 
+  remeasureAll - visina bara se menja kad stignu fontovi); CSS nosi izmerene vrednosti za 
+  prvi paint. IZMERENO: 261/261px na 1440x900, 221/221px na 390x844
+- **#direktor** ("Reč direktora", posle heroja): BELA traka od ivice do ivice - ⚠ BEZ 
+  Tailwindove `bg-white` klase, jer theme-dark.css svaki `section.bg-white` pretvara u tamno 
+  staklo. Fotografija levo u boji (`assets/direktor/bojan-scekic.webp`, izrez na beloj 
+  podlozi, donja ivica sedi na liniji; `clamp(380px, 38vw, 540px)`, 320px na telefonu - 
+  smanjeno na zahtev), desno citat i potpis pod JEDNOM žutom linijom (`figure.direktor-quote` 
+  = blockquote + figcaption): potpis odmah ispod citata, ime i funkcija U JEDNOM REDU 
+  razdvojeni tačkom. Pa žuta pilula "O kompaniji" (taman tekst; theme-dark.css joj vraća 
+  svetlotemski hover kao `.job-card`). Ispod linija i **3 brojke**: 1.100 zaposlenih / 89 
+  lokala / 25+ godina iskustva ("Deo Merkur grupe" UKLONJENO na zahtev). ⚠ Brojke se NE 
+  slažu sa tekstom u #razvoj ("1.200 kolega u 100 lokala") - proveriti sa klijentom. 
+  #direktor NEMA margin-bottom: #impact kreće odmah ispod.
+  **NA TELEFONU PO KLIJENTOVOM PRILOGU**: citat (18px) u levoj koloni od 52%, fotografija 
+  desno APSOLUTNO, 360px, prikovana za dno bloka (sedi na liniji) i pomerena preko desne 
+  ivice (`right: -44px`, beli rub fajla se seče - `overflow-x: hidden` na #direktor). Potpis 
+  u DVA reda, a ", Balkan Bet" se gasi (`.direktor-sign__org`). Brojke: tri u redu, broj i 
+  jedinica u dva reda, BEZ opisnih rečenica (`.direktor-stat__sub` sakriven)
+- **HERO SEARCH BAR NA TELEFONU (#3, ali pravilo je na `#hero-search-block`, pa važi u 
+  svim varijacijama)**: labele "Vrsta posla / Lokacija / Pozicija" sakrivene SAMO VIZUELNO 
+  (čitač ekrana ih i dalje čita), sva četiri elementa tačno **45px**, "Pretraži" 16px. 
+  Bar meri 210px 
+  (bio 279). Bar na listanje.html (`.search-band`) NIJE diran
+- **MOZAIK U #3: SVE KARTICE ISTE** - desktop portret 4:5 u DVA PORAVNATA REDA po tri 
+  (pomeraj srednje kolone `lg:mt-10` ugašen), telefon KVADRATI 1:1. Da bi CSS to uopšte 
+  mogao, skript mozaika više ne piše `aspect-ratio` u inline stil nego `--tile-ratio`, a 
+  `.zivot-tile { aspect-ratio: var(--tile-ratio) }` - #1/#2 time izgledaju isto kao pre
+- **#impact** se zove **"Balkan Bet izbliza"** i NEMA stat blokove u mozaiku (CSS ih krije). 
+  Naslov: markup nosi obe verzije (`.v3-hide` / `.v3-only` spanovi). ⚠ U #3 je **OD IVICE 
+  DO IVICE, PUNA BOJA #0e0d0e (100% neprozirna), BEZ OKVIRA I RADIJUSA**, i kreće odmah 
+  ispod bele trake - i na telefonu. Pravilo `[data-var="3"] #impact` (1,1,0) pobeđuje 
+  `[data-theme="dark"] #impact` samo REDOSLEDOM (variation-3.css se učitava posle 
+  theme-dark.css) - ne menjati redosled `<link>`-ova
+- **#ljudi "Život u Balkan Betu"** (posle #impact): priče zaposlenih po referenci "Ljudi u 
+  fokusu", ali FOTOGRAFIJE umesto videa (nema play dugmeta). Podnaslov je samo "Četiri 
+  kolege, četiri različita puta kroz Balkan Bet." - **30px, U JEDNOM REDU** (nowrap); na 
+  telefonu `min(30px, (100vw − 40px) / 22.6)` - rečenica IZMERENO meri 22.553em, ~15.5px na 
+  390. Sličice su SAMO SLIKE (imena i gradijent uklonjeni), ime nosi `aria-label`. 
+  4 sličice su tabovi 
+  (role=tablist, strelice levo/desno), slajdovi naslagani u istoj ćeliji grida pa je 
+  promena samo cross-fade. Podaci u nizu LJUDI u index.html; slike u `assets/ljudi/`. 
+  ⚠ Imena/pozicije/staž/izjave su PLACEHOLDER osim Ane (sa reference).
+  **NA TELEFONU**: redosled je naslov → FOTOGRAFIJA → SLIČICE (KVADRATI) → IZJAVA, a 
+  tagova nema (traženo). Sličice su u markupu iznad slajdova, pa se to radi gridom: 
+  `.ljudi-wrap` je grid od jedne kolone, a `.ljudi-stage` i `.ljudi-slide` su 
+  `display: contents`, pa su fotografije i kartice svih slajdova direktna deca grida, 
+  naslagane u svoje redove. ⚠ Element sa `display: contents` ne crta opacity, pa se aktivni 
+  slajd na telefonu prikazuje preko DECE slajda (`.ljudi-slide > *`). ⚠ Ranija varijanta 
+  (slajd kao grid) je na 320px puštala fotografiju 29px van ekrana - posle svake izmene ovde 
+  izmeriti scrollWidth na 320/390.
+  ⚠ NA DESKTOPU STAJE U JEDAN EKRAN: visina fotografije je `clamp(300px, 100vh − 370px, 
+  520px)`, kartica sa izjavom je iste visine (stretch, sadržaj centriran). IZMERENO na 1440: 
+  staje na prozorima 720/780/900/1080 uz 33-43px rezerve. Menja li se išta iznad slajda, 
+  premeriti onih 370. `pt-[120px]` i bez donjeg paddinga (sekcija ispod donosi svojih 120)
+- **#razvoj "Tvoj prostor za razvoj"** je ISTA sekcija (naslov, tekst koji se ispisuje na 
+  skrol, obe kartice), samo SPUŠTENA na pretposlednje mesto, iznad futera. Premešta je 
+  variation-3.js (markup ostaje u redosledu #1, koja ne sme da zavisi od JS-a), PRE glavnog 
+  skripta - zato se variation-3.js učitava pre njega, da measureImpact meri već pomerenu 
+  sekciju. `margin-top: -130vh` se u #3 gasi. Kartica "Posao u centrali" dobija STATIČNU 
+  sliku `assets/bb-zivot/centrala-kadar.jpg` - kadar iz istog snimka (ffmpeg, 3.5s), 
+  `object-position: center 32%`
+- SAKRIVENO u #3: #openings ("Najnovije pozicije"), loptica, #proces
+- Pomoćne klase u variation-3.css: `.v3-only` (vidi se samo u #3) i `.v3-hide` (svuda 
+  osim u #3); sekcije #direktor i #ljudi krije `html:not([data-var="3"])`
+
+### Header - logo Olimpijskog tima (sve varijacije, sve tri stranice)
+Desno od BB logotipa: tanka bela linija na 50% (`w-px h-10 bg-white/50`, 18px razmaka) pa 
+`assets/logo/olimp-generalni-sponzor.svg` ("Generalni sponzor Olimpijskog tima Srbije") na 
+34px visine (172px širine). Nije deo linka na početnu.
+⚠ **VIDI SE NA TELEFONU (< 768px) I OD 1400px** (`block md:hidden min-[1400px]:block`). 
+Nav sa šest linkova meri 769px, BB logo 131px, CTA 156px, a znak sa linijom i razmacima 
+još 209px - ukupno ~1380px, pa između 768 i 1400px nema mesta. Na telefonu: videti tačku 1 
+(Header) gore. ⚠ Header i bez ovoga 
+prelazi širinu ekrana ispod ~1190px (nav je vidljiv od 768px) - postojeći problem, nije 
+rešavan ovde.
 
 ### Varijacija #2 - hero naslovne
 Rekonstrukcija uvodne animacije sa **telescope.fyi** (traženo eksplicitno, "identična kao 

@@ -256,6 +256,9 @@
        for so the mosaic and the job cards read as one radius family. Was 18px. */
     border-radius: 12px;
     display: block;
+    /* Odnos stranica dolazi iz podataka (ZIVOT_TILES → --tile-ratio u inline
+       stilu); kao promenljiva, da bi varijacija mogla da ga prepiše. */
+    aspect-ratio: var(--tile-ratio, auto);
     /* Pre-reveal state; .is-revealed (set by the observer) is the rest state. */
     opacity: 0;
     transform: translateY(64px) scale(0.965);
@@ -1935,6 +1938,349 @@
   }
 
   /* ========================================================================
+     REČ DIREKTORA (#direktor) — bela traka od ivice do ivice, odmah ispod
+     heroja. Postoji SAMO u varijaciji #3 (sakriva je variation-3.css).
+
+     Fotografija levo, U BOJI (referenca je imala sivu, traženo je u boji),
+     desno citat + ime + pozicija + CTA. Ispod tanka linija pa četiri brojke.
+
+     ⚠ NE NOSI Tailwindovu `bg-white` klasu, i to je namerno: theme-dark.css
+     svaki `section.bg-white` pretvara u tamno staklo (to su beli paneli na
+     oglasu). Ova traka MORA ostati bela i u tamnoj temi, pa ima svoju boju
+     ovde i svoju boju teksta — body u tamnoj temi nasleđuje svetao tekst.
+
+     Fotografija je izrez na BELOJ podlozi, pa se stapa sa trakom i nema ivicu;
+     donja ivica fotografije sedi tačno na liniji iznad brojki (kao na
+     referenci), zato blok sa citatom ide `align-self: center` a ne slika.
+  ======================================================================== */
+  #direktor {
+    background: #FFFFFF;
+    color: #231F20;
+    /* BEZ razmaka do "Balkan Bet izbliza": ta sekcija u #3 ide od ivice do
+       ivice i kreće ODMAH ispod bele trake (traženo). Bilo je 120px. */
+    margin-bottom: 0;
+  }
+  .direktor-top {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 64px;
+    padding-top: 72px;
+  }
+  .direktor-photo {
+    align-self: end;
+    justify-self: center;
+    margin: 0;
+  }
+  .direktor-photo img {
+    display: block;
+    /* Smanjeno na zahtev (bilo clamp(420px, 44vw, 620px)). */
+    height: clamp(380px, 38vw, 540px);
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    object-position: bottom center;
+  }
+  .direktor-body {
+    align-self: center;
+    max-width: 640px;
+    padding-bottom: 32px;
+  }
+  .direktor-mark { display: block; width: 46px; height: auto; color: #FDB813; }
+  /* JEDNA žuta vertikalna crta obuhvata i citat i potpis (traženo — ranije su
+     bila dve, svaka uz svoj blok). Potpis je odmah ispod citata, ime i
+     funkcija u istom redu. */
+  .direktor-quote {
+    margin: 28px 0 0;
+    padding-left: 28px;
+    border-left: 3px solid #FDB813;
+  }
+  .direktor-quote blockquote {
+    margin: 0;
+    font-size: clamp(1.35rem, 2.05vw, 2rem);
+    line-height: 1.32;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .direktor-sign {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 0;
+    margin-top: 18px;
+    font-size: 1.05rem;
+    line-height: 1.4;
+  }
+  .direktor-sign__name { font-weight: 700; }
+  .direktor-sign__role { color: #6F6A6B; }
+  .direktor-sign__role::before {
+    content: '·';
+    margin: 0 10px;
+    color: #6F6A6B;
+  }
+  .direktor-cta { margin-top: 36px; }
+
+  .direktor-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 40px;
+    border-top: 1px solid #E6E3E3;
+    padding: 64px 0 80px;
+  }
+  .direktor-stat::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 3px;
+    border-radius: 2px;
+    background: #FDB813;
+    margin-bottom: 30px;
+  }
+  .direktor-stat__head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    column-gap: 10px;
+    line-height: 1;
+  }
+  .direktor-stat__num {
+    font-size: clamp(2.6rem, 4vw, 3.75rem);
+    font-weight: 700;
+    letter-spacing: -0.04em;
+  }
+  .direktor-stat__unit { font-size: clamp(1.1rem, 1.5vw, 1.4rem); font-weight: 700; }
+  .direktor-stat__sub { margin-top: 18px; color: #6F6A6B; font-size: 1rem; line-height: 1.5; }
+
+  /* ========================================================================
+     ŽIVOT U BALKAN BETU (#ljudi) — priče zaposlenih, samo varijacija #3.
+
+     Po uzoru na referencu "Ljudi u fokusu", ali bez videa: četiri sličice
+     biraju kolegu, ispod je velika fotografija levo i kartica sa izjavom desno.
+     Podatke i markup slajdova pravi skript (niz LJUDI u index.html).
+
+     ⚠ NA DESKTOPU CELA SEKCIJA STAJE U JEDAN EKRAN (traženo). Zato visina
+     slajda nije fiksna nego izvedena iz visine prozora: sve iznad slajda
+     (naslov, podnaslov, sličice i razmaci) meri ~265px, header 73px i još
+     ~30px vazduha, pa je ostatak ekrana (100vh − 370px) visina fotografije,
+     u granicama 300–520px. Kartica sa izjavom je iste visine (stretch).
+     IZMERENO na 1440 širine (posle podnaslova od 30px i headera od 73px):
+     staje na prozorima visokim 780 i 900px sa 34 i 44px rezerve (na
+     1080 fotografija stane na plafon od 520px pa rezerve ima više). Ispod
+     ~690px fotografija udari u pod od 300px i sekcija počinje da prelazi
+     ekran. Menja li se išta iznad slajda, PREMERITI onih 370.
+
+     Tamna je bez teme: sekcija stoji na tamnoj aurori kao i #openings, pa je
+     kartica sa izjavom isto staklo (#0e0d0e na .6) koje nosi #impact.
+  ======================================================================== */
+  /* 30px i U JEDNOM REDU (traženo). nowrap drži red; na uskim ekranima font
+     pada tako da red stane u širinu — videti mobilni blok. */
+  .ljudi-lead {
+    margin: 14px auto 0;
+    font-size: 30px;
+    line-height: 1.3;
+    font-weight: 500;
+    white-space: nowrap;
+    color: rgba(255,255,255,.85);
+  }
+  .ljudi-picker {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 28px;
+  }
+  .ljudi-thumb {
+    position: relative;
+    width: 116px;
+    height: 88px;
+    padding: 0;
+    border: 2px solid rgba(255,255,255,.14);
+    border-radius: 14px;
+    overflow: hidden;
+    background: #0e0d0e;
+    cursor: pointer;
+    opacity: .62;
+    transition: opacity .3s ease, border-color .3s ease, transform .3s ease;
+  }
+  .ljudi-thumb:hover { opacity: .9; }
+  .ljudi-thumb.is-active {
+    opacity: 1;
+    border-color: #FDB813;
+    transform: translateY(-3px);
+  }
+  .ljudi-thumb:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 3px; }
+  .ljudi-thumb img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 22%;
+  }
+  /* Sličice su SAMO slike (imena su uklonjena na zahtev, pa i tamni gradijent
+     koji je bio podloga za njih). Ime čita čitač ekrana iz aria-label-a. */
+
+  /* Slajdovi su naslagani u ISTOJ ćeliji grida, pa kontejner uzima visinu
+     najvišeg i promena kolege je samo cross-fade, bez skakanja stranice. */
+  .ljudi-stage {
+    display: grid;
+    max-width: 1180px;
+    margin: 32px auto 0;
+  }
+  .ljudi-slide {
+    grid-area: 1 / 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 32px;
+    align-items: stretch;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .45s ease, visibility 0s linear .45s;
+  }
+  .ljudi-slide.is-active {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .45s ease;
+  }
+  .ljudi-photo {
+    position: relative;
+    height: clamp(300px, calc(100vh - 370px), 520px);
+    border-radius: 20px;
+    overflow: hidden;
+    margin: 0;
+  }
+  .ljudi-photo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 22%;
+  }
+  .ljudi-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,.82) 100%);
+  }
+  .ljudi-photo figcaption {
+    position: absolute;
+    left: 28px;
+    right: 28px;
+    bottom: 26px;
+    z-index: 1;
+  }
+  .ljudi-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border: 1px solid rgba(253,184,19,.55);
+    border-radius: 999px;
+    background: rgba(253,184,19,.12);
+    color: #FDB813;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .ljudi-name {
+    margin-top: 14px;
+    color: #FFFFFF;
+    font-size: clamp(1.5rem, 2.1vw, 1.9rem);
+    font-weight: 700;
+    line-height: 1.15;
+  }
+  .ljudi-role { margin-top: 6px; color: rgba(255,255,255,.75); font-size: 1rem; }
+
+  /* Kartica je visoka koliko i fotografija (stretch), a sadržaj je centriran
+     po visini — tekstovi su različite dužine, pa bi prikovani tagovi ostavljali
+     rupu promenljive veličine usred kartice. Ako tekst ne stane (nizak
+     prozor), kartica naraste — red grida je auto, pa se ništa ne seče. */
+  .ljudi-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 32px 40px;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 20px;
+    background: rgba(14,13,14,.6);
+  }
+  .ljudi-card__mark { display: block; width: 26px; height: auto; color: #FDB813; }
+  .ljudi-card__line {
+    margin-top: 18px;
+    color: #FFFFFF;
+    font-size: clamp(1.15rem, 1.5vw, 1.4rem);
+    font-weight: 700;
+    line-height: 1.32;
+  }
+  .ljudi-card__text {
+    margin-top: 16px;
+    color: rgba(255,255,255,.66);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .ljudi-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .ljudi-tags li {
+    padding: 8px 15px;
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 999px;
+    color: rgba(255,255,255,.82);
+    font-size: 14px;
+  }
+
+  /* ========================================================================
+     FUTER — GORNJI DEO (logo + opis, tri kolone linkova, napomena 18+)
+     Stoji iznad žute trake, na sve tri stranice (futer je zajednički).
+     Bez podloge: kao i ostatak futera stoji na aurori, a od sadržaja iznad ga
+     deli samo tanka linija.
+  ======================================================================== */
+  /* Puna tamna podloga od ivice do ivice — ista boja kao "Balkan Bet izbliza"
+     u varijaciji #3 (#0e0d0e, ali bez providnosti). Tamna je i bez teme: futer
+     je zajednički za sve tri stranice, a svetle teme više nema. */
+  .footer-main { background: #0e0d0e; }
+  .footer-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) repeat(3, minmax(0, 1fr));
+    gap: 40px;
+    padding: 72px 0;
+  }
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .footer-top { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .footer-top > :first-child { grid-column: 1 / -1; }
+  }
+  .footer-about {
+    margin-top: 24px;
+    max-width: 380px;
+    color: rgba(255,255,255,.62);
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+  .footer-col__title { color: #FFFFFF; font-size: 1rem; font-weight: 700; }
+  /* Naslov kolone je <button> zbog harmonike na telefonu (videti mobilni blok
+     i skript na dnu futera). Na desktopu mora da izgleda i ponaša se kao običan
+     naslov: bez chevrona, bez kursora pokazivača, van Tab redosleda (tabindex
+     -1 postavlja skript). */
+  .footer-col__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: default;
+  }
+  .footer-col__chevron { display: none; flex: 0 0 auto; }
+  .footer-col ul { margin-top: 14px; display: grid; gap: 12px; }
+  .footer-col a,
+  .footer-col li {
+    color: rgba(255,255,255,.66);
+    font-size: 1rem;
+    transition: color .2s ease;
+  }
+  .footer-col a:hover { color: #FDB813; }
+
+  /* ========================================================================
      REDUCED MOTION — everything that animates on entry is decorative, so for
      visitors who ask the OS for less motion it is skipped entirely and the
      element is simply shown in its finished state. The hero choreography on
@@ -2054,6 +2400,178 @@
        Bez pomeraja nema ni prekoračenja; kaskada (`--stagger-delay`) ostaje. */
     #openings .opening-card { transform: none; }
     #openings .opening-card.is-revealed { transform: none; }
+
+    /* ----------------------------------------------------------------------
+       HERO SEARCH BAR NA NASLOVNOJ — NIŽI (traženo): labele ("Vrsta posla",
+       "Lokacija", "Pozicija") se gase, ostaje samo vrednost, a sva četiri
+       elementa (tri padajuća + "Pretraži") su visoka tačno 45px. Bar time meri
+       4×45 + 3×6 + 2×6 = 210px umesto 279.
+       ⚠ Vezano za #hero-search-block, pa ISTA komponenta na listanje.html
+       (.search-band) ostaje kakva jeste.
+       Labela se krije SAMO VIZUELNO (ne display: none) — čitač ekrana i dalje
+       čuje "Lokacija, Sve lokacije", a ne samo golu vrednost.
+    ---------------------------------------------------------------------- */
+    #hero-search-block .hero-search__label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+    #hero-search-block .hero-search__trigger,
+    #hero-search-block .hero-search__submit {
+      height: 45px;
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    #hero-search-block .hero-search__value { font-size: 16px; }
+    #hero-search-block .hero-search__submit { font-size: 16px; }
+
+    /* ----------------------------------------------------------------------
+       REČ DIREKTORA (samo varijacija #3) — PO KLIJENTOVOM PRILOGU:
+       citat levo u uskoj koloni, fotografija desno, PRIKOVANA za dno bloka tako
+       da donja ivica sedi na liniji iznad brojki (kao na desktopu). Ispod tri
+       brojke u jednom redu, BEZ opisnih rečenica.
+
+       Fotografija je apsolutno pozicionirana i ne zauzima mesto u toku: visinu
+       bloka diktira kolona sa tekstom. Fajl je izrez na BELOJ podlozi (lik
+       zauzima ~11–87% širine fajla), pa je slika pomerena desno i preko ivice
+       ekrana (right: −44px) — beli rub se seče o ivicu sekcije (overflow-x:
+       hidden na #direktor), a lik dolazi skoro do same ivice. Tekst sme da
+       pređe preko belog ruba fajla, ne preko lika: kolona je 52% širine.
+       Na potpisu se ", Balkan Bet" gasi i funkcija ide u svoj red (prilog).
+    ---------------------------------------------------------------------- */
+    #direktor { overflow-x: hidden; }
+    #direktor .max-w-\[1440px\] { padding-left: 20px; padding-right: 20px; }
+    #direktor .direktor-top {
+      position: relative;
+      display: block;
+      padding-top: 40px;
+    }
+    #direktor .direktor-photo {
+      position: absolute;
+      right: -44px;
+      bottom: 0;
+      z-index: 0;
+    }
+    #direktor .direktor-photo img { height: 360px; }
+    #direktor .direktor-body {
+      position: relative;
+      z-index: 1;
+      width: 52%;
+      max-width: none;
+      padding-bottom: 20px;
+    }
+    #direktor .direktor-mark { width: 32px; }
+    #direktor .direktor-quote { margin-top: 18px; padding-left: 14px; }
+    #direktor .direktor-quote blockquote { font-size: 18px; line-height: 1.3; }
+    #direktor .direktor-sign { display: block; margin-top: 14px; font-size: 15px; line-height: 1.35; }
+    #direktor .direktor-sign__name,
+    #direktor .direktor-sign__role { display: block; }
+    #direktor .direktor-sign__role::before { content: none; }
+    #direktor .direktor-sign__org { display: none; }
+    #direktor .direktor-cta { margin-top: 22px; padding: 10px 22px; font-size: 15px; }
+    #direktor .direktor-stats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      padding: 34px 0 44px;
+    }
+    #direktor .direktor-stat::before { width: 44px; margin-bottom: 22px; }
+    /* Broj i jedinica UVEK u dva reda: u uskoj koloni "89 lokala" staje u red
+       a "1.100 zaposlenih" ne, pa bi se brojke lomile različito. */
+    #direktor .direktor-stat__head { flex-direction: column; align-items: flex-start; row-gap: 4px; }
+    #direktor .direktor-stat__num { font-size: 34px; }
+    #direktor .direktor-stat__unit { font-size: 17px; line-height: 1.1; }
+    #direktor .direktor-stat__sub { display: none; }
+
+    /* ----------------------------------------------------------------------
+       ŽIVOT U BALKAN BETU (samo varijacija #3) — na telefonu redosled je
+       naslov → FOTOGRAFIJA → SLIČICE → IZJAVA (traženo: sličice između glavne
+       fotografije i citata), sličice su KVADRATI, a tagova nema.
+
+       Sličice su u markupu IZNAD slajdova, a fotografija i izjava su UNUTAR
+       svakog slajda — pa se red ne može promeniti premeštanjem jednog bloka.
+       Zato omotač (.ljudi-wrap) postaje grid od jedne kolone, a stage i
+       slajdovi `display: contents`: fotografije i kartice svih slajdova
+       postaju direktna deca grida i stavljaju se u svoje redove (sve četiri
+       fotografije u isti red, naslagane; isto kartice), a sličice u red između.
+       ⚠ Element sa `display: contents` ne crta ni opacity ni tranziciju, pa
+       se aktivni slajd ovde prikazuje preko DECE slajda, ne preko slajda.
+       Visina reda sa karticama je visina najduže izjave — kraće dobiju vazduh
+       ispod, ali se stranica ne trza pri promeni kolege.
+    ---------------------------------------------------------------------- */
+    #ljudi { padding-top: 60px; }
+    #ljudi .ljudi-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+    #ljudi .ljudi-wrap > .text-center { grid-row: 1; }
+    /* Podnaslov i ovde U JEDNOM REDU: font = raspoloživa širina / širina
+       rečenice. Delilac je IZMEREN, ne procenjen: "Četiri kolege, četiri
+       različita puta kroz Balkan Bet." u NeoSansW1G Medium meri 22.553em, pa
+       ide 22.6. Na 390px to je ~15.5px. Ako se tekst menja, PREMERITI. */
+    #ljudi .ljudi-lead { font-size: min(30px, calc((100vw - 40px) / 22.6)); }
+    #ljudi .ljudi-stage,
+    #ljudi .ljudi-slide { display: contents; }
+    #ljudi .ljudi-photo { grid-row: 2; grid-column: 1; margin-top: 24px; }
+    #ljudi .ljudi-picker { grid-row: 3; gap: 8px; margin-top: 12px; }
+    #ljudi .ljudi-card { grid-row: 4; grid-column: 1; margin-top: 12px; }
+    #ljudi .ljudi-slide > * {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .45s ease, visibility 0s linear .45s;
+    }
+    #ljudi .ljudi-slide.is-active > * {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity .45s ease;
+    }
+    #ljudi .ljudi-thumb {
+      flex: 1 1 0;
+      width: auto;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      border-radius: 12px;
+    }
+    #ljudi .ljudi-photo { height: auto; aspect-ratio: 4 / 5; border-radius: 15px; }
+    #ljudi .ljudi-photo figcaption { left: 20px; right: 20px; bottom: 20px; }
+    #ljudi .ljudi-card { padding: 26px 22px; border-radius: 15px; }
+    #ljudi .ljudi-tags { display: none; }
+
+    /* --- Futer, gornji deo: HORIZONTALNI logo (markup) i opis, pa tri kolone
+       kao HARMONIKA (traženo) — red sa naslovom i chevronom, linkovi se
+       otvaraju ispod. Otvara/zatvara skript na dnu futera (klasa .is-open);
+       visina se animira kroz grid-template-rows 0fr → 1fr, isti trik kao
+       pilula na .footer-cta, jer `height: auto` ne može da se tranzicionira.
+       Zatvoren panel je i `visibility: hidden` (sa zakašnjenjem dok se
+       zatvara), da linkovi u njemu ne bi primali Tab. */
+    footer .footer-top {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+      padding: 40px 0 20px;
+    }
+    footer .footer-top > :first-child { padding-bottom: 28px; }
+    footer .footer-col { border-top: 1px solid rgba(255,255,255,.12); }
+    footer .footer-col__toggle { padding: 18px 0; cursor: pointer; }
+    footer .footer-col__chevron { display: block; transition: transform .25s ease; }
+    footer .footer-col.is-open .footer-col__chevron { transform: rotate(180deg); }
+    footer .footer-col__panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows .35s cubic-bezier(.22,.61,.36,1);
+    }
+    footer .footer-col__panel > div {
+      overflow: hidden;
+      min-height: 0;
+      visibility: hidden;
+      transition: visibility 0s linear .35s;
+    }
+    footer .footer-col.is-open .footer-col__panel { grid-template-rows: 1fr; }
+    footer .footer-col.is-open .footer-col__panel > div { visibility: visible; transition: none; }
+    footer .footer-col ul { margin-top: 0; padding-bottom: 18px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -2081,6 +2599,8 @@
     .footer-cta__face,
     .footer-cta__pillwrap,
     .footer-cta__pill { transition: none !important; }
+    .footer-col__panel,
+    .footer-col__chevron { transition: none !important; }
     .animated-bg__blob,
     .hero-scroll-ball__dot,
     .hero-scroll-ball__shadow { animation: none !important; }

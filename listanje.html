@@ -1,15 +1,15 @@
 ﻿<!DOCTYPE html>
-<!-- data-theme="dark" i data-var="2" STOJE U MARKUPU i važe od prvog pixela —
+<!-- data-theme="dark" i data-var="3" STOJE U MARKUPU i važe od prvog pixela —
      pre nego što se izvrši ijedna linija JS-a, i onda kad JS ne radi uopšte.
 
      TEMA: samo tamna. Svetla je povučena na zahtev; nema ni prekidača ni
      ?tema=light, ni ključa bb-tema.
 
-     VARIJACIJA: **#2 JE SADA PODRAZUMEVANA** — na njoj se radi dalje. #1 je
-     original i ostaje samo kao poređenje; do njega se stiže prekidačem dole
-     desno ili preko ?var=1, i tada boot skript SKIDA data-var (isti obrazac
-     koji je ranije koristio izlaz iz tamne teme). -->
-<html lang="sr" data-theme="dark" data-var="2">
+     VARIJACIJA: **#3 JE PODRAZUMEVANA (PRIMARNA)** — na njoj se radi dalje.
+     #1 (original) i #2 (telescope uvod) ostaju kao poređenje; do njih se stiže
+     prekidačem dole desno ili preko ?var=1 / ?var=2, i tada boot skript
+     SKIDA data-var (#1) odnosno ga PREPISUJE na "2". -->
+<html lang="sr" data-theme="dark" data-var="3">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -51,12 +51,15 @@
      Prioritet: ?var= iz URL-a pobeđuje zapamćeni izbor, da se varijacija može
      nekome poslati kao link koji uvek otvara ono što u njemu piše. */
   (function () {
+    // Ključ je NOV (bb-varijacija, ranije bb-var): ko je ranije prekidačem
+    // izabrao #2, imao bi je zapamćenu i nikad ne bi video novu primarnu #3.
     var url = new URLSearchParams(location.search).get('var');
     var saved = null;
-    try { saved = localStorage.getItem('bb-var'); } catch (e) { /* privatni režim */ }
+    try { saved = localStorage.getItem('bb-varijacija'); } catch (e) { /* privatni režim */ }
     var v = url || saved;
     if (v === '1') document.documentElement.removeAttribute('data-var');
-    if (url) { try { localStorage.setItem('bb-var', url); } catch (e) {} }
+    else if (v === '2') document.documentElement.setAttribute('data-var', '2');
+    if (url) { try { localStorage.setItem('bb-varijacija', url); } catch (e) {} }
   })();
 </script>
 </head>
@@ -103,27 +106,43 @@
               bg-brand-dark/40 backdrop-blur-md border-b border-white/20
               pl-5 pr-5 md:pl-[30px] md:pr-[30px] py-5 md:py-3">
 
-    <!-- Logo — 60px tall, asked for directly (it was 51.2px: 2x the original,
-         then reduced 20%). The bar has no fixed height of its own: it is the
-         logo plus the wrapper's py-3, so raising the logo is what raises the
-         header, from ~76px to ~85px.
-         NA TELEFONU IDE DRUGI FAJL — SEKUNDARNI, HORIZONTALNI OBLIK logotipa
-         (BalkanBetLogo-horizontal.svg): lopta levo, "BALKAN BET" u jednom redu,
-         "PUN POGODAK" ispod. To je klijentov sekundarni oblik iz brend knjige, i
-         nije nov crtež nego isti path-evi iz osnovnog fajla, samo premešteni.
-         Visina je 41px — traženo je uvećanje od 20% nad prvobitna 34px (34 × 1.2 =
-         40.8, zaokruženo). Onih 34px je bila visina na kojoj su SLOVA ISTE
-         VELIČINE kao u složenom logotipu na 48px; sada su za petinu krupnija.
-         Traka time meri 20 + 41 + 20 = 81px.
-         ⚠ DVA <img>-a, a ne jedan sa CSS-om: header je duplikat na tri stranice
-         i mora ostati byte-identičan, pa je bolje da sve svoje nosi u markupu. -->
-    <a href="index.html" class="flex items-center shrink-0" aria-label="Balkan Bet početna">
-      <img src="assets/logo/BalkanBetLogo-horizontal.svg" alt="Balkan Bet" class="md:hidden h-[41px] w-auto">
-      <img src="assets/logo/BalkanBetLogo.svg" alt="" aria-hidden="true" class="hidden md:block h-[60px] w-auto">
-    </a>
+    <!-- Logo — 48px tall on desktop: the 60px it had, reduced 20% on request
+         (and 60 was itself 51.2px raised on request). The bar has no fixed
+         height of its own: it is the logo plus the wrapper's py-3, so the
+         header is 48 + 24 = 72px (+1px bottom hairline) on desktop.
+         NA TELEFONU je to ISTI, SLOŽENI oblik ("BALKAN" i "BET" u dva reda) —
+         traženo; horizontalni oblik (BalkanBetLogo-horizontal.svg) se sada
+         koristi samo u futeru na telefonu. Visina je min(44px, 11.3vw): 44px
+         na 390px, a na užim ekranima pada sa širinom da oba logotipa i burger
+         uvek stanu u red (videti računicu ispod). -->
+    <!-- GENERALNI SPONZOR OLIMPIJSKOG TIMA SRBIJE — drugi logo, desno od
+         našeg, odvojen tankom belom linijom na 50% (traženo tako). Nije deo
+         linka na početnu: to je oznaka sponzorstva, ne naš znak.
+         VIDI SE NA TELEFONU (< 768px) I OD 1400px, a NE između:
+         - desktop: nav (šest linkova) meri 769px, BB logo 131px, CTA 156px, a
+           separator + znak od 34px (172px) + dva razmaka od 18px još 209px —
+           ukupno ~1380px, pa između 768 i 1400px za njega nema mesta
+         - telefon: nav i CTA su sakriveni, u redu su samo logotipi i burger.
+           BB 44px (120px širine) + 12+1+12 + znak 24px (122px) = 267px; na
+           390px ostaje ~59px vazduha do burgera. Obe visine su vezane i za vw
+           (11.3vw / 6.2vw), pa na 320px padnu na ~36/20px i vazduh ostaje ~32px.
+         ⚠ Sve je u klasama, nijedno pravilo u styles.css — header je duplikat
+         na tri stranice i mora ostati byte-identičan. -->
+    <div class="flex items-center shrink-0">
+      <a href="index.html" class="flex items-center shrink-0" aria-label="Balkan Bet početna">
+        <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[min(44px,11.3vw)] md:h-[48px] w-auto">
+      </a>
+      <span class="block md:hidden min-[1400px]:block w-px h-[min(30px,7.7vw)] md:h-10 mx-3 md:mx-[18px] bg-white/50" aria-hidden="true"></span>
+      <img src="assets/logo/olimp-generalni-sponzor.svg" alt="Generalni sponzor Olimpijskog tima Srbije"
+           class="block md:hidden min-[1400px]:block h-[min(24px,6.2vw)] md:h-[34px] w-auto">
+    </div>
 
-    <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case -->
-    <nav class="hidden md:flex items-center gap-5 text-base font-medium uppercase text-white whitespace-nowrap">
+    <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case.
+         STOJI DESNO, UZ CTA (traženo): `ml-auto` ga gura do dugmeta umesto da
+         ga justify-between centrira između logotipa i CTA-a. Razmak do CTA-a je
+         gap-5 trake + mr-3 = 32px — samih 20px (koliko je i između linkova)
+         lepilo je poslednji link za pilulu. -->
+    <nav class="hidden md:flex items-center gap-5 ml-auto md:mr-3 text-base font-medium uppercase text-white whitespace-nowrap">
       <a href="#" class="hover:text-brand-yellow transition-colors">O kompaniji</a>
       <a href="#" class="hover:text-brand-yellow transition-colors">Život u Balkan Betu</a>
       <a href="#" class="hover:text-brand-yellow transition-colors">Poslovi u lokalima</a>
@@ -386,18 +405,19 @@
   </section>
 
 <!-- ============================================================================
-     FOOTER — zaključna žuta traka
+     FOOTER — gornji deo (logo, linkovi, 18+) + zaključna žuta traka
 
      ⚠ SHARED BLOCK — same rule as the header above: this exact markup is
      duplicated BYTE-FOR-BYTE in listanje.html and oglas-primer.html.
      index.html is the source of truth; edit here, then copy this comment and
      the whole footer element across unchanged.
 
-     SAMO TRAKA. Dve .footer-cta kartice koje su ranije otvarale futer su
-     PRESELJENE u sekciju #razvoj ("Tvoj prostor za razvoj") na index.html, gde
-     su dobile svoj naslov i podnaslov. ⚠ Zato ih na listanje.html i
-     oglas-primer.html više nema uopšte — futer je tamo sada samo žuta traka.
-     Ako ikad zatrebaju i tamo, sekcija #razvoj se kopira, ne futer.
+     DVA DELA: gornji na tamnoj podlozi (logo + opis, kolone Karijera /
+     Kompanija / Kontakt — po klijentovoj referenci) i žuta traka.
+     Dve .footer-cta kartice koje su nekad otvarale futer su PRESELJENE u
+     sekciju #razvoj ("Tvoj prostor za razvoj") na index.html. ⚠ Zato ih na
+     listanje.html i oglas-primer.html nema — ako ikad zatrebaju i tamo,
+     sekcija #razvoj se kopira, ne futer.
 
      No .panel-overlap: the bar is a real coloured band, and a visible top edge
      riding 48px up over the section above it would read as a mistake — on
@@ -409,9 +429,60 @@
      section above.
 ============================================================================ -->
 <footer class="relative z-20">
+  <!-- GORNJI DEO FUTERA — logo + opis, tri kolone linkova.
+       Po klijentovoj referenci; stoji IZNAD žute trake, na PUNOJ TAMNOJ
+       podlozi od ivice do ivice (.footer-main — ista boja kao "Balkan Bet
+       izbliza" u varijaciji #3). Napomena 18+ koja je bila ispod kolona je
+       uklonjena na zahtev.
+       Stil: .footer-main / .footer-top / .footer-col u styles.css.
+       Linkovi su isti placeholderi (#) kao u navigaciji headera — kad stranice
+       dobiju svoje putanje, menjaju se na OBA mesta. -->
+  <div class="footer-main">
   <div class="max-w-[1440px] mx-auto px-8 md:px-16">
+    <div class="footer-top">
+      <div>
+        <!-- Telefon: HORIZONTALNI oblik ("BALKAN BET" u jednom redu), traženo;
+             desktop: složeni. Dva <img>-a iz istog razloga kao u headeru. -->
+        <a href="index.html" class="inline-block" aria-label="Balkan Bet početna">
+          <img src="assets/logo/BalkanBetLogo-horizontal.svg" alt="Balkan Bet" class="md:hidden h-[41px] w-auto">
+          <img src="assets/logo/BalkanBetLogo.svg" alt="" aria-hidden="true" class="hidden md:block h-[56px] w-auto">
+        </a>
+        <p class="footer-about">Karijerni sajt Balkan Bet-a. Otkrij prilike u tehnologiji, operacijama i našim lokalima širom regiona.</p>
+      </div>
 
+      <nav class="footer-col" aria-label="Karijera">
+        <h3 class="footer-col__title"><button type="button" class="footer-col__toggle" aria-expanded="true">Karijera<svg class="footer-col__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></h3>
+        <div class="footer-col__panel"><div>
+          <ul>
+            <li><a href="#">Poslovi u lokalima</a></li>
+            <li><a href="#">Poslovi u centrali</a></li>
+            <li><a href="#">Život u Balkan Betu</a></li>
+          </ul>
+        </div></div>
+      </nav>
 
+      <nav class="footer-col" aria-label="Kompanija">
+        <h3 class="footer-col__title"><button type="button" class="footer-col__toggle" aria-expanded="true">Kompanija<svg class="footer-col__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></h3>
+        <div class="footer-col__panel"><div>
+          <ul>
+            <li><a href="#">O kompaniji</a></li>
+            <li><a href="#">CSR</a></li>
+            <li><a href="#">Kontakt</a></li>
+          </ul>
+        </div></div>
+      </nav>
+
+      <div class="footer-col">
+        <h3 class="footer-col__title"><button type="button" class="footer-col__toggle" aria-expanded="true">Kontakt<svg class="footer-col__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></h3>
+        <div class="footer-col__panel"><div>
+          <ul>
+            <li><a href="mailto:karijera@balkanbet.rs">karijera@balkanbet.rs</a></li>
+            <li>Beograd, Srbija</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+  </div>
   </div>
 
   <!-- CLOSING BAR — everything the footer still has to say, on ONE line: legal
@@ -461,6 +532,35 @@
       </div>
     </div>
   </div>
+
+  <!-- HARMONIKA KOLONA (Karijera / Kompanija / Kontakt) — samo na telefonu.
+       Skript stoji OVDE, u samom futeru, a ne u skriptu stranice: futer je
+       byte-identičan na sve tri stranice, pa se tako i ponašanje kopira sa
+       njim i ne može da se raziđe. Na desktopu su kolone uvek otvorene (CSS),
+       naslov je običan tekst (tabindex -1), a aria-expanded kaže "true".
+       Kolone kreću ZATVORENE na telefonu. -->
+  <script>
+    (function () {
+      var mq = window.matchMedia('(max-width: 767px)');
+      var cols = Array.prototype.slice.call(document.querySelectorAll('.footer-col'));
+      function sync() {
+        cols.forEach(function (col) {
+          var btn = col.querySelector('.footer-col__toggle');
+          btn.setAttribute('aria-expanded', mq.matches ? String(col.classList.contains('is-open')) : 'true');
+          btn.tabIndex = mq.matches ? 0 : -1;
+        });
+      }
+      cols.forEach(function (col) {
+        col.querySelector('.footer-col__toggle').addEventListener('click', function () {
+          if (!mq.matches) return;
+          col.classList.toggle('is-open');
+          sync();
+        });
+      });
+      if (mq.addEventListener) mq.addEventListener('change', sync);
+      sync();
+    })();
+  </script>
 </footer>
 
 <!-- ============================================================================
@@ -772,7 +872,7 @@
      markupu: telo stranice ostaje netaknuto, pa se ceo mehanizam uklanja
      brisanjem ovog bloka i skripta iz <head>-a.
 
-     Ključ u localStorage-u je isti (bb-var), pa izbor napravljen ovde važi i
+     Ključ u localStorage-u je isti (bb-varijacija), pa izbor napravljen ovde važi i
      na naslovnoj i obrnuto. ⚠ Varijacija #2 za sada menja SAMO hero naslovne —
      ovde prekidač postoji da izbor ne bi ispario kad se dođe na listanje, i
      prikazuje tačan broj, ali sama stranica izgleda isto u obe.
@@ -783,17 +883,23 @@
     btn.type = 'button';
     btn.className = 'var-toggle';
 
-    function current() { return root.getAttribute('data-var') === '2' ? 2 : 1; }
+    // Tri varijacije: #3 (podrazumevana), #2 i #1 (bez atributa). Klik vodi
+    // u krug 3 → 1 → 2 → 3.
+    function current() {
+      var v = root.getAttribute('data-var');
+      return v === '3' ? 3 : v === '2' ? 2 : 1;
+    }
+    var NEXT = { 3: 1, 1: 2, 2: 3 };
 
     var now = current();
     btn.textContent = '#' + now;
-    var label = 'Varijacija #' + now + ' — klikni za varijaciju #' + (now === 1 ? 2 : 1);
+    var label = 'Varijacija #' + now + ' — klikni za varijaciju #' + NEXT[now];
     btn.setAttribute('aria-label', label);
     btn.setAttribute('title', label);
 
     btn.addEventListener('click', function () {
-      var next = current() === 1 ? '2' : '1';
-      try { localStorage.setItem('bb-var', next); } catch (e) {}
+      var next = String(NEXT[current()]);
+      try { localStorage.setItem('bb-varijacija', next); } catch (e) {}
       var u = new URL(location.href);
       u.searchParams.set('var', next);
       location.href = u.toString();

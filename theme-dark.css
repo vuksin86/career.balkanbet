@@ -117,7 +117,10 @@
      pa im treba svetlotemski hover: potamnjenje, ne svetljenje. Halo bi se na
      belom video kao prljav oreol, a posvetljenje na beloj podlozi ne čita kao
      odziv. Selektor je (0,3,1) — specifičniji od pravila iznad. */
-  [data-theme="dark"] .job-card a.bg-brand-cta:hover {
+  /* Isto važi za "O kompaniji" u traci direktora (#direktor, varijacija #3) —
+     traka ostaje BELA i u tamnoj temi, pa je dugme opet žuto na belom. */
+  [data-theme="dark"] .job-card a.bg-brand-cta:hover,
+  [data-theme="dark"] #direktor a.bg-brand-cta:hover {
     filter: brightness(.95);
     box-shadow: none;
   }

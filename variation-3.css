@@ -1,0 +1,166 @@
+/* ##########################################################################
+   VARIJACIJA #3 — PODRAZUMEVANA (primarna) verzija naslovne
+
+   Isti obrazac kao variation-2.css: sva pravila koja razlikuju varijacije su
+   ovde, pod [data-var="3"], a atribut stoji ZAKUCAN na <html> sve tri stranice
+   (boot skript ga menja samo kad je tražena #1 ili #2).
+
+   ŠTA JE DRUGAČIJE OD #1/#2:
+     1. HERO BEZ UVODNE ANIMACIJE — video je preko celog ekrana od prvog
+        piksela, naslov u sredini, search bar pri dnu. Nema pinovanja: spacer
+        je visok tačno jedan ekran i hero se odskroluje kao obična sekcija.
+     2. "REČ DIREKTORA" (#direktor) — bela traka odmah ispod heroja
+     3. #impact se zove "Balkan Bet izbliza" i NEMA stat blokove u mozaiku
+     4. "ŽIVOT U BALKAN BETU" (#ljudi) — priče zaposlenih, posle #impact
+     5. "Tvoj prostor za razvoj" (#razvoj) je ISTA sekcija, samo SPUŠTENA na
+        pretposlednje mesto, odmah iznad futera (premešta je variation-3.js);
+        kartica "Posao u centrali" ima statičnu sliku umesto videa
+     6. NEMA "Najnovijih pozicija" (#openings), loptice ni "Procesa"
+
+   ⚠ Pomoćne klase za tekst koji se razlikuje po varijaciji (koriste se za
+   naslov #impact) — markup nosi OBE verzije, CSS pokazuje jednu, pa varijacije
+   ne zavise od JS-a za sopstveni tekst:
+     .v3-only  — vidi se samo u #3
+     .v3-hide  — vidi se svuda osim u #3
+   ########################################################################## */
+
+html:not([data-var="3"]) .v3-only,
+html:not([data-var="3"]) #direktor,
+html:not([data-var="3"]) #ljudi { display: none; }
+
+[data-var="3"] .v3-hide,
+[data-var="3"] #hero-scroll-ball,
+[data-var="3"] #proces,
+[data-var="3"] #openings,
+[data-var="3"] #impact .zivot-tile--stat { display: none; }
+
+/* ==========================================================================
+   HERO — statičan kadar, jedan ekran
+
+   Postojeći elementi (#hero-media-box, #hero-heading, #hero-search-block) se
+   samo postave kako stoje u završnom kadru varijacije #1 — updateHero() u #3
+   ne piše nijedan stil (videti heroVar3 u index.html), pa sve što je u #1
+   upisivao skript ovde mora da stoji u CSS-u.
+
+   svh posle vh: na telefonu je 100vh viši od vidljivog dela kad je adresna
+   traka prikazana, pa bi search bar na 20px od dna završio ISPOD nje.
+   Browser koji ne zna svh ostaje na vh.
+
+   ⚠ NEMA margin-top: -130vh. To pravilo ("HERO → FIRST SECTION OVERLAP" u
+   styles.css) postoji zato što u #1/#2 video izlazi preko sledeće sekcije;
+   ovde hero nema izlaznu fazu. Nosi ga #razvoj, koji je u #3 ionako dole.
+========================================================================== */
+[data-var="3"] #hero-spacer { height: 100vh; height: 100svh; }
+[data-var="3"] #hero-stage { height: 100%; }
+[data-var="3"] #razvoj { margin-top: 0; }
+
+[data-var="3"] #hero-media-box {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+  border-radius: 0;
+  box-shadow: none;
+  z-index: 5;
+  will-change: auto;
+}
+/* Ravnomeran veo preko celog kadra: naslov sada stoji NA videu od prvog
+   piksela (u #1/#2 stoji na aurori), a kadrovi imaju svetla mesta. Donji
+   gradijent (.hero-media-fade) ostaje i radi svoj posao ispod search bara. */
+[data-var="3"] #hero-media-box::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, .28);
+  pointer-events: none;
+}
+/* GORNJI VEO — blagi tamni prelaz odozgo nadole, da se header (koji na vrhu
+   heroja nema svoju podlogu) malo izdvoji od videa. Traženo: da se ne vidi
+   gde se završava. Zato NIJE linearan prelaz od dve tačke (on ima vidljiv
+   "lom" na mestu gde stane), nego niz tačaka po ease-out krivulji — alfa
+   opada brzo pri vrhu i sve sporije ka nuli, pa kraj nema ivicu.
+   Visina je u pikselima sa donjom granicom u procentima, da na niskom i na
+   visokom ekranu pokriva isto: header + malo vazduha, nikad naslov. */
+[data-var="3"] #hero-media-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: max(260px, 30%);
+  pointer-events: none;
+  background: linear-gradient(to bottom,
+    rgba(0,0,0,.50)   0%,
+    rgba(0,0,0,.43)  10%,
+    rgba(0,0,0,.35)  20%,
+    rgba(0,0,0,.27)  30%,
+    rgba(0,0,0,.19)  40%,
+    rgba(0,0,0,.125) 50%,
+    rgba(0,0,0,.075) 60%,
+    rgba(0,0,0,.04)  70%,
+    rgba(0,0,0,.017) 80%,
+    rgba(0,0,0,.005) 90%,
+    rgba(0,0,0,0)   100%);
+}
+@media (max-width: 767px) {
+  [data-var="3"] #hero-media-box::before { height: max(200px, 26%); }
+}
+[data-var="3"] #hero-search-block { transform: translateX(-50%); }
+
+/* Search bar: 50px od dna (traženo; bio je 96px kao u #1). Na telefonu ostaje
+   20px — tamo je bar od tri ivice podjednako odmaknut (videti styles.css), a
+   ovo pravilo (0,2,0) bi ga inače pregazilo, pa se 20px ponavlja ovde. */
+[data-var="3"] #hero-search-block { bottom: 50px; }
+@media (max-width: 767px) {
+  [data-var="3"] #hero-search-block { bottom: 20px; }
+}
+
+/* NASLOV JE PODJEDNAKO UDALJEN OD HEADERA I OD SEARCH BARA (traženo).
+   Sloj sa naslovom se ne prostire više preko celog kadra nego samo preko
+   pojasa IZMEĐU donje ivice headera i gornje ivice bara; flex ga centrira u
+   tom pojasu. Tačne ivice upisuje skript (layoutHeroV3 u index.html), jer
+   visina bara zavisi od fonta i od preloma (na telefonu je bar u četiri
+   reda). Ove vrednosti su samo prvi paint pre skripta — IZMERENE na 1440
+   (header 73px; bar 75px + 50px = 125) i na 390 (header 81px sa oba
+   logotipa; bar 210px u četiri reda od 45px + 20px = 230). Sa skriptom je
+   razmak naslov↔header i naslov↔bar izmeren jednak: 261/261px na 1440x900,
+   221/221px na 390x844, 235/235px na 320x844. */
+[data-var="3"] #hero-heading-wrap { top: 73px; bottom: 125px; }
+@media (max-width: 767px) {
+  [data-var="3"] #hero-heading-wrap { top: 81px; bottom: 230px; }
+}
+
+/* ==========================================================================
+   "BALKAN BET IZBLIZA" (#impact) — PUNA ŠIRINA, PUNA BOJA, BEZ OKVIRA
+   Traženo: od ivice do ivice, 100% neprozirna, bez stroke-a, i da kreće
+   ODMAH ispod bele trake direktora (#direktor zato više nema margin-bottom).
+   Boja je ista kao staklo u tamnoj temi (#0e0d0e) samo bez alfe, pa se aurora
+   kroz nju više ne vidi. Isto je i gornjem delu futera (.footer-main).
+   Specifičnost (1,1,0) je jednaka `[data-theme="dark"] #impact`; ovaj fajl se
+   učitava POSLE theme-dark.css, pa pobeđuje redosledom — a mobilni blok u
+   styles.css (#impact, 1,0,0) gubi, pa i na telefonu ide od ivice do ivice.
+========================================================================== */
+[data-var="3"] #impact {
+  margin-left: 0;
+  margin-right: 0;
+  border: 0;
+  border-radius: 0;
+  background: #0e0d0e;
+}
+
+/* --- Mozaik u "Balkan Bet izbliza": SVE KARTICE ISTE ----------------------
+   U #1/#2 svaka kartica nosi svoj odnos stranica, a srednja kolona kreće niže
+   (lg:mt-10) — to je "masonry". U #3 je traženo suprotno:
+     - DESKTOP: sve kartice istog PORTRET pravougaonika (4:5) i u ravni, dakle
+       dva poravnata reda po tri — zato se gasi i pomeraj srednje kolone
+     - TELEFON: kvadrati (1:1), jedna ispod druge
+   Odnos se piše preko --tile-ratio, koji skript mozaika inače puni iz podataka
+   (inline). Ovo pravilo ne dira promenljivu nego sam aspect-ratio, sa većom
+   specifičnošću od .zivot-tile — pa podaci u ZIVOT_TILES ostaju netaknuti
+   za #1/#2. */
+[data-var="3"] #impact .zivot-tile { aspect-ratio: 4 / 5; }
+[data-var="3"] #zivot-col-1 { margin-top: 0; }
+@media (max-width: 767px) {
+  [data-var="3"] #impact .zivot-tile { aspect-ratio: 1 / 1; }
+}
