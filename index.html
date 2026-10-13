@@ -143,7 +143,7 @@
        Kontakt                -> kontakt.html
 ============================================================================ -->
 <header class="fixed top-0 inset-x-0 z-50">
-  <div class="w-full flex items-center justify-between gap-5
+  <div class="relative z-[1] w-full flex items-center justify-between gap-5
               bg-brand-dark/40 backdrop-blur-md border-b border-white/20
               pl-5 pr-5 md:pl-[30px] md:pr-[30px] py-5 md:py-3">
 
@@ -207,18 +207,67 @@
          ⚠ Sve je pisano Tailwind klasama, bez ijednog pravila u styles.css —
          header je duplikat na tri stranice i mora ostati byte-identičan, pa je
          jedan izvor (markup) manje mesta gde stranice mogu da se raziđu.
-         Za sada NE OTVARA meni (mobilna navigacija još ne postoji); `aria-expanded`
-         stoji da bi ga imalo šta menjati kad panel stigne.
+         Otvara MOBILNU NAVIGACIJU (#mnav, odmah ispod) i pretvara se u X —
+         animacija crta je u styles.css (.mnav-burger), jer je vezana za
+         aria-expanded koji menja skript na dnu headera.
          Mere su 24x18px sa crtama od 3px — to je prethodnih 34x26/4px umanjeno za
          30%, traženo tako. Razmak crta drži `justify-between`, pa ostaje tačno
          (18 − 3×3) / 2 = 4.5px i ne mora da se zaokružuje na celu vrednost. -->
-    <button type="button" aria-label="Otvori meni" aria-expanded="false"
-            class="md:hidden flex flex-col justify-between w-6 h-[18px] shrink-0 cursor-pointer">
+    <button type="button" aria-label="Otvori meni" aria-expanded="false" aria-controls="mnav"
+            class="mnav-burger md:hidden flex flex-col justify-between w-6 h-[18px] shrink-0 cursor-pointer">
       <span class="block w-full h-[3px] rounded-full bg-white"></span>
       <span class="block w-full h-[3px] rounded-full bg-white"></span>
       <span class="block w-full h-[3px] rounded-full bg-white"></span>
     </button>
   </div>
+
+  <!-- MOBILNA NAVIGACIJA — panel preko celog ekrana, samo ispod 768px.
+       Traka iznad (logo + burger, koji postaje X) ostaje vidljiva preko panela
+       zahvaljujući `relative z-[1]` na njoj. Element je <nav>, ne <div>: pravila
+       za providnu traku u styles.css gađaju `header > div` i ne smeju ga uhvatiti.
+       Izgled je u styles.css (.mnav), ponašanje u skriptu odmah ispod — oba se
+       kopiraju sa headerom na svih osam stranica. Aktivna strana se NE piše u
+       markup (header je byte-identičan); skript je obeležava sa aria-current. -->
+  <nav id="mnav" class="mnav md:hidden" aria-label="Glavna navigacija">
+    <ul class="mnav__list">
+      <li style="--i:0"><a href="o-kompaniji.html">O kompaniji</a></li>
+      <li style="--i:1"><a href="zivot-u-balkan-betu.html">Život u Balkan Betu</a></li>
+      <li style="--i:2"><a href="poslovi-u-lokalima.html">Poslovi u lokalima</a></li>
+      <li style="--i:3"><a href="poslovi-u-centrali.html">Poslovi u centrali</a></li>
+      <li style="--i:4"><a href="csr.html">CSR</a></li>
+      <li style="--i:5"><a href="#">Kontakt</a></li>
+    </ul>
+    <div class="mnav__foot">
+      <a href="listanje.html" class="mnav__cta">Pronađi posao</a>
+      <a href="mailto:karijera@balkanbet.rs" class="mnav__mail">karijera@balkanbet.rs</a>
+    </div>
+  </nav>
+  <script>
+    (function () {
+      var btn = document.querySelector('header .mnav-burger');
+      var nav = document.getElementById('mnav');
+      if (!btn || !nav) return;
+      var root = document.documentElement;
+      var here = location.pathname.split('/').pop() || 'index.html';
+      nav.querySelectorAll('a').forEach(function (a) {
+        if (a.getAttribute('href') === here) a.setAttribute('aria-current', 'page');
+      });
+      function set(open) {
+        nav.classList.toggle('is-open', open);
+        nav.inert = !open;
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.setAttribute('aria-label', open ? 'Zatvori meni' : 'Otvori meni');
+        root.classList.toggle('mnav-lock', open);
+      }
+      nav.inert = true;
+      btn.addEventListener('click', function () { set(btn.getAttribute('aria-expanded') !== 'true'); });
+      nav.addEventListener('click', function (e) { if (e.target.closest('a')) set(false); });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && nav.classList.contains('is-open')) { set(false); btn.focus(); }
+      });
+      matchMedia('(min-width: 768px)').addEventListener('change', function (m) { if (m.matches) set(false); });
+    })();
+  </script>
 </header>
 
 <!-- ============================================================================
@@ -466,7 +515,7 @@
             <p><span class="dq">Ne gradimo samo</span> <span class="dq">poslovanje — gradimo</span> <span class="dq">mesto gde ljudi mogu</span> <span class="dq">iskreno da napreduju.</span> <span class="dq">Transparentnost i</span> <span class="dq">poverenje nisu fraze</span> <span class="dq">kod nas, to je način</span> <span class="dq">na koji radimo svaki</span> <span class="dq">dan.</span></p>
           </blockquote>
           <figcaption class="direktor-sign">
-            <span class="direktor-sign__name">Bojan Šćekić</span><span class="direktor-sign__role">Generalni direktor<span class="direktor-sign__org">, Balkan Bet</span></span>
+            <span class="direktor-sign__name">Bojan Šćekić</span><span class="direktor-sign__role">Generalni direktor</span>
           </figcaption>
         </figure>
         <!-- Žuta pilula kao "Pronađi posao" u headeru: sentence case, bold.
@@ -480,15 +529,15 @@
 
     <div class="direktor-stats">
       <div class="direktor-stat reveal">
-        <p class="direktor-stat__head"><span class="direktor-stat__num">1.100</span><span class="direktor-stat__unit">zaposlenih</span></p>
+        <p class="direktor-stat__head"><span class="direktor-stat__num">1.100</span><span class="direktor-stat__unit">srećno <br class="md:hidden">zaposlenih</span></p>
         <p class="direktor-stat__sub">Tim koji zajedno gradi uspeh.</p>
       </div>
       <div class="direktor-stat reveal">
-        <p class="direktor-stat__head"><span class="direktor-stat__num">89</span><span class="direktor-stat__unit">lokala</span></p>
+        <p class="direktor-stat__head"><span class="direktor-stat__num">89</span><span class="direktor-stat__unit">lokala <br class="md:hidden">širom Srbije</span></p>
         <p class="direktor-stat__sub">Široka mreža lokala širom Srbije.</p>
       </div>
       <div class="direktor-stat reveal">
-        <p class="direktor-stat__head"><span class="direktor-stat__num">25+</span><span class="direktor-stat__unit">godina iskustva</span></p>
+        <p class="direktor-stat__head"><span class="direktor-stat__num">25+</span><span class="direktor-stat__unit">godina <br class="md:hidden">iskustva</span></p>
         <p class="direktor-stat__sub">Gradimo poverenje od 1999. godine.</p>
       </div>
     </div>

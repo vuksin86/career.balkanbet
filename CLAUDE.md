@@ -195,8 +195,15 @@ Videti "Varijacija #3" u sekciji "Varijacije dizajna".
      `<button>` sa tri `<span>`-a, oble debele crte, `md:hidden`. Mere su **24x18px sa
      crtama od 3px**, tj. prvobitnih 34x26/4px umanjeno za 30% (traženo). Razmak crta drži
      `justify-between`, pa ostaje tačno (18 − 3×3) / 2 = 4.5px i ne mora da se zaokružuje.
-     Burger za sada NE OTVARA ništa (mobilna navigacija još ne postoji); `aria-expanded="false"`
-     stoji da bi ga imalo šta menjati kad panel stigne
+     Burger OTVARA MOBILNU NAVIGACIJU (`<nav id="mnav">` u samom headeru, posle trake) i
+     postaje X. Panel preko celog ekrana (#0e0d0e + blag žuti sjaj), 6 linkova u verzalu
+     od 20px, BELA slova + ŽUTE strelice, 26px vazduha gore i dole po linku (traženo).
+     Nema hover/active stanja — na telefonu hovera nema; aktivna strana se NE ističe
+     vizuelno (aria-current stavlja skript, samo za čitače). Dole žuto "Pronađi posao" + mejl. Zatvara se na X, Esc, klik na
+     link i prelazak na ≥768px; skrol stranice je zaključan (`html.mnav-lock`).
+     Izgled je u styles.css (`.mnav*`, `.mnav-burger`), skript INLINE na dnu headera.
+     ⚠ Panel je `<nav>`, ne `<div>`: pravila providne trake gađaju `header > div`.
+     Traka nosi `relative z-[1]` da bi stajala iznad panela
    ⚠ SVE JE PISANO TAILWIND KLASAMA U MARKUPU, nijedno pravilo nije u styles.css - header je 
    duplikat na tri stranice i mora ostati byte-identičan, pa je jedan izvor manje mesta gde 
    stranice mogu da se raziđu. 
@@ -587,9 +594,26 @@ Videti "Varijacija #3" u sekciji "Varijacije dizajna".
 ## listanje.html (listing)
 **TAMNA JE I OVDE JEDINA TEMA** - stranica učitava theme-dark.css i nosi 
 `data-theme="dark"` zakucan na `<html>`, isto kao naslovna (videti "Tamna varijanta" niže).
-Struktura: hero BEZ PODLOGE (.page-hero--flush) sa naslovom "Postani deo Balkan Bet tima" → 
-search bar (.search-band) → svetli panel sa 16 kartica pozicija (4 u redu) + CTA za 
+Struktura: hero (.page-hero--flush) sa naslovom "Postani deo Balkan Bet tima" → 
+search bar (.search-band) → panel sa 16 kartica pozicija (4 u redu) + CTA za 
 otvorenu prijavu na dnu panela → footer.
+⚠ **CELA STRANA JE TAMNA (traženo, novije od opisa niže — gde se kosi, važi ovo):**
+- hero + `.search-band` su JEDNA PUNA TAMNA TRAKA #0e0d0e (ista boja kao gornji deo futera),
+  od vrha strane, header stoji preko nje
+- `.jobs-panel` NEMA pozadinu (vidi se aurora); kartice `.job-card` su tamno staklo
+  (`--dk-glass` + hairline `--dk-line`), isto kao `.opening-card` na naslovnoj
+- brojač, prekidač "Bez CV-a" (track white/18 kad je isključen), sortiranje (tamna providna
+  pločica kao polja search bara, meni beo) i prazno stanje su svetlo-na-tamnom;
+  `.talent-cta` dobija hairline okvir da se i dalje čita kao zaseban blok
+- "Prijavi se" na karticama koristi OPŠTI tamni hover (izuzetak sa svetlim hoverom obrisan)
+- HOVER KARTICE (traženo): cela kartica postaje ŽUTA #FDB913, tekst/grad/meta tamni, a
+  "Prijavi se" postaje tamna pilula sa belim tekstom. Tranzicija u theme-dark.css ponavlja
+  opacity/transform ulaza, a --stagger-delay važi samo za njih (boja reaguje odmah)
+- CELA KARTICA JE KLIKABILNA (traženo): `.job-card a.bg-brand-cta::after` (inset 0) razvlači
+  klik-površinu linka "Prijavi se" preko cele kartice (`.job-card` je position: relative) —
+  jedan link, bez JS-a, u styles.css
+- sve je u theme-dark.css, blok "LISTANJE" na dnu fajla
+- telefon: panel `padding: 20px 0` — kartice na istih 20px od ivice kao search bar
 - naslov je `pt-[140px]` od vrha (bilo 190px), a podnaslov NEMA margin-top - h1 i pasus 
   su jedan blok, razmak drži line-height naslova. Oboje traženo eksplicitno
 - HTML tekst naslova je "Postani deo Balkan Bet tima" u rečeničnom slučaju; verzali dolaze 
@@ -653,6 +677,8 @@ Raniji beli `.jf-bar` na ovoj stranici je odavno UKLONJEN, kao i rečenica ispod
 - z-40 (panel ispod je z-10) - inače otvoren dropdown završi ISPOD panela
 
 #### Header staklo
+⚠ NOVIJE: okidač je PRVI PIKSEL SKROLA (`scrollY > 0`, traženo) — kao naslovna u #3 i
+unutrašnje strane. Opis ispod (panel stiže do headera) je ZASTAREO.
 Traka startuje providna (CSS to zaključuje iz `.page-hero--flush`, videti tačku 1 gore) i 
 puni se na scroll. **Okidač je PANEL SA REZULTATIMA koji stigne do headera**, ne fiksna 
 razdaljina: to je trenutak kad navigacija prestaje da lebdi nad uvodom stranice (naslov na 
@@ -716,7 +742,7 @@ razmak od 30px je ceo efekat, dva panela ne smeju da se dodiruju.
   četiri kartice jedan gest, ovde je grid od 16 kroz koji se skroluje gore-dole, pa 
   ponavljanje fade-a čita kao treperenje. Unobserve (umesto obične zastavice) usput znači 
   i da filter može da sakrije i vrati karticu preko `display` a da se observer ne oglasi
-- ⚠ PANEL I KARTICE OSTAJU SVETLI I U TAMNOJ TEMI - traženo eksplicitno. Sve oko njih ide 
+- (ZASTARELO — panel i kartice su sada TAMNI, videti vrh ove sekcije) ⚠ PANEL I KARTICE OSTAJU SVETLI I U TAMNOJ TEMI - traženo eksplicitno. Sve oko njih ide 
   u tamno (aurora, hero, header, futer), a ovo ostaje jedina osvetljena površina na 
   stranici, pa se rezultati čitaju kao ono zbog čega stranica postoji. Zato u 
   theme-dark.css NEMA nijednog pravila za `.jobs-panel` ni `.job-card` - to odsustvo je 
@@ -862,7 +888,7 @@ održavaju ručno kao i ostale.
   DESKTOP KRUG (traženo): hero bez "Upoznaj posao" i tagova, CTA bez strelice, slika
   `object-position: right` (momak ceo u kadru), `.ip-hero--short`. "Zašto lokal" ima
   klijentove IKONICE umesto 01-03 (`assets/lokali/zasto-lokal-ikonice-svg.zip`, maska u
-  currentColor, `.ip-why__icon`). Glave Radno okruženje / Pogodnosti / Iz prve ruke /
+  currentColor, `.ip-why__icon`); između tri razloga NEMA linija (uklonjene na zahtev). Glave Radno okruženje / Pogodnosti / Iz prve ruke /
   Česta pitanja su centrirane, naslov u jednom redu. "Karijerni put" i žuta traka su
   UKLONJENI. Na njihovom mestu je `#proces-lokali` - ISTA rukom pisana kompozicija kao
   `#proces` na naslovnoj (CSS `#proces-stage` / `.proc-*` je zajednički; pogon je kopija
@@ -870,7 +896,9 @@ održavaju ručno kao i ostale.
   id="proces" - variation-3.css ga krije. Koraci: Pronađi poziciju / Prijavi se bez CV-a /
   Razgovor sa timom / Prvi dan u lokalu (labele dužinom bliske originalu, --x/--y
   prepisani). Česta pitanja: izbačeni proces selekcije, prelazak u centralu, benefiti;
-  redovi ostaju pitanje levo / "+" desno, lista je centrirana (max 880px)
+  redovi ostaju pitanje levo / "+" desno, lista je centrirana (max 880px). Glava je SAMO
+  naslov "Imaš pitanja?" (bez "Česta pitanja" iznad); ISPOD liste je jedna rečenica
+  "Ako ne nađeš odgovor, piši nam na karijera@balkanbet.rs." (`.ip-faq__foot`) — traženo
 - CENTRALA: hero → timovi (3 foto kartice + linkovi ka ostalim timovima) →
   mit/realnost → benefiti (3 istaknuta + 3 mala) → izjave (2) → žuta traka
 - **FOTOGRAFIJE SU KLIJENTOVE** (`assets/slike-unutrasnje-strane/*.zip`, PNG). Po njihovom
@@ -919,12 +947,16 @@ sve do `<main>` i od `</main>` uzeo iz poslovi-u-lokalima.html.
   `[data-slider]` pogon) → 4 oblasti (`.ip-areas`) → projekti u naizmeničnim redovima
   (`.ip-feature`) → vesti (`.ip-stories` sa datumima) → kontakt forma.
   DESKTOP KRUG (traženo): hero slika `object-position: right` (momak sa kutijom ceo u
-  kadru), CTA bez strelice; ispod naslova "Uz Olimpijski tim Srbije." krupan znak
-  `olimp-generalni-sponzor.svg` (`.ip-sponsor`, 64px / telefon 48px); glave Naše
+  kadru), CTA bez strelice. "Podrška sportu": naslov "Uz Olimpijski tim Srbije." je
+  UKLONJEN (ostao samo kao sr-only h2), a znak `olimp-generalni-sponzor.svg` ga zamenjuje
+  preko CELE širine kolone (`.ip-sponsor--max`, do 560px); tri stavke iznad dugmeta su
+  zbijene (flex, gap 48px) umesto razvučene u 3 kolone. Glave Naše
   vrednosti / Projekti / Iz naših akcija centrirane, naslov u jednom redu; oblasti imaju
   klijentove linijske ikonice (`assets/csr/odgovornost-ikonice-svg.zip`, inline,
   stroke currentColor, `.ip-area__icon`; maska treće ikonice preimenovana u
-  `csr-ikona-3-mask`)
+  `csr-ikona-3-mask`). Između oblasti NEMA linija, a dva linka ispod ("Pročitaj pismo
+  našeg direktora" / "Vodič za odgovorno igranje") su UKLONJENA — sve na zahtev
+  (`.ip-arealinks` CSS je ostao, ne koristi se)
 - O KOMPANIJI: hero → "Ko smo mi" (`.ip-split` + `.ip-duo`) i "Naš način rada" (`.ip-ways`)
   → vremenska linija (`[data-timeline]`: godine su dugmad, panel i fotografija se
   pretapaju) → partneri → rukovodstvo (`.ip-leaders`) → kontakt forma sa linkom ka listanju
@@ -1014,7 +1046,7 @@ header, futer i žuta CTA dugmad su isti zajednički elementi kao na naslovnoj, 
 pravila koja tu već postoje. Ono što je stvarno specifično za listanje - `.page-hero--flush` 
 bez podloge i `.search-band` - pisano je BEZ TEME, u styles.css, jer izgleda isto u 
 obe varijante. Stvarno svoja su samo dva izuzetka:
-- `[data-theme="dark"] .job-card a.bg-brand-cta:hover` vraća SVETLOTEMSKI hover 
+- (OBRISANO — kartice su sada tamne) `[data-theme="dark"] .job-card a.bg-brand-cta:hover` vraćao je SVETLOTEMSKI hover 
   (brightness .95, bez haloa). "Prijavi se" na listanju je jedina žuta CTA koja i u tamnoj 
   temi stoji na BELOJ kartici, jer panel sa rezultatima ostaje svetao; opšte tamno pravilo 
   (posvetljenje + žuti halo) bi joj na belom nacrtalo prljav oreol
@@ -1167,15 +1199,29 @@ Mehanika je namerno ista kao kod teme, jer je dokazano dobra na ovom projektu:
   ivice bara, a flex ga centrira. Ivice upisuje `layoutHeroV3()` (u measureHero, pa i u 
   remeasureAll - visina bara se menja kad stignu fontovi); CSS nosi izmerene vrednosti za 
   prvi paint. IZMERENO: 261/261px na 1440x900, 221/221px na 390x844
-- **#direktor** ("Reč direktora", posle heroja): BELA traka od ivice do ivice - ⚠ BEZ 
-  Tailwindove `bg-white` klase, jer theme-dark.css svaki `section.bg-white` pretvara u tamno 
-  staklo. Fotografija levo u boji (`assets/direktor/bojan-scekic.webp`, izrez na beloj 
-  podlozi, donja ivica sedi na liniji; `clamp(380px, 38vw, 540px)`, 320px na telefonu - 
+- **#direktor** ("Reč direktora", posle heroja): TAMNA traka od ivice do ivice (bila bela,
+  prebačeno na zahtev): #131011 + blag žuti radijalni sjaj iza fotografije + tanka linija
+  white/8 na dnu. ⚠ NE #0e0d0e — #impact odmah ispod je #0e0d0e, pa bi se trake stopile.
+  Tekst #F5F1EC, pozicija i opisi brojki na 60%.
+  DESKTOP (≥768px, traženo): fotografija ISEČENA odmah ispod ruku (`--dir-crop: .72` =
+  deo visine fajla koji ostaje) i uvećana da isečak zadrži staru visinu `--dir-h`
+  (clamp 380–540px); figure seče (`overflow: hidden`), slika viša za 1/crop, prikovana za
+  vrh. Fotografija stoji ODMAH pred citatom i njih dvoje su JEDNA GRUPA CENTRIRANA po
+  širini (`.direktor-top` je flex + justify-content center, gap 32px, ne više grid 5fr/7fr).
+  Negativne margine levo (−11%) i desno (−12% širine slike) poništavaju providne rubove
+  izreza, pa je centrirano ono što se VIDI (izmereno: sredina grupe 718px na 1440).
+  Telefon ima svoj raspored i to ga ne dira. Fotografija levo u boji
+  (`assets/direktor/bojan-scekic.webp`, izrez na PROVIDNOJ podlozi, donja ivica sedi na liniji; `clamp(380px, 38vw, 540px)`, 320px na telefonu - 
   smanjeno na zahtev), desno citat i potpis pod JEDNOM žutom linijom (`figure.direktor-quote` 
   = blockquote + figcaption): potpis odmah ispod citata, ime i funkcija U JEDNOM REDU 
-  razdvojeni tačkom. Pa žuta pilula "O kompaniji" (taman tekst; theme-dark.css joj vraća 
-  svetlotemski hover kao `.job-card`). Ispod linija i **3 brojke**: 1.100 zaposlenih / 89 
-  lokala / 25+ godina iskustva ("Deo Merkur grupe" UKLONJENO na zahtev). ⚠ Brojke se NE 
+  razdvojeni tačkom. Pa žuta pilula "O kompaniji" (taman tekst; opšti tamni hover —
+  posvetli + žuti halo; izuzetak sa svetlim hoverom u theme-dark.css važi još samo za `.job-card`). Ispod linija i **3 brojke** (desktop i telefon: broj ŽUT #FDB813, jedinica u redu
+  ispod, BEZ crtice iznad broja i BEZ sitnog opisa ispod — traženo; na desktopu su JEDNA
+  GRUPA centrirana po širini, razmak clamp(64px, 7vw, 112px) — `#direktor .direktor-stats`
+  flex u ≥768 bloku, id jer osnovni grid stoji niže u fajlu): 1.100 srećno zaposlenih / 89 
+  lokala širom Srbije / 25+ godina iskustva ("Deo Merkur grupe" UKLONJENO na zahtev).
+  Na telefonu je svaka jedinica u DVA reda (`<br class="md:hidden">` u markupu + nowrap),
+  razmak između brojki clamp(14px, 25.7vw − 68px, 32px) — 32 na 390, 14 na 320, gde jedva staju. ⚠ Brojke se NE 
   slažu sa tekstom u #razvoj ("1.200 kolega u 100 lokala") - proveriti sa klijentom. 
   #direktor NEMA margin-bottom: #impact kreće odmah ispod.
   **NA TELEFONU IDENTIČNO KLIJENTOVOM PRILOGU** (odnos slike i teksta, prelomi, položaj):
@@ -1187,8 +1233,11 @@ Mehanika je namerno ista kao kod teme, jer je dokazano dobra na ovom projektu:
   17px na 390. **PRELOMI SU ZAKUCANI**: svaki red citata je `<span class="dq">` (inline na
   desktopu, block na telefonu), devet redova kao na prilogu. Svi razmaci u bloku su u vw,
   pa je VRH GLAVE U RAVNI SA VRHOM NAVODNIKA na svakoj širini - IZMERENO −3/0/+2/+5px na
-  320/360/390/430. Lik 19–186px od leve ivice na 390 (prilog 18.6–186). Potpis u DVA reda, ", Balkan Bet" se gasi (`.direktor-sign__org`). 
-  Brojke: tri u redu, broj i jedinica u dva reda, BEZ opisnih rečenica. **"O kompaniji" je 
+  320/360/390/430. Lik 19–186px od leve ivice na 390 (prilog 18.6–186). Potpis u DVA reda. ", Balkan Bet" posle funkcije je
+  OBRISAN iz markupa (svuda, ne samo na telefonu — "podrazumeva se", traženo).
+  Fotografija i prelomi citata na telefonu se NE menjaju sa desktopom (isecanje ispod ruku
+  je samo desktop — traženo). Brojke: tri u redu, žute, broj i jedinica u dva reda, BEZ
+  opisnih rečenica, zbijene u centriranu grupu (flex, gap 32px). **"O kompaniji" je 
   CENTRIRANO ISPOD BROJKI** - to je DRUGI primerak dugmeta u markupu (`.direktor-cta-m`, 
   posle `.direktor-stats`); onaj uz citat (`.direktor-cta`) se na telefonu gasi, a ovaj na 
   desktopu

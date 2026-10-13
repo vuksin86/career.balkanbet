@@ -1577,6 +1577,11 @@
     transition-delay: var(--stagger-delay, 0ms);
   }
   .job-card.is-revealed { opacity: 1; transform: none; }
+  /* CELA KARTICA JE KLIKABILNA (traženo): link "Prijavi se" razvlači svoju
+     klik-površinu preko cele kartice (::after, inset 0), pa nema drugog linka
+     ni JS-a — tastatura i čitač ekrana i dalje vide jedan link. */
+  .job-card { position: relative; cursor: pointer; }
+  .job-card a.bg-brand-cta::after { content: ''; position: absolute; inset: 0; border-radius: inherit; }
   /* NO hover state on purpose — the homepage cards have none either, and the
      lift/shadow this used to carry made the listing read as a different
      component. The only hover in the card is on the "Prijavi se" button. */
@@ -2134,24 +2139,27 @@
   }
 
   /* ========================================================================
-     REČ DIREKTORA (#direktor) — bela traka od ivice do ivice, odmah ispod
-     heroja. Postoji SAMO u varijaciji #3 (sakriva je variation-3.css).
+     REČ DIREKTORA (#direktor) — TAMNA traka od ivice do ivice, odmah ispod
+     heroja (bila je bela; prebačena u tamno na zahtev). Postoji SAMO u varijaciji #3 (sakriva je variation-3.css).
 
      Fotografija levo, U BOJI (referenca je imala sivu, traženo je u boji),
      desno citat + ime + pozicija + CTA. Ispod tanka linija pa četiri brojke.
 
-     ⚠ NE NOSI Tailwindovu `bg-white` klasu, i to je namerno: theme-dark.css
-     svaki `section.bg-white` pretvara u tamno staklo (to su beli paneli na
-     oglasu). Ova traka MORA ostati bela i u tamnoj temi, pa ima svoju boju
-     ovde i svoju boju teksta — body u tamnoj temi nasleđuje svetao tekst.
+     Podloga je boja tamne stranice (#131011), a ne #0e0d0e: "Balkan Bet
+     izbliza" odmah ispod je #0e0d0e od ivice do ivice, pa bi se dve trake
+     stopile u jednu. Blag žuti sjaj iza fotografije daje traci sopstveni ton,
+     a tanka linija na dnu je granica prema #impact.
 
-     Fotografija je izrez na BELOJ podlozi, pa se stapa sa trakom i nema ivicu;
+     Fotografija je izrez na PROVIDNOJ podlozi, pa sedi na traci bez ivice;
      donja ivica fotografije sedi tačno na liniji iznad brojki (kao na
      referenci), zato blok sa citatom ide `align-self: center` a ne slika.
   ======================================================================== */
   #direktor {
-    background: #FFFFFF;
-    color: #231F20;
+    background:
+      radial-gradient(42% 70% at 36% 62%, rgba(253, 184, 19, .13), transparent 70%),
+      #131011;
+    color: #F5F1EC;
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
     /* BEZ razmaka do "Balkan Bet izbliza": ta sekcija u #3 ide od ivice do
        ivice i kreće ODMAH ispod bele trake (traženo). Bilo je 120px. */
     margin-bottom: 0;
@@ -2175,6 +2183,49 @@
     max-width: 100%;
     object-fit: contain;
     object-position: bottom center;
+  }
+  /* DESKTOP: fotografija je ISEČENA odmah ispod ruku (traženo) i uvećana tako
+     da isečak zadrži visinu koju je cela fotografija imala. --dir-crop je deo
+     visine fajla koji ostaje (rukavi se završavaju na ~70%, rez je na 72%):
+     figure drži staru visinu i seče, a slika je za 1/--dir-crop viša i
+     prikovana za vrh. Rez sedi na liniji iznad brojki, kao bista.
+     Telefon ima svoj raspored (mobilni blok niže) i ovo ga ne dira. */
+  @media (min-width: 768px) {
+    .direktor-photo {
+      --dir-h: clamp(380px, 38vw, 540px);
+      --dir-crop: .72;
+      height: var(--dir-h);
+      overflow: hidden;
+      flex: none;
+      /* Izrez ima providan rub desno od ramena (~14% širine fajla); negativna
+         margina ga poništava, pa fotografija stoji ODMAH pred citatom. Širina
+         slike je visina × 2/3 (fajl je 1024x1536). */
+      margin-right: calc(var(--dir-h) / var(--dir-crop) * 2 / 3 * -.12);
+      /* Isto i levo (~11% praznog ruba levo od ruke), da centrirana grupa bude
+         centrirana po onome što se VIDI, a ne po pravougaoniku fajla. */
+      margin-left: calc(var(--dir-h) / var(--dir-crop) * 2 / 3 * -.11);
+    }
+    /* Fotografija + citat su JEDNA grupa centrirana po širini (traženo), a ne
+       dve kolone 5fr/7fr. */
+    .direktor-top {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+    }
+    .direktor-body { flex: 0 1 640px; }
+    /* Brojke: jedna grupa na manjem razmaku, centrirana (traženo), umesto tri
+       kolone razvučene preko cele širine. Linija iznad ostaje puna širina.
+       Sa #direktor jer osnovno .direktor-stats (grid) stoji niže u fajlu. */
+    #direktor .direktor-stats {
+      display: flex;
+      justify-content: center;
+      gap: clamp(64px, 7vw, 112px);
+    }
+    .direktor-photo img {
+      height: calc(var(--dir-h) / var(--dir-crop));
+      max-width: none;
+      object-position: top center;
+    }
   }
   .direktor-body {
     align-self: center;
@@ -2207,11 +2258,11 @@
     line-height: 1.4;
   }
   .direktor-sign__name { font-weight: 700; }
-  .direktor-sign__role { color: #6F6A6B; }
+  .direktor-sign__role { color: rgba(245, 241, 236, .6); }
   .direktor-sign__role::before {
     content: '·';
     margin: 0 10px;
-    color: #6F6A6B;
+    color: rgba(245, 241, 236, .6);
   }
   .direktor-cta { margin-top: 36px; }
   .direktor-cta-m { display: none; }
@@ -2220,12 +2271,14 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 40px;
-    border-top: 1px solid #E6E3E3;
+    border-top: 1px solid rgba(255, 255, 255, .12);
     padding: 64px 0 80px;
   }
+  /* Brojke: broj ŽUT, jedinica u redu ispod, bez crtice iznad i bez sitnog
+     opisa ispod (traženo; isto i na telefonu). */
   .direktor-stat::before {
     content: '';
-    display: block;
+    display: none;
     width: 40px;
     height: 3px;
     border-radius: 2px;
@@ -2234,18 +2287,19 @@
   }
   .direktor-stat__head {
     display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    column-gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    row-gap: 8px;
     line-height: 1;
   }
   .direktor-stat__num {
     font-size: clamp(2.6rem, 4vw, 3.75rem);
     font-weight: 700;
     letter-spacing: -0.04em;
+    color: #FDB813;
   }
   .direktor-stat__unit { font-size: clamp(1.1rem, 1.5vw, 1.4rem); font-weight: 700; }
-  .direktor-stat__sub { margin-top: 18px; color: #6F6A6B; font-size: 1rem; line-height: 1.5; }
+  .direktor-stat__sub { display: none; margin-top: 18px; color: rgba(245, 241, 236, .6); font-size: 1rem; line-height: 1.5; }
 
   /* ========================================================================
      ŽIVOT U BALKAN BETU (#ljudi) — priče zaposlenih, samo varijacija #3.
@@ -2672,6 +2726,8 @@
       bottom: 0;
       z-index: 0;
     }
+    /* Fotografija i prelomi citata na telefonu ostaju PO PRILOGU (traženo) —
+       isecanje ispod ruku važi samo za desktop. */
     #direktor .direktor-photo img { height: 85vw; }
     #direktor .direktor-body {
       position: relative;
@@ -2700,11 +2756,15 @@
     #direktor .direktor-sign__name,
     #direktor .direktor-sign__role { display: block; }
     #direktor .direktor-sign__role::before { content: none; }
-    #direktor .direktor-sign__org { display: none; }
     #direktor .direktor-cta { display: none; }
+    /* Brojke: jedna grupa, zbijena i centrirana (kao na desktopu). */
     #direktor .direktor-stats {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
+      display: flex;
+      justify-content: center;
+      /* 32px na 390, manje na najužim ekranima — na 320 tri kolone
+         ("srećno zaposlenih" / "lokala širom Srbije" / "godina iskustva",
+         svaka u dva reda) inače ne staju. */
+      gap: clamp(14px, 25.7vw - 68px, 32px);
       padding: 34px 0 0;
     }
     #direktor .direktor-stat::before { width: 44px; margin-bottom: 22px; }
@@ -2712,7 +2772,9 @@
        a "1.100 zaposlenih" ne, pa bi se brojke lomile različito. */
     #direktor .direktor-stat__head { flex-direction: column; align-items: flex-start; row-gap: 4px; }
     #direktor .direktor-stat__num { font-size: 34px; }
-    #direktor .direktor-stat__unit { font-size: 17px; line-height: 1.1; }
+    /* Jedinica je u DVA reda (traženo) — prelom je <br class="md:hidden"> u
+       markupu, a nowrap sprečava treći red u uskoj koloni. */
+    #direktor .direktor-stat__unit { font-size: 17px; line-height: 1.1; white-space: nowrap; }
     #direktor .direktor-stat__sub { display: none; }
     #direktor .direktor-cta-m {
       display: block;
@@ -3084,8 +3146,8 @@
   /* Aktivan link u navigaciji — bez ijedne izmene u markupu headera (on je
      byte-identičan na svim stranama): stranica se prepoznaje po modifikatoru
      svog heroja, a link po href-u. */
-  body:has(.ip-hero--lokali) header nav a[href="poslovi-u-lokalima.html"],
-  body:has(.ip-hero--centrala) header nav a[href="poslovi-u-centrali.html"] {
+  body:has(.ip-hero--lokali) header > div > nav a[href="poslovi-u-lokalima.html"],
+  body:has(.ip-hero--centrala) header > div > nav a[href="poslovi-u-centrali.html"] {
     color: #FDB813;
   }
 
@@ -3104,9 +3166,8 @@
     grid-template-columns: 64px 1fr;
     gap: 8px;
     padding-block: 24px;
-    border-top: 1px solid rgba(255,255,255,.10);
+    /* Bez linija između razloga (traženo). */
   }
-  .ip-why__item:last-child { border-bottom: 1px solid rgba(255,255,255,.10); }
   .ip-why__num {
     font-size: 34px;
     font-weight: 500;
@@ -3691,9 +3752,9 @@
   ########################################################################## */
 
   /* Aktivan link u navigaciji — isti trik kao za lokale/centralu. */
-  body:has(.ip-hero--zivot) header nav a[href="zivot-u-balkan-betu.html"],
-  body:has(.ip-hero--csr) header nav a[href="csr.html"],
-  body:has(.ip-hero--kompanija) header nav a[href="o-kompaniji.html"] {
+  body:has(.ip-hero--zivot) header > div > nav a[href="zivot-u-balkan-betu.html"],
+  body:has(.ip-hero--csr) header > div > nav a[href="csr.html"],
+  body:has(.ip-hero--kompanija) header > div > nav a[href="o-kompaniji.html"] {
     color: #FDB813;
   }
 
@@ -3847,10 +3908,10 @@
     align-items: center;
   }
   .ip-split__text .ip-lead { max-width: 480px; }
+  /* Tri stavke zbijene jedna uz drugu (traženo), ne razvučene preko kolone. */
   .ip-icons3 {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px;
+    display: flex;
+    gap: 48px;
     margin-block: 40px 44px;
   }
   .ip-icons3 li { display: flex; flex-direction: column; gap: 12px; font-size: 15px; font-weight: 700; line-height: 1.3; color: #F5F1EC; }
@@ -3908,7 +3969,7 @@
     text-align: center;
   }
   .ip-area { padding: 8px 32px 40px; }
-  .ip-area + .ip-area { border-left: 1px solid rgba(255,255,255,.12); }
+  /* Bez linija između oblasti (traženo) — ni na tabletu ni na telefonu. */
   .ip-area svg { margin-inline: auto; color: #FDB813; }
   .ip-area h3 { margin-top: 22px; font-size: 22px; font-weight: 700; color: #F5F1EC; }
   .ip-area p { margin-top: 10px; font-size: 16px; line-height: 1.6; color: rgba(245,241,236,.65); }
@@ -4120,6 +4181,10 @@
      Krupan znak "Generalni sponzor Olimpijskog tima Srbije" ispod naslova
      "Uz Olimpijski tim Srbije." */
   .ip-sponsor { display: block; height: 64px; width: auto; margin-top: 28px; }
+  /* CSR / Podrška sportu: znak zamenjuje naslov i ide preko cele kolone. */
+  .ip-sponsor--max { width: 100%; max-width: 560px; height: auto; margin-top: 24px; }
+  /* Česta pitanja: rečenica sa mejlom ispod liste. */
+  .ip-faq__foot { max-width: 880px; margin: 40px auto 0; text-align: center; }
   /* Klijentove linijske ikonice oblasti — boja dolazi kroz currentColor. */
   .ip-area__icon { display: block; margin-inline: auto; color: #FDB813; }
   /* Završni CTA na centrali: naslov je .section-title (ista veličina/težina kao
@@ -4172,7 +4237,7 @@
     .ip-story { grid-template-columns: 104px 1fr; gap: 16px; }
     .ip-story__go { display: none; }
     .ip-story h3 { font-size: 17px; }
-    .ip-icons3 { grid-template-columns: 1fr; gap: 14px; margin-block: 32px; }
+    .ip-icons3 { display: grid; grid-template-columns: 1fr; gap: 14px; margin-block: 32px; }
     .ip-icons3 li { flex-direction: row; align-items: center; }
     .ip-slides { border-radius: 20px; }
     .ip-slides .ip-nav { top: 14px; right: 14px; }
@@ -4188,14 +4253,17 @@
        su bile uske 270px. `body` / `>` dižu specifičnost iznad Tailwindovih
        `px-[30px]` i `rounded-[32px]` u markupu. */
     .search-band > div { padding-left: 20px; padding-right: 20px; }
-    body .jobs-panel { margin: 30px 20px; padding: 20px 14px; border-radius: 20px; }
+    /* Panel više nema pozadinu, pa nema ni unutrašnji bočni razmak: kartice
+       stoje na istih 20px od ivice kao search bar iznad. */
+    body .jobs-panel { margin: 30px 20px; padding: 20px 0; border-radius: 20px; }
     .ip-sponsor { height: 48px; margin-top: 22px; }
+    .ip-sponsor--max { height: auto; }
     .ip-area__icon { width: 52px; height: 52px; }
     .ip-cta__btn { margin-top: 28px; }
     .ip-proces__cta { margin-top: 48px; }
     .ip-way .ip-why__num { font-size: 34px; }
     .ip-areas { grid-template-columns: 1fr; }
-    .ip-area, .ip-area + .ip-area { padding: 28px 0; border-left: 0; border-top: 1px solid rgba(255,255,255,.12); }
+    .ip-area, .ip-area + .ip-area { padding: 28px 0; }
     .ip-area:first-child { border-top: 0; padding-top: 0; }
     .ip-arealinks { flex-direction: column; align-items: center; gap: 18px; }
     .ip-features { gap: 56px; }
@@ -4232,4 +4300,124 @@
     .ip-panel,
     .ip-timeline__media img,
     .ip-story-big img { transition: none !important; }
+  }
+
+  /* ========================================================================
+     MOBILNA NAVIGACIJA (#mnav) — panel preko celog ekrana ispod 768px.
+     Markup i skript su u <header>-u (byte-identičan na svih osam stranica),
+     ovde je samo izgled. Panel je <nav> a ne <div> namerno: pravila za
+     providnu traku gore gađaju `header > div`.
+     - Traka (logo + burger) ostaje IZNAD panela: nosi `relative z-[1]`, a
+       panel je fixed bez z-indexa unutar headera (z-50).
+     - Zatvoren panel je opacity 0 + visibility hidden + `inert` (skript), pa
+       linkovi ne primaju ni Tab ni dodir.
+     - Na telefonu nema hovera, pa nema ni stanja za njega: slova su bela,
+       strelice žute, uvek (traženo). aria-current="page" skript i dalje
+       stavlja, ali samo za čitače ekrana — vizuelno se ne ističe.
+  ======================================================================== */
+  .mnav {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    padding: 113px 20px calc(28px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    background:
+      radial-gradient(110% 55% at 100% 0%, rgba(253, 184, 19, .16), transparent 62%),
+      radial-gradient(80% 40% at 0% 100%, rgba(250, 166, 26, .08), transparent 70%),
+      #0e0d0e;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .3s ease, visibility 0s linear .3s;
+  }
+  .mnav.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .3s ease;
+  }
+  @media (min-width: 768px) { .mnav { display: none; } }
+
+  .mnav__list { list-style: none; margin: 0; padding: 0; }
+  .mnav__list li {
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .35s ease, transform .45s cubic-bezier(.22, .61, .36, 1);
+  }
+  .mnav.is-open .mnav__list li {
+    opacity: 1;
+    transform: none;
+    transition-delay: calc(80ms + var(--i, 0) * 45ms);
+  }
+  .mnav__list a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 26px 0;
+    font-size: 20px;
+    line-height: 1.1;
+    font-weight: 500;
+    letter-spacing: -.02em;
+    text-transform: uppercase;
+    color: #FFFFFF;
+  }
+  /* Strelica — žuta, maska bez dodatnog markupa. */
+  .mnav__list a::after {
+    content: '';
+    flex: none;
+    width: 20px;
+    height: 20px;
+    background: #FDB813;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center / contain no-repeat;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+
+  .mnav__foot {
+    margin-top: auto;
+    padding-top: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .35s ease, transform .45s cubic-bezier(.22, .61, .36, 1);
+  }
+  .mnav.is-open .mnav__foot { opacity: 1; transform: none; transition-delay: 380ms; }
+  .mnav__cta {
+    display: block;
+    width: 100%;
+    padding: 16px 24px;
+    border-radius: 999px;
+    background: #ffbb1a;
+    color: #231F20;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .mnav__mail { font-size: 14px; color: rgba(245, 241, 236, .55); }
+
+  /* Burger -> X. Crte stoje na 0 / 7.5 / 15px (18px visine, crte od 3px),
+     pa se spoljne pomeraju za 7.5px do sredine i okreću. */
+  .mnav-burger span { transition: transform .3s cubic-bezier(.22, .61, .36, 1), opacity .2s ease; }
+  .mnav-burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(7.5px) rotate(45deg); }
+  .mnav-burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+  .mnav-burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7.5px) rotate(-45deg); }
+
+  /* Dok je meni otvoren, stranica ispod ne skroluje. */
+  html.mnav-lock, html.mnav-lock body { overflow: hidden; }
+  /* Niski telefoni (npr. 320x568): manje vazduha, da linkovi i CTA stanu bez skrola.
+     Mora stajati POSLE osnovnih .mnav pravila — iste je jačine. */
+  @media (max-height: 700px) {
+    .mnav { padding-top: 101px; }
+    .mnav__list a { padding: 15px 0; }
+    .mnav__foot { padding-top: 20px; gap: 12px; }
+  }
+  /* Prekidač varijacija (#1/#2/#3) je razvojni alat — ne sme da stoji preko menija. */
+  html.mnav-lock .var-toggle { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mnav, .mnav__list li, .mnav__foot, .mnav-burger span { transition: none !important; }
   }

@@ -26,9 +26,8 @@
      naslovnoj, pa ih hvataju pravila koja već postoje niže. Ono što je stvarno
      specifično za tu stranicu — `.page-hero--flush` bez podloge, `.search-band`
      i `.talent-cta` — pisano je BEZ TEME, u styles.css, jer izgleda isto u obe
-     varijante. Panel sa karticama (.jobs-panel, #F4F4F4) i same kartice
-     (.job-card, bele) OSTAJU SVETLI u tamnoj temi, traženo tako — zato ovde
-     nema (i ne treba da bude) nijedno pravilo za njih.
+     varijante. IZUZETAK su hero traka, panel sa rezultatima i kartice — oni su
+     od skora TAMNI i imaju svoj blok "LISTANJE" na dnu ovog fajla.
   ########################################################################## */
 
   /* ========================================================================
@@ -117,13 +116,9 @@
      pa im treba svetlotemski hover: potamnjenje, ne svetljenje. Halo bi se na
      belom video kao prljav oreol, a posvetljenje na beloj podlozi ne čita kao
      odziv. Selektor je (0,3,1) — specifičniji od pravila iznad. */
-  /* Isto važi za "O kompaniji" u traci direktora (#direktor, varijacija #3) —
-     traka ostaje BELA i u tamnoj temi, pa je dugme opet žuto na belom. */
-  [data-theme="dark"] .job-card a.bg-brand-cta:hover,
-  [data-theme="dark"] #direktor a.bg-brand-cta:hover {
-    filter: brightness(.95);
-    box-shadow: none;
-  }
+  /* (Ovde su ranije stajali izuzeci sa svetlim hoverom za #direktor i za
+     "Prijavi se" na listanju, dok su te površine bile bele. Obe su sada tamne,
+     pa koriste opšti tamni hover iznad.) */
 
 /* --- Senka loptice ----------------------------------------------------
      U svetloj temi je to prava bačena senka: #231F20 na .05–.17 alfe, tj.
@@ -421,3 +416,70 @@
     .var-toggle { transition: none; }
     .var-toggle:hover { transform: none; }
   }
+
+  /* ========================================================================
+     LISTANJE (listanje.html) — TAMNO (traženo; ranije su panel i kartice
+     namerno ostajali svetli i ovde za njih nije bilo nijednog pravila).
+     - hero sa naslovom + traka sa search barom su JEDNA puna tamna traka,
+       ista boja kao gornji deo futera (#0e0d0e), od vrha strane — header stoji
+       preko nje
+     - panel sa rezultatima NEMA pozadinu (vidi se aurora), a kartice su tamne:
+       isto staklo + hairline okvir kao kartice pozicija na naslovnoj
+     - sve što je stajalo na svetlom panelu (brojač, prekidač "Bez CV-a",
+       sortiranje, prazno stanje) prelazi u svetlo-na-tamnom
+  ======================================================================== */
+  [data-theme="dark"] .page-hero.page-hero--flush,
+  [data-theme="dark"] .search-band { background: #0e0d0e; }
+
+  [data-theme="dark"] .jobs-panel { background: none; }
+
+  [data-theme="dark"] .job-card {
+    background: var(--dk-glass);
+    border: 1px solid var(--dk-line);
+  }
+  [data-theme="dark"] .job-card h3 { color: var(--dk-ink); }
+  [data-theme="dark"] .job-card .text-brand-dark\/50 { color: var(--dk-ink-3); }
+
+  /* HOVER (traženo): kartica postaje ŽUTA (#FDB913 — isto kao hover lice
+     kartica na naslovnoj), tekst taman. "Prijavi se" bi na žutom nestalo, pa
+     za vreme hovera postaje tamna pilula sa belim tekstom.
+     ⚠ Tranzicija ponavlja opacity/transform ulaza iz styles.css (inače bi ih
+     ovo pravilo pregazilo), a kašnjenje kaskade (--stagger-delay) važi SAMO za
+     njih — boja reaguje odmah, ne čeka ulaz kartice. */
+  [data-theme="dark"] .job-card {
+    transition: opacity .7s cubic-bezier(.35,.12,.45,.92),
+                transform .7s cubic-bezier(.35,.12,.45,.92),
+                background-color .25s ease,
+                border-color .25s ease;
+    transition-delay: var(--stagger-delay, 0ms), var(--stagger-delay, 0ms), 0s, 0s;
+  }
+  [data-theme="dark"] .job-card:hover { background: #FDB913; border-color: #FDB913; }
+  [data-theme="dark"] .job-card:hover h3,
+  [data-theme="dark"] .job-card:hover .text-brand-gold { color: #231F20; }
+  [data-theme="dark"] .job-card:hover .text-brand-dark\/50 { color: rgba(35,31,32,.65); }
+  [data-theme="dark"] .job-card:hover a.bg-brand-cta {
+    background: #231F20;
+    color: #FFFFFF;
+    filter: none;
+    box-shadow: none;
+  }
+
+  [data-theme="dark"] #results-count { color: var(--dk-ink); }
+  [data-theme="dark"] #jobs-empty .text-brand-dark { color: var(--dk-ink); }
+  [data-theme="dark"] #jobs-empty .text-brand-dark\/60 { color: var(--dk-ink-2); }
+
+  [data-theme="dark"] .nocv-toggle { color: var(--dk-ink); }
+  [data-theme="dark"] .nocv-toggle__track { background: rgba(255,255,255,.18); }
+  [data-theme="dark"] .nocv-toggle input:focus-visible + .nocv-toggle__track { outline-color: #FFFFFF; }
+
+  /* Sortiranje: ista tamna providna pločica kao polja search bara; meni ostaje beo. */
+  [data-theme="dark"] .jf-field--solid {
+    background: rgba(0,0,0,.35);
+    border: 1px solid rgba(255,255,255,.14);
+  }
+  [data-theme="dark"] .jf-field--solid .jf-trigger { color: #FFFFFF; font-weight: 400; }
+
+  /* "Nema tvoje pozicije?" je bila jedina tamna površina na svetlom panelu;
+     na tamnoj strani je drži tanak okvir, pa se i dalje čita kao zaseban blok. */
+  [data-theme="dark"] .talent-cta { border: 1px solid var(--dk-line-2); }
+
