@@ -94,11 +94,11 @@
 
      NOTE for dev handoff: the "#" hrefs are placeholders. Swap them for real
      paths once the rest of the site exists, e.g.:
-       O kompaniji            -> o-kompaniji.html
-       Život u Balkan Betu    -> zivot-u-balkan-betu.html
-       Poslovi u lokalima     -> poslovi-u-lokalima.html   (its own page, TBD)
-       Poslovi u centrali     -> poslovi-u-centrali.html
-       CSR                    -> csr.html
+       O kompaniji            -> o-kompaniji.html   (POVEZANO)
+       Život u Balkan Betu    -> zivot-u-balkan-betu.html   (POVEZANO)
+       Poslovi u lokalima     -> poslovi-u-lokalima.html   (POVEZANO)
+       Poslovi u centrali     -> poslovi-u-centrali.html   (POVEZANO)
+       CSR                    -> csr.html   (POVEZANO)
        Kontakt                -> kontakt.html
 ============================================================================ -->
 <header class="fixed top-0 inset-x-0 z-50">
@@ -143,11 +143,11 @@
          gap-5 trake + mr-3 = 32px — samih 20px (koliko je i između linkova)
          lepilo je poslednji link za pilulu. -->
     <nav class="hidden md:flex items-center gap-5 ml-auto md:mr-3 text-base font-medium uppercase text-white whitespace-nowrap">
-      <a href="#" class="hover:text-brand-yellow transition-colors">O kompaniji</a>
-      <a href="#" class="hover:text-brand-yellow transition-colors">Život u Balkan Betu</a>
-      <a href="#" class="hover:text-brand-yellow transition-colors">Poslovi u lokalima</a>
-      <a href="#" class="hover:text-brand-yellow transition-colors">Poslovi u centrali</a>
-      <a href="#" class="hover:text-brand-yellow transition-colors">CSR</a>
+      <a href="o-kompaniji.html" class="hover:text-brand-yellow transition-colors">O kompaniji</a>
+      <a href="zivot-u-balkan-betu.html" class="hover:text-brand-yellow transition-colors">Život u Balkan Betu</a>
+      <a href="poslovi-u-lokalima.html" class="hover:text-brand-yellow transition-colors">Poslovi u lokalima</a>
+      <a href="poslovi-u-centrali.html" class="hover:text-brand-yellow transition-colors">Poslovi u centrali</a>
+      <a href="csr.html" class="hover:text-brand-yellow transition-colors">CSR</a>
       <a href="#" class="hover:text-brand-yellow transition-colors">Kontakt</a>
     </nav>
 
@@ -454,9 +454,9 @@
         <h3 class="footer-col__title"><button type="button" class="footer-col__toggle" aria-expanded="true">Karijera<svg class="footer-col__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></h3>
         <div class="footer-col__panel"><div>
           <ul>
-            <li><a href="#">Poslovi u lokalima</a></li>
-            <li><a href="#">Poslovi u centrali</a></li>
-            <li><a href="#">Život u Balkan Betu</a></li>
+            <li><a href="poslovi-u-lokalima.html">Poslovi u lokalima</a></li>
+            <li><a href="poslovi-u-centrali.html">Poslovi u centrali</a></li>
+            <li><a href="zivot-u-balkan-betu.html">Život u Balkan Betu</a></li>
           </ul>
         </div></div>
       </nav>
@@ -465,8 +465,8 @@
         <h3 class="footer-col__title"><button type="button" class="footer-col__toggle" aria-expanded="true">Kompanija<svg class="footer-col__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></h3>
         <div class="footer-col__panel"><div>
           <ul>
-            <li><a href="#">O kompaniji</a></li>
-            <li><a href="#">CSR</a></li>
+            <li><a href="o-kompaniji.html">O kompaniji</a></li>
+            <li><a href="csr.html">CSR</a></li>
             <li><a href="#">Kontakt</a></li>
           </ul>
         </div></div>
@@ -577,8 +577,10 @@
      gets its own `url` and only the href line changes.
 
      `vrsta` splits the two career tracks the search bar's first tab offers.
-     Only lokal positions exist as data today, so picking "Posao u centrali"
-     lands on the empty state — deliberately, not a bug.
+     CENTRALA: 10 primera pozicija (Beograd / Novi Sad — iste dve lokacije
+     koje nudi hero na naslovnoj), da dugmad sa poslovi-u-centrali.html ne
+     vode na praznu listu. ⚠ PLACEHOLDER — zameniti stvarnim oglasima.
+     Većina traži CV (nocv: false); bez CV-a su samo agenti korisničke podrške.
      `category` feeds the card's first meta row, matching the homepage card.
   ========================================================================== */
   const JOBS = [
@@ -598,6 +600,17 @@
     { title: 'Operater u lokalu',   city: 'Ruma',         category: 'Operativa',      vrsta: 'lokali', nocv: true  },
     { title: 'Konobar',             city: 'Šabac',        category: 'Ugostiteljstvo', vrsta: 'lokali', nocv: true  },
     { title: 'Higijeničar',         city: 'Nova Pazova',  category: 'Održavanje',     vrsta: 'lokali', nocv: true  },
+
+    { title: 'Frontend developer',             city: 'Beograd',  category: 'IT i razvoj',              vrsta: 'centrala', nocv: false },
+    { title: 'Backend developer',              city: 'Beograd',  category: 'IT i razvoj',              vrsta: 'centrala', nocv: false },
+    { title: 'Digital marketing specijalista', city: 'Beograd',  category: 'Marketing',                vrsta: 'centrala', nocv: false },
+    { title: 'Grafički dizajner',              city: 'Beograd',  category: 'Marketing',                vrsta: 'centrala', nocv: false },
+    { title: 'Finansijski analitičar',         city: 'Beograd',  category: 'Finansije i računovodstvo', vrsta: 'centrala', nocv: false },
+    { title: 'Knjigovođa',                     city: 'Novi Sad', category: 'Finansije i računovodstvo', vrsta: 'centrala', nocv: false },
+    { title: 'HR generalista',                 city: 'Beograd',  category: 'Ljudski resursi',          vrsta: 'centrala', nocv: false },
+    { title: 'Pravnik',                        city: 'Beograd',  category: 'Pravni poslovi',           vrsta: 'centrala', nocv: false },
+    { title: 'Agent korisničke podrške',       city: 'Beograd',  category: 'Podrška korisnicima',      vrsta: 'centrala', nocv: true  },
+    { title: 'Agent korisničke podrške',       city: 'Novi Sad', category: 'Podrška korisnicima',      vrsta: 'centrala', nocv: true  },
   ];
 
   const VRSTE = [
@@ -806,6 +819,13 @@
   // bar; the query-parameter contract with the other pages is unchanged.
   if (params.get('nocv')) {
     noCvBox.checked = true;
+    apply();
+  } else if (params.get('vrsta') === 'centrala') {
+    // Prekidač "Bez CV-a" je podrazumevano UKLJUČEN, a u centrali skoro sve
+    // pozicije traže CV — dolazak sa poslovi-u-centrali.html bi inače
+    // pokazao samo dve kartice. Gasi se SAMO pri dolasku linkom; ručna
+    // promena vrste u baru ne dira prekidač.
+    noCvBox.checked = false;
     apply();
   }
 

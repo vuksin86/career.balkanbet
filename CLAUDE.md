@@ -16,7 +16,11 @@ kaže drugačije.
   posao", "Pretraži", "Pogledaj sve pozicije" i footer CTA kartice. Fajl se ranije zvao 
   poslovi-u-lokalima.html
 - **oglas-primer.html** - template pojedinačnog oglasa + forma za prijavu
-- **styles.css** - JEDAN zajednički stylesheet za SVE tri stranice (@font-face, 
+- **poslovi-u-lokalima.html** / **poslovi-u-centrali.html** / **zivot-u-balkan-betu.html** /
+  **csr.html** / **o-kompaniji.html** - unutrašnje strane, rađene po klijentovim skicama i
+  prevedene u jezik sajta. Videti sekciju "Unutrašnje strane" niže.
+  Zajedničko ponašanje im je u **inner-pages.js**, komponente u styles.css (prefiks `.ip-`)
+- **styles.css** - JEDAN zajednički stylesheet za SVE stranice (@font-face, 
   .animated-bg, .scroll-progress, hero, .hero-search, .zivot-tile, .opening-card, 
   .page-hero, .search-band, .jf-* filter bar, .nocv-toggle, .jobs-panel, .job-card, 
   .talent-cta, .fld-* polja forme, .info-card, prefers-reduced-motion blok). Stoji u root-u NAMERNO - url() putanje do fontova su relativne 
@@ -42,7 +46,11 @@ kaže drugačije.
   `hero` (.hero-search bar). `initBar(bar, {skin, fields, onChange, onSubmit})` vraća 
   `{values, set, refill}`; `refill` služi kad izbor u jednom tabu poništi listu drugog
 
-### ⚠ HEADER I FOOTER SU ZAKUCANI - IDENTIČNI NA SVE TRI STRANICE
+### ⚠ HEADER I FOOTER SU ZAKUCANI - IDENTIČNI NA SVIH OSAM STRANICA
+(index, listanje, oglas-primer, poslovi-u-lokalima, poslovi-u-centrali, zivot-u-balkan-betu,
+csr, o-kompaniji - gde niže piše "tri stranice", važi za svih osam.) Svi nav linkovi i
+linkovi u futeru vode na svoje strane, OSIM "Kontakt" (i dalje `#`, strana ne postoji).
+Oba dugmeta "O kompaniji" u #direktor na naslovnoj vode na o-kompaniji.html.
 Header i footer su DUPLIRANI kao markup na sve tri stranice (nema build koraka, a 
 statični mockup ne treba da zavisi od JS-a da bi nacrtao svoju navigaciju).
 **index.html je IZVOR ISTINE.** Pravilo je strogo: blokovi moraju biti BYTE-IDENTIČNI 
@@ -56,7 +64,7 @@ izmene.
   tekst box); zamenjen je aktuelnim futerom sa dve .footer-cta kartice
 - Provera da nisu odlutali (hešuje se blok iz sva tri fajla, sva tri moraju biti ista):
   ```
-  for f in index.html listanje.html oglas-primer.html; do printf "%-20s %s %s\n" "$f" \
+  for f in *.html; do printf "%-26s %s %s\n" "$f" \
     "$(sed -n '/^<header /,/^<\/header>/p' $f | md5sum | cut -c1-8)" \
     "$(sed -n '/^<footer /,/^<\/footer>/p' $f | md5sum | cut -c1-8)"; done
   ```
@@ -155,9 +163,8 @@ Videti "Varijacija #3" u sekciji "Varijacije dizajna".
      `body:has(#hero-spacer)` (postoji samo na index.html) i `body:has(.page-hero--flush)` 
      (postoji samo na listanje.html). Header markup mora ostati byte-identičan na sve tri 
      stranice, pa se per-page ponašanje ne sme pisati kao klasa u markupu nego se 
-     zaključuje iz onoga što je još na stranici. oglas-primer.html nosi običan 
-     `.page-hero` bez `--flush`, ne matchuje nijedan selektor, i traka mu je uvek puna - 
-     što tamo i treba. Ko pali `.is-solid` se razlikuje: na naslovnoj updateHero() na 
+     zaključuje iz onoga što je još na stranici. oglas-primer.html ima TREĆI 
+     marker, `body:has(.job-hero)` (hero sa fotografijom), i puni se čim skrol krene. Ko pali `.is-solid` se razlikuje: na naslovnoj updateHero() na 
      kraju snap pauze, na listanju trenutak kad panel sa rezultatima stigne do headera 
      (videti listanje.html niže) - ista klasa, dva različita okidača
    - pravilo je pisano kao `:not(.is-solid)`, dakle SKIDA fill umesto da ga crta. Zato puno 
@@ -611,7 +618,7 @@ Ranije je imala `rounded-b-[32px]` - UKLONJENO, ne vraćati.
   gubi od `[data-theme="dark"] .page-hero` (0,2,0), pa je flush hero u tamnoj varijanti 
   ipak dobijao staklenu podlogu (--dk-glass) I okvir. Zato je to pravilo suženo na 
   `[data-theme="dark"] .page-hero:not(.page-hero--flush)` - `:not()` je NOSEĆI, ne 
-  kozmetika. Traka na oglas-primer.html (`.page-hero` bez `--flush`) staklo i dalje ima
+  kozmetika. (Oglas više nema `.page-hero` traku, pa je to pravilo obrisano iz theme-dark.css)
 - ⚠ `.page-hero--flush` je I MARKER po kome header zna da na ovoj stranici startuje 
   providan (videti tačku 1 gore) - ne stavljati tu klasu na treću stranicu ako se ne misli 
   i to
@@ -666,7 +673,13 @@ naslovna primenjuje na kraju heroja. Search bar u tome NE učestvuje.
   srpsku množinu. Ako nema rezultata, prikazuje se prazno stanje umesto praznog grida
 - Dropdown-i su CUSTOM (job-filter.js, skin `hero`), ne <select> - native <option> 
   ignoriše padding/line-height na Windows Chrome-u
-- Vrsta "Posao u centrali" namerno ne vraća rezultate (u JOBS nizu žive samo lokali)
+- JOBS niz ima i 10 PRIMERA POZICIJA U CENTRALI (Beograd / Novi Sad; IT, marketing,
+  finansije, HR, pravo, podrška) - PLACEHOLDER. Većina ima `nocv: false`, pa kad se na
+  listanje stigne sa `?vrsta=centrala` (bez `?nocv=1`), prekidač "Bez CV-a" se GASI -
+  inače bi se videle samo 2 kartice. Ručna promena vrste u baru prekidač ne dira.
+  ⚠ Pozicije koje hero na naslovnoj šalje za centralu ("Marketing", "IT i razvoj"...) su
+  ODELJENJA, a filter poredi NAZIV pozicije - pa `?pozicija=` iz tog heroja ne pogađa
+  ništa (isti raskorak postoji i za lokale: "Operater u kladionici" vs "Operater u lokalu")
 
 ### Panel sa karticama
 `.jobs-panel` - background **#F4F4F4**, **margin 30px sa svih strana** (30px tamne trake 
@@ -768,24 +781,159 @@ se otvori nešto po tvojoj meri.") i žuta pilula "Prijavi se unapred".
 ### Query parametri (dolazak sa druge stranice)
 Listanje čita `?vrsta=lokali|centrala`, `?lokacija=...`, `?pozicija=...`, `?nocv=1` i 
 pretpodesi svoj bar. `vrsta` se postavlja PRVA jer ona rebuild-uje ostale dve liste.
-Šalju ih: hero "Pretraži" na naslovnoj i mali bar "Pretraži druge pozicije" na 
-oglas-primer.html. To je JEDAN ugovor za sve pozivaoce - ne uvoditi po jedan set ključeva 
+Šalje ih hero "Pretraži" na naslovnoj (mali bar "Pretraži druge pozicije" na 
+oglas-primer.html je uklonjen). To je JEDAN ugovor za sve pozivaoce - ne uvoditi po jedan set ključeva 
 po stranici (raniji `?grad=` je zamenjen sa `?lokacija=`).
 
 ## oglas-primer.html (template oglasa)
-Struktura: tamni hero (naziv pozicije, lokacija, tagovi "Smene 8h" i "Bez CV-ja", CTA 
-"Prijavi se sada", placeholder okvir "Foto zaposlenog") → beli panel sa opisom pozicije 
-→ tamna sekcija sa formom za prijavu → beli panel "Pretraži druge pozicije" → tri 
-kartice "Saznaj više o nama" → footer.
+Struktura: hero sa fotografijom (`.job-hero`) → DVE KOLONE (opis levo, prijava desno u 
+boxu) → footer. Panel "Pretraži druge pozicije" (mali `.jf-bar` koji je slao grad na 
+listanje preko ?lokacija=) je UKLONJEN na zahtev, sa svojim skriptom, `job-filter.js` 
+`<script>`-om na ovoj stranici i tamnim `.jf-bar` pravilima iz theme-dark.css.
+- **HERO** (`.job-hero`): `assets/oglas/hero.jpg` (1920x400, zgrada desno; zamenila raniji hero.webp 2000x667) PREKO CELE 
+  ŠIRINE, od vrha stranice - header leži preko nje. Visina **400px na desktopu** 
+  (traženo; min-height, pa poraste ako sadržaj ne stane), telefon 440px; `object-position: 80% center`. Slika se završava TVRDOM IVICOM - bez 
+  pretapanja u stranicu (maska je bila, uklonjena na zahtev, ne vraćati). Na telefonu tekst 
+  ide preko zgrade, pa `::after` nosi tamni veo (samo < 768px).
+  Sadržaj: link "Sve otvorene pozicije" → naslov → dve `.job-pill` (SAMO žuti stroke, bez 
+  popune): lokacija + radno vreme. UKLONJENO na zahtev: tag "Bez CV-ja", CTA "Prijavi se 
+  sada", placeholder "Foto zaposlenog", žuta linija lokacije ispod naslova
+- ⚠ `.job-hero` je i MARKER za providan header (treći selektor uz `#hero-spacer` i 
+  `.page-hero--flush` u styles.css). `.is-solid` pali skript na dnu stranice ČIM SKROL 
+  KRENE (scrollY > 0), isto kao naslovna u #3
+- **DVE KOLONE** (`lg:grid-cols-[minmax(0,1fr)_500px]`, ispod lg jedna ispod druge, opis 
+  prvi): levo `.job-desc` BEZ BOXA (tekst direktno na stranici, max 760px; h2 podnaslovi 
+  bold, liste `.job-list` sa žutom tačkom iz CSS-a). Odeljci: uvod / O poziciji / Šta će 
+  biti tvoji zadaci / Šta očekujemo / Kako izgleda rad u kompaniji Balkan Bet? / Dobro je 
+  da znaš. ⚠ "Zadaci" i "Šta očekujemo" su PLACEHOLDER - proveriti sa klijentom.
+  Desno `aside#prijava.job-apply` - box (rgba(14,13,14,.78), okvir white/10, radijus 24, 
+  telefon 20) sa formom. Naslov "Prijavi se za 1 minut" + rečenica "Bez CV-ja - ...". 
+  Dugme "Pošalji prijavu" je `bg-brand-cta` BEZ IKONICE (avion uklonjen na zahtev).
+  ⚠ STICKY na desktopu (traženo): `top: 97px` (header 73 + 24), samo pod
+  `@media (min-width: 1024px) and (min-height: 870px)` - box je visok 751px, pa bi na
+  nižem prozoru sticky zauvek odsekao dugme. Radi samo zato što je grid `items-start`.
+  Ako se box produži (nova polja), PREMERITI i podići prag visine.
+  Opis je STEGNUT na zahtev ("previše razvučeno"): prored 1.5 / liste 1.45, pasus 12px,
+  stavke 6px, podnaslov 36px iznad - ne vraćati na stare 1.65 / 18 / 12 / 48.
+  POLJA (traženo): Ime | Prezime, E-mail | Telefon (u paru), pa Datum rođenja i Priloži CV 
+  punom širinom. IZBAČENO na zahtev, ne vraćati: Pozicija, Lokacija, Obrazovanje, "Ukratko 
+  o prethodnom radnom iskustvu" i "Da li si ranije radio/la u Balkan Bet-u?"
+- Raniji `.page-hero` traka i panel prijave su OTIŠLI, pa je iz theme-dark.css obrisano 
+  njihovo staklo (`.page-hero:not(--flush)`) i pravilo za `#apply-done`
 - Forma NIŠTA ne šalje (nema backend): jedino pravilo je checkbox saglasnosti, submit 
   zamenjuje formu potvrdom "Hvala, javićemo ti se uskoro!"
 - Tagovi su BREND ŽUTI, ne zeleni kao na referentnoj slici - na sajtu nema zelene boje
-- Mali filter bar "Pretraži druge pozicije" ne filtrira ovde nego prosleđuje izabrani 
-  grad na listanje.html preko ?lokacija=... (listing ga pročita i pretpodesi). Isti set 
-  ključeva koji šalje i hero bar sa naslovne - videti "Query parametri" iznad
 - Sadržaj oglasa je iz klijentske reference; dupliran bullet iz reference je UKLONJEN 
   (8 bullet-a, svaki jednom). PAŽNJA: uvodni pasus kaže "90 lokala i 13 gradova Srbije" 
   (tako traži brief), a listing prikazuje 16 različitih gradova - proveriti sa klijentom
+
+## Unutrašnje strane (poslovi-u-lokalima.html, poslovi-u-centrali.html)
+(Drugi krug - Život, CSR, O kompaniji - opisan je u sledećoj sekciji.)
+Rađene po dve klijentove skice (sadržaj i redosled), ali NE prepisane: skice su zgusnute,
+a sajt "diše" - 120px između sekcija (60 na telefonu), tamna podloga sa aurorom, naslovi
+`.section-title` u dva reda sa drugim redom u brend žutoj (`.ip-title__accent`), žute
+CTA pilule (`.ip-btn`, #ffbb1a, rečenični slučaj) i tekst linkovi u verzalu (`.ip-link`).
+Header i futer sa skica se IGNORIŠU - stoje naši, byte-identični. Strane su IZGRAĐENE
+skriptom koji je header/futer/boot skript uzeo iz oglas-primer.html - posle toga se
+održavaju ručno kao i ostale.
+- ⚠ **NEMA FORME** (traženo; skica lokala je ima na dnu). Obe strane imaju dugme ka
+  listanju NA POČETKU (hero) i NA KRAJU (žuta traka `.ip-cta`): lokali →
+  `listanje.html?vrsta=lokali`, centrala → `listanje.html?vrsta=centrala`.
+  Listanje za "centrala" pokazuje 10 primera pozicija (videti "Panel sa karticama")
+- **Hero** (`.ip-hero`): fotografija desno (62% širine, od vrha, header preko nje), tekst
+  levo; leva strana slike se pretapa u podlogu heroja, DONJA ivica je tvrda. Na telefonu
+  slika ide preko celog kadra sa tamnim velom odozdo. `.ip-hero` je MARKER za providan
+  header (četvrti selektor u styles.css), `.is-solid` pali inner-pages.js čim skrol krene
+- **Aktivan link u navigaciji BEZ izmene headera**: `body:has(.ip-hero--lokali) header nav
+  a[href="poslovi-u-lokalima.html"]` (i isto za centralu) boji link žuto
+- Sekcije: `.ip-section` (aurora) i `.ip-section.ip-band` (puna #0e0d0e traka). Dve
+  uzastopne sekcije na aurori gube gornji padding (`:not(.ip-band) + :not(.ip-band)`), da
+  se razmak ne sabere u 240px
+- LOKALI: hero → "Više od posla operatera" (3 razloga + video kartica, pravi
+  BalkanBet.mp4 sa posterom, klik ga pušta) → mit/realnost traka (slajder, 3 para) →
+  galerija + kartica "Pronađi lokal" → pogodnosti 3x2 → izjave (3) → karijerni put (4
+  koraka) → česta pitanja (harmonika, 9) → žuta traka sa 3 koraka
+- CENTRALA: hero → timovi (3 foto kartice + linkovi ka ostalim timovima) →
+  mit/realnost → benefiti (3 istaknuta + 3 mala) → izjave (2) → žuta traka
+- **FOTOGRAFIJE SU KLIJENTOVE** (`assets/slike-unutrasnje-strane/*.zip`, PNG). Po njihovom
+  README-u to su AI rekonstrukcije motiva sa skica - NE stvarni zaposleni ni enterijeri.
+  Izvezene u WebP (q80, širina do 1672/1400/1200/1000) u `assets/lokali/` i
+  `assets/centrala/`, imena prate sekcije (hero, video-poster, galerija-*, kolega-*,
+  tim-*). Zipovi su ~30MB izvornog materijala - NE commitovati ih
+- Video na lokalima je i dalje BalkanBet.mp4 (snimak lokala), samo je poster nov
+- Izjave: imena, uloge i rečenice su SA SKICE (lokali: Marko Petrović, Ana Jovanović,
+  Milica Stojanović; centrala: Marija Petrović, Stefan Nikolić) - ilustrativne priče
+- Centrala timovi: tri foto kartice (IT razvoj / Marketing / Operacije, 5:4) + red tekst
+  linkova (Finansije, Ljudski resursi, Pravna služba, Ostali timovi), kao na skici
+- Hero NA TELEFONU: fotografija je gornjih 58% kadra, tekst ispod nje - preko celog kadra
+  naslov je pokrivao likove
+- ⚠ PLACEHOLDER TEKST: odgovori u čestim pitanjima, slajdovi mit/realnost 2 i 3, benefiti
+  centrale (sa skice) - proveriti
+- Skica lokala ima mapu Srbije u kartici "Pronađi lokal" - nemamo je, pa kartica nosi
+  pin + gradove kao čipove; skica centrale ima video uz izjave - nemamo ih, fotografije
+- Telefon: izjave (lokali) i timovi postaju vodoravni skroler kao "Najnovije pozicije";
+  karijerni put ide uspravno sa linijom. IZMERENO bez horizontalnog skrola na 320/390/900
+
+## Unutrašnje strane, drugi krug (zivot-u-balkan-betu.html, csr.html, o-kompaniji.html)
+Isti sistem i ista pravila kao lokali/centrala (videti prethodnu sekciju); nove komponente
+su u styles.css pod "UNUTRAŠNJE STRANE, DRUGI KRUG". Strane su izgrađene skriptom koji je
+sve do `<main>` i od `</main>` uzeo iz poslovi-u-lokalima.html.
+- Aktivan link: `.ip-hero--zivot` / `--csr` / `--kompanija`. `.ip-hero--short` je niži
+  hero za strane bez tagova
+- ŽIVOT: hero → "Kako je kada si Balkanac?" (široka video kartica + citat) → "Tri razloga"
+  (3 stuba sa fotografijom i tagovima) → "Šta se dešava u našem timu?" (velika priča + 3
+  manje, `.ip-stories`) → žuta izjava (`.ip-cta--center`) → "Tvoj put" sa ISTE DVE
+  `.footer-cta` KARTICE kao #razvoj na naslovnoj (`.ip-cta-pair`, traženo; ovde vode na
+  poslovi-u-lokalima / poslovi-u-centrali). Raniji `.ip-paths` je otišao iz markupa (CSS
+  ostao). DESKTOP IZMENE (traženo): hero BEZ dugmadi i tagova (`.ip-hero--short`),
+  slika na 73% - četvrta osoba (u zelenom) samo izviruje; glave sve četiri sekcije
+  centrirane (`.ip-head--center`) sa naslovom u JEDNOM redu
+- CSR: hero → "Uz Olimpijski tim Srbije" (tekst + slajder fotografija `.ip-slides`, isti
+  `[data-slider]` pogon) → 4 oblasti (`.ip-areas`) → projekti u naizmeničnim redovima
+  (`.ip-feature`) → vesti (`.ip-stories` sa datumima) → kontakt forma
+- O KOMPANIJI: hero → "Ko smo mi" (`.ip-split` + `.ip-duo`) i "Naš način rada" (`.ip-ways`)
+  → vremenska linija (`[data-timeline]`: godine su dugmad, panel i fotografija se
+  pretapaju) → partneri → rukovodstvo (`.ip-leaders`) → kontakt forma sa linkom ka listanju
+- KONTAKT FORMA (CSR, O kompaniji): box je `.job-apply` sa oglasa (ovde NIJE sticky), polja
+  `.fld`. NIŠTA ne šalje - proverava se samo saglasnost, pa potvrda (`form[data-contact]`,
+  vrednost atributa je id bloka sa potvrdom)
+- Dve uzastopne `.ip-band` trake gube gornji padding (vesti → kontakt, rukovodstvo →
+  kontakt), isto kao dve sekcije na aurori
+- **FOTOGRAFIJE SU KLIJENTOVE** (zipovi `balkan-bet-kultura/csr/o-kompaniji-...` u
+  `assets/slike-unutrasnje-strane/` - AI rekonstrukcije, NE stvarni ljudi ni prostori),
+  izvezene u WebP u `assets/zivot/`, `assets/csr/`, `assets/kompanija/`. Panoramski
+  heroji (2048x768) se u `.ip-hero` seku na desni kadar - object-position je štimovan po
+  strani (Život 62%, CSR 78%, O kompaniji 58%)
+- **BOJAN ŠĆEKIĆ** ima fotografiju koju je klijent poslao posebno
+  (`assets/kompanija/rukovodstvo-izvrsni-direktor.webp`), BEZ citata (uklonjen na
+  zahtev). AI portret "izvršni direktor" iz paketa se NE koristi. Ostalih pet članova
+  rukovodstva su AI portreti iz paketa. (`.ip-leader__bg` / `.is-cutout` u CSS-u su
+  ostali od ranijeg izreza i trenutno se ne koriste)
+- **O KOMPANIJI, desktop (traženo):** hero BEZ dugmeta ("Upoznaj Balkan Bet" uklonjen);
+  fotografija ima `object-position: 79%` (u markupu) - tri lika u kadru, a ČETVRTI
+  (desno) samo IZVIRUJE na ivici (traženo tako; probana šira slika sa sva četiri je
+  odbijena).
+  "Naši partneri" je CENTRIRAN, jedno ispod drugog (`.ip-partners--center`): tag, naslov
+  u JEDNOM redu (na telefonu se lomi), podnaslov, pa krupniji logotipi u redu.
+  Glava "Rukovodstva" je centrirana (`.ip-head--center`), naslov "Ko vodi Balkan Bet?" u
+  JEDNOM redu. "Naš način rada" ima KLIJENTOVE IKONICE umesto brojeva 01-03
+  (`assets/kompanija/nas-nacin-rada-svg.zip`): žuti krug je izbačen, glif je inline SVG
+  MASKA preko pravougaonika u currentColor (`.ip-way__icon`, #FDB813) - žuti detalji
+  originala su rupe kroz koje se vidi stranica. Između "Ko smo mi" i "Naš način rada" NEMA linije
+  (uklonjena na zahtev)
+- Kontakt sekcije (CSR, O kompaniji) imaju fotografiju enterijera u pozadini
+  (`.ip-band--photo` + `img.ip-band__bg`, opacity .14 / telefon .10 - zatamnjeno na
+  zahtev, bilo .22 / .14; važi i za CSR). Takva traka VRAĆA
+  gornji padding i kad dolazi posle druge trake - ivica fotografije je granica sekcije
+- ⚠ ZA PROVERU SA KLIJENTOM (sve je sa skica): rukovodstvo - IMENA I FUNKCIJE OSIM BOJANA
+  ŠĆEKIĆA NISU POTVRĐENA (a lica su AI); godine na vremenskoj liniji;
+  partneri (od logotipa imamo SAMO olimpijski - Merkur, Dynamic i Fondacija Ana i Vlade
+  Divac su tipografske oznake); "10 miliona dinara · 2024", datumi vesti, partnerstvo od
+  2023; kontakt telefon ("Telefon kompanije" kao na skici); "1999" se ne slaže sa "25
+  godina" na naslovnoj
+- Linkovi bez odredišta (`#`): priče na Životu, vesti na CSR-u, "Vodič za odgovorno
+  igranje", biografije rukovodstva. "Saznaj više" kod CSR projekata vodi na #vesti, a
+  "Pročitaj pismo našeg direktora" na index.html#direktor
 
 ## Animirana pozadina (globalna)
 ⚠ `.animated-bg::after` je DITHER sloj i NE SME se brisati. Blobovi su tvrdi krugovi 
@@ -1053,8 +1201,8 @@ Mehanika je namerno ista kao kod teme, jer je dokazano dobra na ovom projektu:
   variation-3.js (markup ostaje u redosledu #1, koja ne sme da zavisi od JS-a), PRE glavnog 
   skripta - zato se variation-3.js učitava pre njega, da measureImpact meri već pomerenu 
   sekciju. `margin-top: -130vh` se u #3 gasi. Kartica "Posao u centrali" dobija STATIČNU 
-  sliku `assets/bb-zivot/centrala-kadar.jpg` - kadar iz istog snimka (ffmpeg, 3.5s), 
-  `object-position: center 32%`
+  sliku `assets/zivot/put-centrala.webp` (ista kao na kartici na Životu - traženo; ranije
+  `centrala-kadar.jpg`, kadar iz videa), `object-position: center 30%`
 - SAKRIVENO u #3: #openings ("Najnovije pozicije"), loptica, #proces
 - Pomoćne klase u variation-3.css: `.v3-only` (vidi se samo u #3) i `.v3-hide` (svuda 
   osim u #3); sekcije #direktor i #ljudi krije `html:not([data-var="3"])`

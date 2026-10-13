@@ -30,11 +30,11 @@
   if (video) {
     var img = document.createElement('img');
     img.className = 'footer-cta__media';
-    img.src = 'assets/bb-zivot/centrala-kadar.jpg';
+    img.src = 'assets/zivot/put-centrala.webp';
     img.alt = 'Balkan Bet centrala';
-    // Kadar je uspravan (9:16), a kartica položena — bez ovoga bi cover
-    // isekao sredinu i odsekao lica.
-    img.style.objectPosition = 'center 32%';
+    // Ista fotografija kao na zivot-u-balkan-betu.html (traženo); položen
+    // kadar 3:2, lica su u gornjoj polovini.
+    img.style.objectPosition = 'center 30%';
     video.replaceWith(img);
   }
 

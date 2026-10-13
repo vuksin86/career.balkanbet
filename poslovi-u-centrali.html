@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<!-- data-theme="dark" i data-var="3" STOJE U MARKUPU i važe od prvog pixela,
+     isto kao na ostalim stranama (videti index.html). -->
+<html lang="sr" data-theme="dark" data-var="3">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Balkan Bet | Poslovi u centrali</title>
+<meta name="description" content="Posao u centrali Balkan Beta: IT, ljudski resursi, marketing, finansije i još mnogo timova.">
+
+<!-- ==========================================================================
+     SHARED SETUP — identično ostalim stranama. Komponente ove strane su u
+     styles.css pod "UNUTRAŠNJE STRANE" (prefiks .ip-), ponašanje u
+     inner-pages.js.
+========================================================================== -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="brand-setup.js"></script>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="theme-dark.css">
+<script>
+  /* PREKIDAČ VARIJACIJE — boot deo.
+
+     Radi OBRNUTO od ranije verzije: varijacija #2 se više ne pali odavde (za to
+     je atribut u markupu, koji važi i pre JS-a i bez njega), nego se ovde SKIDA
+     kada je tražena #1.
+
+     Mora ostati u <head>-u i pre <body>-ja: skidanje atributa kasnije, npr. na
+     DOMContentLoaded, daje vidljiv blesak varijacije #2 pre #1.
+
+     Prioritet: ?var= iz URL-a pobeđuje zapamćeni izbor, da se varijacija može
+     nekome poslati kao link koji uvek otvara ono što u njemu piše. */
+  (function () {
+    // Ključ je NOV (bb-varijacija, ranije bb-var): ko je ranije prekidačem
+    // izabrao #2, imao bi je zapamćenu i nikad ne bi video novu primarnu #3.
+    var url = new URLSearchParams(location.search).get('var');
+    var saved = null;
+    try { saved = localStorage.getItem('bb-varijacija'); } catch (e) { /* privatni režim */ }
+    var v = url || saved;
+    if (v === '1') document.documentElement.removeAttribute('data-var');
+    else if (v === '2') document.documentElement.setAttribute('data-var', '2');
+    if (url) { try { localStorage.setItem('bb-varijacija', url); } catch (e) {} }
+  })();
+</script>
+</head>
+
+<body class="font-sans text-brand-dark antialiased overflow-x-hidden">
+
+<div class="animated-bg" aria-hidden="true">
+  <span class="animated-bg__blob animated-bg__blob--1"></span>
+  <span class="animated-bg__blob animated-bg__blob--2"></span>
+  <span class="animated-bg__blob animated-bg__blob--3"></span>
+</div>
+
+<!-- ============================================================================
+     HEADER — full-bleed bar, fixed to the very top of the viewport.
+
+     Was a floating pill (top-6, max-w-[1300px], rounded-full, border all round)
+     until the client asked for edge-to-edge with no radius. The glass fill and
+     backdrop blur stay — it still has to sit over the hero video — but the ring
+     border is now a bottom hairline only: on a full-bleed bar the left/right/top
+     edges of a full border land on the screen edges and read as an artefact.
+
+     ⚠ SHARED BLOCK — this exact markup is duplicated BYTE-FOR-BYTE in
+     listanje.html and oglas-primer.html (no build step here, and a static
+     mockup should not need JS to draw its own navigation). index.html is the
+     source of truth: edit here first, then copy this comment and the whole
+     header element across unchanged. Nothing page-specific goes in it — no
+     per-page active state, no per-page hrefs — so the copies cannot drift.
+     (Do not write a literal closing header/footer tag inside these comments:
+     the sync is done by matching from the banner to the first closing tag.)
+
+     NOTE for dev handoff: the "#" hrefs are placeholders. Swap them for real
+     paths once the rest of the site exists, e.g.:
+       O kompaniji            -> o-kompaniji.html   (POVEZANO)
+       Život u Balkan Betu    -> zivot-u-balkan-betu.html   (POVEZANO)
+       Poslovi u lokalima     -> poslovi-u-lokalima.html   (POVEZANO)
+       Poslovi u centrali     -> poslovi-u-centrali.html   (POVEZANO)
+       CSR                    -> csr.html   (POVEZANO)
+       Kontakt                -> kontakt.html
+============================================================================ -->
+<header class="fixed top-0 inset-x-0 z-50">
+  <div class="w-full flex items-center justify-between gap-5
+              bg-brand-dark/40 backdrop-blur-md border-b border-white/20
+              pl-5 pr-5 md:pl-[30px] md:pr-[30px] py-5 md:py-3">
+
+    <!-- Logo — 48px tall on desktop: the 60px it had, reduced 20% on request
+         (and 60 was itself 51.2px raised on request). The bar has no fixed
+         height of its own: it is the logo plus the wrapper's py-3, so the
+         header is 48 + 24 = 72px (+1px bottom hairline) on desktop.
+         NA TELEFONU je to ISTI, SLOŽENI oblik ("BALKAN" i "BET" u dva reda) —
+         traženo; horizontalni oblik (BalkanBetLogo-horizontal.svg) se sada
+         koristi samo u futeru na telefonu. Visina je min(40px, 10.2vw): ~40px
+         na 390px (bilo 44, smanjeno 10% na zahtev), a na užim ekranima pada sa
+         širinom da oba logotipa i burger uvek stanu u red (računica ispod). -->
+    <!-- GENERALNI SPONZOR OLIMPIJSKOG TIMA SRBIJE — drugi logo, desno od
+         našeg, odvojen tankom belom linijom na 50% (traženo tako). Nije deo
+         linka na početnu: to je oznaka sponzorstva, ne naš znak.
+         VIDI SE NA TELEFONU (< 768px) I OD 1400px, a NE između:
+         - desktop: nav (šest linkova) meri 769px, BB logo 131px, CTA 156px, a
+           separator + znak od 34px (172px) + dva razmaka od 18px još 209px —
+           ukupno ~1380px, pa između 768 i 1400px za njega nema mesta
+         - telefon: nav i CTA su sakriveni, u redu su samo logotipi i burger.
+           BB ~40px (108px širine) + 12+1+12 + znak ~26px (132px; uvećan 10% na
+           zahtev) = ~265px. Obe visine su vezane i za vw (10.2vw / 6.7vw), pa
+           odnos ostaje isti i na 320px.
+         ⚠ Sve je u klasama, nijedno pravilo u styles.css — header je duplikat
+         na tri stranice i mora ostati byte-identičan. -->
+    <div class="flex items-center shrink-0">
+      <a href="index.html" class="flex items-center shrink-0" aria-label="Balkan Bet početna">
+        <img src="assets/logo/BalkanBetLogo.svg" alt="Balkan Bet" class="h-[min(40px,10.2vw)] md:h-[48px] w-auto">
+      </a>
+      <span class="block md:hidden min-[1400px]:block w-px h-[min(30px,7.7vw)] md:h-10 mx-3 md:mx-[18px] bg-white/50" aria-hidden="true"></span>
+      <img src="assets/logo/olimp-generalni-sponzor.svg" alt="Generalni sponzor Olimpijskog tima Srbije"
+           class="block md:hidden min-[1400px]:block h-[min(26px,6.7vw)] md:h-[34px] w-auto">
+    </div>
+
+    <!-- Nav links (desktop) — uppercase via CSS only, HTML text stays sentence case.
+         STOJI DESNO, UZ CTA (traženo): `ml-auto` ga gura do dugmeta umesto da
+         ga justify-between centrira između logotipa i CTA-a. Razmak do CTA-a je
+         gap-5 trake + mr-3 = 32px — samih 20px (koliko je i između linkova)
+         lepilo je poslednji link za pilulu. -->
+    <nav class="hidden md:flex items-center gap-5 ml-auto md:mr-3 text-base font-medium uppercase text-white whitespace-nowrap">
+      <a href="o-kompaniji.html" class="hover:text-brand-yellow transition-colors">O kompaniji</a>
+      <a href="zivot-u-balkan-betu.html" class="hover:text-brand-yellow transition-colors">Život u Balkan Betu</a>
+      <a href="poslovi-u-lokalima.html" class="hover:text-brand-yellow transition-colors">Poslovi u lokalima</a>
+      <a href="poslovi-u-centrali.html" class="hover:text-brand-yellow transition-colors">Poslovi u centrali</a>
+      <a href="csr.html" class="hover:text-brand-yellow transition-colors">CSR</a>
+      <a href="#" class="hover:text-brand-yellow transition-colors">Kontakt</a>
+    </nav>
+
+    <!-- CTA — flat brand yellow + white text, same fill as the "Prijavi se"
+         buttons on the job cards. Sentence case on purpose: this is the one
+         CTA on the page that is NOT set uppercase.
+         This is one of the entry points into the listing page (together with
+         every "Pretraži" / "Pogledaj sve pozicije" on the site). -->
+    <a href="listanje.html" class="hidden md:block bg-brand-cta shrink-0 text-white rounded-full px-6 py-3 text-base font-bold hover:brightness-95 transition-all whitespace-nowrap cursor-pointer">
+      Pronađi posao
+    </a>
+
+    <!-- BURGER — stoji TAČNO NA MESTU CTA dugmeta, samo na telefonu: ispod md
+         se "Pronađi posao" gasi (`hidden`) a ovo se pali. Tri oble debele crte i
+         ništa više, traženo tako.
+         ⚠ Sve je pisano Tailwind klasama, bez ijednog pravila u styles.css —
+         header je duplikat na tri stranice i mora ostati byte-identičan, pa je
+         jedan izvor (markup) manje mesta gde stranice mogu da se raziđu.
+         Za sada NE OTVARA meni (mobilna navigacija još ne postoji); `aria-expanded`
+         stoji da bi ga imalo šta menjati kad panel stigne.
+         Mere su 24x18px sa crtama od 3px — to je prethodnih 34x26/4px umanjeno za
+         30%, traženo tako. Razmak crta drži `justify-between`, pa ostaje tačno
+         (18 − 3×3) / 2 = 4.5px i ne mora da se zaokružuje na celu vrednost. -->
+    <button type="button" aria-label="Otvori meni" aria-expanded="false"
+            class="md:hidden flex flex-col justify-between w-6 h-[18px] shrink-0 cursor-pointer">
+      <span class="block w-full h-[3px] rounded-full bg-white"></span>
+      <span class="block w-full h-[3px] rounded-full bg-white"></span>
+      <span class="block w-full h-[3px] rounded-full bg-white"></span>
+    </button>
+  </div>
+</header>
+
+<main>
+<!-- ============================================================================
+     HERO — fotografija desno, od vrha stranice; header leži preko nje.
+     Fotografije su klijentove (assets/slike-unutrasnje-strane/*.zip — AI
+     rekonstrukcije motiva sa skica, NE stvarni zaposleni i enterijeri;
+     izvezene u WebP u assets/lokali/ i assets/centrala/).
+     `.ip-hero--centrala` pali aktivan link "Poslovi u centrali".
+============================================================================ -->
+<section class="ip-hero ip-hero--centrala">
+  <div class="ip-hero__media">
+    <img src="assets/centrala/hero.webp" alt="" style="object-position: 62% center;">
+  </div>
+
+  <div class="ip-hero__inner ip-wrap">
+    <span class="ip-eyebrow">Poslovi u centrali</span>
+    <h1 class="ip-hero__title">Tvoja struka.<br><span class="ip-title__accent">Naš zajednički potez.</span></h1>
+    <p class="ip-hero__lead">Različite veštine. Zajednička ambicija. Pronađi svoj tim u Balkan Betu.</p>
+
+    <div class="ip-hero__actions">
+      <a href="listanje.html?vrsta=centrala" class="ip-btn">
+        Pogledaj otvorene pozicije
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
+      </a>
+      <a href="#timovi" class="ip-link">
+        Upoznaj timove
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+      </a>
+    </div>
+
+    <ul class="ip-tags">
+      <li>Tehnologija</li>
+      <li>Kreativnost</li>
+      <li>Podrška poslovanju</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================================
+     NAŠI TIMOVI — tri kartice sa fotografijom + red linkova ka ostalim timovima
+     Fotografije su klijentove (assets/slike-unutrasnje-strane/*.zip — AI
+     rekonstrukcije motiva sa skica, NE stvarni zaposleni i enterijeri;
+     izvezene u WebP u assets/lokali/ i assets/centrala/).
+============================================================================ -->
+<section id="timovi" class="ip-section">
+  <div class="ip-wrap">
+    <div class="ip-head reveal">
+      <div>
+        <span class="ip-eyebrow">Naši timovi</span>
+        <h2 class="section-title ip-title font-medium uppercase text-white">Različiti talenti.<br><span class="ip-title__accent">Isti tim.</span></h2>
+      </div>
+      <p class="ip-lead">Upoznaj ljude i oblasti koje pokreću Balkan Bet — iza svakog lokala stoji tim iz centrale.</p>
+    </div>
+
+    <div class="ip-teams reveal">
+      <a href="listanje.html?vrsta=centrala" class="ip-team">
+        <img src="assets/centrala/tim-it.webp" alt="" loading="lazy" style="object-position: 62% center;">
+        <div class="ip-team__body">
+          <h3>IT razvoj</h3>
+          <span class="ip-team__go">Upoznaj tim
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
+          </span>
+        </div>
+      </a>
+      <a href="listanje.html?vrsta=centrala" class="ip-team">
+        <img src="assets/centrala/tim-marketing.webp" alt="" loading="lazy" style="object-position: 55% center;">
+        <div class="ip-team__body">
+          <h3>Marketing</h3>
+          <span class="ip-team__go">Upoznaj tim
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
+          </span>
+        </div>
+      </a>
+      <a href="listanje.html?vrsta=centrala" class="ip-team">
+        <img src="assets/centrala/tim-operacije.webp" alt="" loading="lazy" style="object-position: 45% center;">
+        <div class="ip-team__body">
+          <h3>Operacije</h3>
+          <span class="ip-team__go">Upoznaj tim
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
+          </span>
+        </div>
+      </a>
+    </div>
+
+    <ul class="ip-teamlinks reveal">
+      <li><a href="listanje.html?vrsta=centrala" class="ip-link">Finansije <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></a></li>
+      <li><a href="listanje.html?vrsta=centrala" class="ip-link">Ljudski resursi <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></a></li>
+      <li><a href="listanje.html?vrsta=centrala" class="ip-link">Pravna služba <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></a></li>
+      <li><a href="listanje.html?vrsta=centrala" class="ip-link">Ostali timovi <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg></a></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================================
+     MIT / REALNOST — traka sa slajderom (inner-pages.js, [data-slider])
+============================================================================ -->
+<section class="ip-section ip-band" data-slider aria-roledescription="slajder" aria-label="Mit i realnost">
+  <div class="ip-wrap">
+    <span class="ip-eyebrow">Mit / realnost</span>
+    <div class="ip-myth">
+      <div class="ip-myth__stage">
+        <div class="ip-myth__slide is-active" data-slide>
+          <p class="ip-myth__myth">To je samo privremeni posao.</p>
+          <div class="ip-myth__fact">
+            <h3>Ovde se grade dugogodišnje karijere.</h3>
+            <p>Znanje, inicijativa i podrška tima otvaraju prostor za tvoj sledeći korak.</p>
+          </div>
+        </div>
+        <div class="ip-myth__slide" data-slide>
+          <p class="ip-myth__myth">U velikoj firmi se ideje izgube.</p>
+          <div class="ip-myth__fact">
+            <h3>Tvoje ideje stižu do lokala.</h3>
+            <p>Ono što napraviš u centrali vidi se u preko 90 lokala širom Srbije.</p>
+          </div>
+        </div>
+        <div class="ip-myth__slide" data-slide>
+          <p class="ip-myth__myth">Kladionica je samo kladionica.</p>
+          <div class="ip-myth__fact">
+            <h3>Iza svega stoji tehnologija.</h3>
+            <p>Sistemi, podaci, marketing i finansije — posao za ljude iz najrazličitijih struka.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ip-nav">
+        <button type="button" class="ip-nav__btn" data-prev aria-label="Prethodno">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <button type="button" class="ip-nav__btn" data-next aria-label="Sledeće">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <span class="ip-nav__count" data-count></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     BENEFITI — tri istaknuta + tri manja
+     ⚠ Sadržaj je sa klijentove skice (6h petkom, 1 dan od kuće, voće,
+     benefiti za decu, tim bildinzi) — potvrditi da važi za sve u centrali.
+============================================================================ -->
+<section class="ip-section">
+  <div class="ip-wrap">
+    <div class="ip-head reveal">
+      <div>
+        <span class="ip-eyebrow">Benefiti za zaposlene</span>
+        <h2 class="section-title ip-title font-medium uppercase text-white">Dobar posao.<br><span class="ip-title__accent">Još bolji uslovi.</span></h2>
+      </div>
+      <p class="ip-lead">Prostor za razvoj. Vreme za život.</p>
+    </div>
+
+    <div class="ip-benefits reveal">
+      <div class="ip-benefit ip-benefit--accent">
+        <svg class="ip-benefit__icon" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"/><path d="M22 9v6"/></svg>
+        <h3>Edukacije i obuke</h3>
+        <p>Obuke, kursevi i konferencije za tvoj profesionalni razvoj — učiš od najboljih i deliš znanje dalje.</p>
+      </div>
+      <div class="ip-benefit">
+        <div class="ip-benefit__big">6h
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </div>
+        <h3>Petkom kraće radno vreme</h3>
+        <p>Više vremena za tvoj vikend.</p>
+      </div>
+      <div class="ip-benefit">
+        <div class="ip-benefit__big">1
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9v11h14V9"/><path d="M10 20v-6h4v6"/></svg>
+        </div>
+        <h3>Dan rada od kuće</h3>
+        <p>Nedeljno, za pozicije kojima priroda posla to dozvoljava.</p>
+      </div>
+    </div>
+
+    <div class="ip-minis reveal">
+      <div class="ip-mini">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FDB813" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7c-1-2.5-4-3-6-1.5S3 10 4 14c1 4 3.5 7 6 7 1 0 1.5-.5 2-.5s1 .5 2 .5c2.5 0 5-3 6-7s0-7-2-8.5S13 4.5 12 7z"/><path d="M12 7c0-2 1-3.5 3-4"/></svg>
+        <div><h3>Voće ponedeljkom i sredom</h3><p>Sveže voće u kancelariji.</p></div>
+      </div>
+      <div class="ip-mini">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FDB813" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="6.5" r="2.5"/><circle cx="16.5" cy="9" r="2"/><path d="M3.5 20v-3a4.5 4.5 0 0 1 9 0v3"/><path d="M13.5 20v-2a3 3 0 0 1 6 0v2"/></svg>
+        <div><h3>Benefiti za decu</h3><p>Podrška zaposlenima sa decom.</p></div>
+      </div>
+      <div class="ip-mini">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FDB813" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="6" r="2.5"/><circle cx="5" cy="9" r="2"/><circle cx="19" cy="9" r="2"/><path d="M7.5 20v-2a4.5 4.5 0 0 1 9 0v2"/><path d="M1.5 19v-1a3.5 3.5 0 0 1 5-3.2M22.5 19v-1a3.5 3.5 0 0 0-5-3.2"/></svg>
+        <div><h3>Tim bildinzi</h3><p>Zajednički trenuci i van kancelarije.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     KOJA JE NAJBOLJA STVAR KOD TVOG POSLA? — dve izjave
+     Imena, uloge i izjave su sa klijentove skice (ilustrativne priče).
+     Skica ima video uz izjave; snimaka nemamo, pa su fotografije.
+     Fotografije su klijentove (assets/slike-unutrasnje-strane/*.zip — AI
+     rekonstrukcije motiva sa skica, NE stvarni zaposleni i enterijeri;
+     izvezene u WebP u assets/lokali/ i assets/centrala/).
+============================================================================ -->
+<section class="ip-section ip-band">
+  <div class="ip-wrap">
+    <div class="ip-head reveal">
+      <div>
+        <span class="ip-eyebrow">Iz prve ruke</span>
+        <h2 class="section-title ip-title font-medium uppercase text-white">Koja je najbolja stvar<br><span class="ip-title__accent">kod tvog posla?</span></h2>
+      </div>
+      <p class="ip-lead">Odgovori kolega iz centrale.</p>
+    </div>
+
+    <div class="ip-voices reveal">
+      <figure class="ip-voice">
+        <img src="assets/centrala/kolega-marija.webp" alt="" loading="lazy" style="object-position: 40% 30%;">
+        <figcaption class="ip-voice__body">
+          <svg width="34" height="26" viewBox="0 0 34 26" fill="#FDB813" aria-hidden="true"><path d="M0 26V15.6C0 6.9 4.6 1.7 13 0l1.6 3.4C9.9 5 7.6 8 7.4 12H14v14H0zm19.4 0V15.6C19.4 6.9 24 1.7 32.4 0L34 3.4C29.3 5 27 8 26.8 12h6.6v14h-14z"/></svg>
+          <p class="ip-voice__text">Sloboda da eksperimentišem i tim od kog svakog dana učim.</p>
+          <p class="ip-voice__name">Marija Petrović</p>
+          <p class="ip-voice__role">Senior Developer · IT razvoj</p>
+        </figcaption>
+      </figure>
+      <figure class="ip-voice">
+        <img src="assets/centrala/kolega-stefan.webp" alt="" loading="lazy" style="object-position: 62% 30%;">
+        <figcaption class="ip-voice__body">
+          <svg width="34" height="26" viewBox="0 0 34 26" fill="#FDB813" aria-hidden="true"><path d="M0 26V15.6C0 6.9 4.6 1.7 13 0l1.6 3.4C9.9 5 7.6 8 7.4 12H14v14H0zm19.4 0V15.6C19.4 6.9 24 1.7 32.4 0L34 3.4C29.3 5 27 8 26.8 12h6.6v14h-14z"/></svg>
+          <p class="ip-voice__text">Najbolje ideje nastaju kada ih gradimo zajedno.</p>
+          <p class="ip-voice__name">Stefan Nikolić</p>
+          <p class="ip-voice__role">Marketing menadžer · Marketing</p>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     ZAVRŠNI CTA — žuta traka; vodi na listanje (forme ovde NEMA, traženo)
+============================================================================ -->
+<section class="ip-cta">
+  <div class="ip-wrap">
+    <div class="ip-cta__row reveal">
+      <div>
+        <h2>Sledeći potez<br>je tvoj.</h2>
+        <p class="ip-cta__lead">Pronađi svoju priliku u centrali.</p>
+      </div>
+      <a href="listanje.html?vrsta=centrala" class="ip-btn ip-btn--dark">
+        Pogledaj otvorene pozicije
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================================================================
+     FOOTER — gornji deo (logo, linkovi, 18+) + zaključna žuta traka
+
+     ⚠ SHARED BLOCK — same rule as the header above: this exact markup is
+     duplicated BYTE-FOR-BYTE in listanje.html and oglas-primer.html.
+     index.html is the source of truth; edit here, then copy this comment and
+     the whole footer element across unchanged.
+
+     DVA DELA: gornji na tamnoj podlozi (logo + opis, kolone Karijera /
+     Kompanija / Kontakt — po klijentovoj referenci) i žuta traka.
+     Dve .footer-cta kartice koje su nekad otvarale futer su PRESELJENE u
+     sekciju #razvoj ("Tvoj prostor za razvoj") na index.html. ⚠ Zato ih na
+     listanje.html i oglas-primer.html nema — ako ikad zatrebaju i tamo,
+     sekcija #razvoj se kopira, ne futer.
+
+     No .panel-overlap: the bar is a real coloured band, and a visible top edge
+     riding 48px up over the section above it would read as a mistake — on
+     listanje.html it would cover the bottom of the results panel. Losing the
+     overlap makes everything above the footer sit 48px looser.
+
+     FULL-BLEED (the bar's fill has to reach both screen edges), with its own
+     1440/px-16 wrapper inside — that is what lines the content up with every
+     section above.
+============================================================================ -->
+<footer class="relative z-20">
+  <!-- GORNJI DEO FUTERA — logo + opis, tri kolone linkova.
+       Po klijentovoj referenci; stoji IZNAD žute trake, na PUNOJ TAMNOJ
+       podlozi od ivice do ivice (.footer-main — ista boja kao "Balkan Bet
+       izbliza" u varijaciji #3). Napomena 18+ koja je bila ispod kolona je
+       uklonjena na zahtev.
+       Stil: .footer-main / .footer-top / .footer-col u styles.css.
+       Linkovi su isti placeholderi (#) kao u navigaciji headera — kad stranice
+       dobiju svoje putanje, menjaju se na OBA mesta. -->
+  <div class="footer-main">
+  <div class="max-w-[1440px] mx-auto px-8 md:px-16">
+    <div class="footer-top">
+      <div>
+        <!-- Telefon: HORIZONTALNI oblik ("BALKAN BET" u jednom redu), traženo;
+             desktop: složeni. Dva <img>-a iz istog razloga kao u headeru. -->
+        <a href="index.html" class="inline-block" aria-label="Balkan Bet početna">
+          <img src="assets/logo/BalkanBetLogo-horizontal.svg" alt="Balkan Bet" class="md:hidden h-[41px] w-auto">
+          <img src="assets/logo/BalkanBetLogo.svg" alt="" aria-hidden="true" class="hidden md:block h-[56px] w-auto">
+        </a>
+        <p class="footer-about">Karijerni sajt Balkan Bet-a. Otkrij prilike u tehnologiji, operacijama i našim lokalima širom regiona.</p>
+      </div>
+
+      <nav class="footer-col" aria-label="Karijera">
+        <h3 class="footer-col__title"><button type="button" class="footer-col__toggle" aria-expanded="true">Karijera<svg class="footer-col__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></h3>
+        <div class="footer-col__panel"><div>
+          <ul>
+            <li><a href="poslovi-u-lokalima.html">Poslovi u lokalima</a></li>
+            <li><a href="poslovi-u-centrali.html">Poslovi u centrali</a></li>
+            <li><a href="zivot-u-balkan-betu.html">Život u Balkan Betu</a></li>
+          </ul>
+        </div></div>
+      </nav>
+
+      <nav class="footer-col" aria-label="Kompanija">
+        <h3 class="footer-col__title"><button type="button" class="footer-col__toggle" aria-expanded="true">Kompanija<svg class="footer-col__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></h3>
+        <div class="footer-col__panel"><div>
+          <ul>
+            <li><a href="o-kompaniji.html">O kompaniji</a></li>
+            <li><a href="csr.html">CSR</a></li>
+            <li><a href="#">Kontakt</a></li>
+          </ul>
+        </div></div>
+      </nav>
+
+      <div class="footer-col">
+        <h3 class="footer-col__title"><button type="button" class="footer-col__toggle" aria-expanded="true">Kontakt<svg class="footer-col__chevron" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></h3>
+        <div class="footer-col__panel"><div>
+          <ul>
+            <li><a href="mailto:karijera@balkanbet.rs">karijera@balkanbet.rs</a></li>
+            <li>Beograd, Srbija</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- CLOSING BAR — everything the footer still has to say, on ONE line: legal
+       left, socials centred, credit right. Three grid slots rather than
+       justify-between, so the socials are centred against the FOOTER and not
+       against whatever the two side texts happen to measure.
+
+       This is the only part of the footer that takes a fill (see .footer-bar in
+       theme-dark.css — solid yellow there, nothing in the light theme, where it
+       reads as a rule under the cards instead).
+
+       The "Prati nas" heading above the icons is gone: four recognisable glyphs
+       on their own line do not need to be announced, and the label was the only
+       thing keeping this from fitting on one line. The aria-labels stay, so
+       nothing was lost for screen readers.
+
+       .footer-legal is the hook the dark theme needs: on the yellow band this
+       text goes dark and the all-white Smartweb logo has to flip with it. -->
+  <!-- ⚠ BEZ mt-16. Ta margina je bila razmak od CTA kartica koje su nekad
+       otvarale futer; kartice su otišle u #razvoj, pa je ostajala kao čist
+       višak povrh razmaka koji sekcija iznad ionako ima (120px + 64px = 184px
+       do žute trake, čitalo se kao rupa). Razmak sada u celosti drži sekcija
+       iznad, kao i između svih ostalih sekcija. -->
+  <div class="footer-bar py-8 border-t border-white/20">
+    <div class="max-w-[1440px] mx-auto px-8 md:px-16">
+      <div class="reveal footer-legal grid grid-cols-1 sm:grid-cols-3 items-center gap-6 text-white/80 text-xs text-center">
+        <p class="sm:justify-self-start">&copy;2026 Balkan Bet. Sva prava zadržana.</p>
+
+        <div class="flex items-center justify-center gap-4 sm:justify-self-center">
+          <a href="#" aria-label="LinkedIn" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer font-bold text-sm">in</a>
+          <a href="#" aria-label="Instagram" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/><circle cx="18" cy="6" r="1.2" fill="currentColor"/></svg>
+          </a>
+          <a href="#" aria-label="Facebook" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer font-bold">f</a>
+          <a href="#" aria-label="YouTube" class="w-11 h-11 rounded-full bg-white text-brand-dark flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors cursor-pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="4" stroke="currentColor" stroke-width="2"/><path d="M10 9L15 12L10 15V9Z" fill="currentColor"/></svg>
+          </a>
+        </div>
+
+        <span class="sm:justify-self-end inline-flex items-center justify-center gap-2">
+          Dizajn i razvoj
+          <!-- smartweb-logo.svg is already all-white (fill="#fff"), so it needs
+               no filter in the light theme. Height is in em so it tracks this
+               row's font size. -->
+          <img src="assets/logo/smartweb-logo.svg" alt="Smartweb" class="h-[1.15em] w-auto">
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HARMONIKA KOLONA (Karijera / Kompanija / Kontakt) — samo na telefonu.
+       Skript stoji OVDE, u samom futeru, a ne u skriptu stranice: futer je
+       byte-identičan na sve tri stranice, pa se tako i ponašanje kopira sa
+       njim i ne može da se raziđe. Na desktopu su kolone uvek otvorene (CSS),
+       naslov je običan tekst (tabindex -1), a aria-expanded kaže "true".
+       Kolone kreću ZATVORENE na telefonu. -->
+  <script>
+    (function () {
+      var mq = window.matchMedia('(max-width: 767px)');
+      var cols = Array.prototype.slice.call(document.querySelectorAll('.footer-col'));
+      function sync() {
+        cols.forEach(function (col) {
+          var btn = col.querySelector('.footer-col__toggle');
+          btn.setAttribute('aria-expanded', mq.matches ? String(col.classList.contains('is-open')) : 'true');
+          btn.tabIndex = mq.matches ? 0 : -1;
+        });
+      }
+      cols.forEach(function (col) {
+        col.querySelector('.footer-col__toggle').addEventListener('click', function () {
+          if (!mq.matches) return;
+          col.classList.toggle('is-open');
+          sync();
+        });
+      });
+      if (mq.addEventListener) mq.addEventListener('change', sync);
+      sync();
+    })();
+  </script>
+</footer>
+
+<script src="inner-pages.js"></script>
+</body>
+</html>

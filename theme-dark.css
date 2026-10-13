@@ -343,36 +343,23 @@
      ⚠ FORMA NE TRAŽI NIŠTA. `.fld`, `.fld-label`, `.fld-file` su od početka
      crtani kao SVETLI blokovi (rgba(255,255,255,.08)) na tamnoj podlozi, jer je
      panel prijave oduvek bio taman — pa rade i na staklu ispod bez ijedne
-     izmene. Isto važi za `.page-hero` hero traku i za sve žute akcente.
+     izmene. Isto važi za sve žute akcente.
 
-     Ostaju tačno dve stvari: dva BELA panela (opis pozicije i "Pretraži druge
-     pozicije") i beli `.jf-bar` u drugom od njih.
+     Na oglasu više NEMA ničega za ovaj fajl: opis stoji bez boxa, a panel
+     "Pretraži druge pozicije" sa `.jf-bar` je uklonjen (pa su obrisana i
+     njegova tamna pravila).
   ======================================================================== */
 
-  /* Dve tamne trake stranice (hero i panel prijave, obe `.page-hero`) prelaze
-     sa punog #231F20 na isto staklo koje nose #impact i kartice pozicija, pa se
-     cela stranica čita kao isti materijal i aurora se nazire kroz nju.
-     Corner glow (`.page-hero::after`) se NE dira — žuti radial na staklu radi
-     isto što je radio i na punoj podlozi.
+  /* `.page-hero` traka i panel prijave više NE POSTOJE na ovoj stranici
+     (hero je sada fotografija `.job-hero`, prijava je box `.job-apply`), pa
+     je njihovo staklo obrisano. `.job-hero` / `.job-apply` su pisani za
+     tamnu podlogu direktno u styles.css. */
 
-     ⚠ `:not(.page-hero--flush)` JE NOSEĆE, ne kozmetika. Hero na listanju nosi
-     obe klase, a `background: none` iz `.page-hero--flush` (0,1,0) gubi od ovog
-     selektora — pa je flush hero, koji u svetloj temi stoji golo na aurori, u
-     tamnoj ipak dobijao staklenu podlogu I okvir. Traženo je da tamo NEMA
-     nikakve podloge, u obe varijante. Pravilo zato važi samo za `.page-hero`
-     koje zaista ima svoju traku, tj. za oglas-primer.html. */
-  [data-theme="dark"] .page-hero:not(.page-hero--flush) {
-    background: var(--dk-glass);
-    border: 1px solid var(--dk-line);
-  }
-
-  /* --- Dva bela panela ---------------------------------------------------
-     Opis pozicije i "Pretraži druge pozicije" su jedine bele površine na ovoj
-     stranici. Za razliku od panela sa rezultatima na listanju (koji OSTAJE
-     svetao namerno, jer je tamo sadržaj zbog kog stranica postoji), ovde je
-     bela ploča samo pozadina teksta — na tamnoj stranici bi bila blesak usred
-     čitanja oglasa. Selektor je `section.bg-white`, dovoljno jednoznačan: to su
-     jedina dva takva elementa u fajlu.
+  /* --- `section.bg-white` → tamno staklo --------------------------------
+     Pisano za bele panele oglasa, kojih tamo VIŠE NEMA (opis je bez boxa,
+     "Pretraži druge pozicije" je uklonjen). ⚠ NE BRISATI: isti selektor
+     hvata i `#impact` na index.html (`section ... bg-white`), pa bi brisanje
+     promenilo naslovnu. Zato i #direktor namerno NEMA klasu bg-white.
   --------------------------------------------------------------------- */
   [data-theme="dark"] section.bg-white {
     background: var(--dk-glass);
@@ -383,42 +370,6 @@
   [data-theme="dark"] section.bg-white .text-brand-dark { color: var(--dk-ink); }
   [data-theme="dark"] section.bg-white .text-brand-dark\/80 { color: var(--dk-ink-2); }
   [data-theme="dark"] section.bg-white .text-brand-dark\/60 { color: var(--dk-ink-3); }
-
-  /* --- Filter bar "Pretraži druge pozicije" ------------------------------
-     Beli `.jf-bar` sa sivim poljima. Postaje tamna pločica na staklu; senka mu
-     se gasi jer na skoro crnoj podlozi ne radi ništa osim što blati ivicu.
-     ⚠ OPSEG: ova pravila NE SMEJU da dohvate sortiranje na listanju — ono stoji
-     na svetlom panelu koji ostaje svetao. Zato sve ide kroz `.jf-bar`, koji
-     postoji SAMO na ovoj stranici; `.jf-field--solid` sa listanja nije u njemu.
-  --------------------------------------------------------------------- */
-  [data-theme="dark"] .jf-bar {
-    background: var(--dk-card);
-    border: 1px solid var(--dk-line);
-    box-shadow: none;
-  }
-  [data-theme="dark"] .jf-bar .jf-field { background: rgba(255,255,255,.06); }
-  [data-theme="dark"] .jf-bar .jf-label { color: var(--dk-ink-3); }
-  [data-theme="dark"] .jf-bar .jf-trigger { color: var(--dk-ink); }
-  [data-theme="dark"] .jf-bar .jf-check { color: var(--dk-ink); }
-  [data-theme="dark"] .jf-bar .jf-check__box { border-color: rgba(255,255,255,.35); }
-  /* Meni je zaseban sloj nad barom, pa nosi svoju punu podlogu — providan bi
-     propuštao tekst ispod sebe. */
-  [data-theme="dark"] .jf-bar .jf-menu {
-    background: var(--dk-card);
-    border: 1px solid var(--dk-line);
-    box-shadow: 0 20px 50px rgba(0,0,0,.55);
-  }
-  [data-theme="dark"] .jf-bar .jf-option { color: var(--dk-ink); }
-  [data-theme="dark"] .jf-bar .jf-option:hover { background: rgba(255,255,255,.08); }
-  /* Izabrani red ostaje ŽUT sa tamnim tekstom — isto kao u svetloj temi, i isto
-     kao `.hero-search__option.is-selected` inverzija. Bez ovoga bi nasledio
-     `--dk-ink` odozgo i dao svetao tekst na žutom. */
-  [data-theme="dark"] .jf-bar .jf-option.is-selected { color: #231F20; }
-
-  /* Potvrda posle slanja i placeholder okvir za fotografiju su `bg-white/5` —
-     svetle staklene pločice, isti materijal koji je u futeru zamenjen. Ovde se
-     poravnavaju sa ostatkom teme. */
-  [data-theme="dark"] #apply-done { background: var(--dk-glass); }
 
   /* ##########################################################################
      PREKIDAČ VARIJACIJE — demo kontrola, NIJE deo dizajna sajta
