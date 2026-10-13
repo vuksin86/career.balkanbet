@@ -1133,15 +1133,16 @@
      telefon i desktop). Traženo po referenci: tamna providna podloga bara,
      tamna providna polja, tekst u poljima NIJE bold, a "Pretraži" je žuto
      dugme sa bold tekstom. Raniji žuti okvir sa belim pločicama je otišao.
-     ⚠ Vezano za #hero-search-block — isti komponent na listanje.html
-     (.search-band) zadržava žuti okvir i bele pločice.
+     Važi i za bar na listanje.html (.search-band) — traženo da bude ISTI kao
+     na naslovnoj, pa su selektori `:is(#hero-search-block, .search-band)`
+     (specifičnost ostaje id-nivo). Raniji žuti okvir na listanju je otišao.
      Žuta je #ffbb1a (brand.cta), ista kao svako drugo žuto dugme na sajtu.
      Širine polja i dugmeta su i dalje JEDNAKE (raniji eksplicitan zahtev) —
      na referenci je dugme uže; to je jedna linija (grid-template-columns).
      Padajući meni ostaje beo: otvara se preko videa, a beo panel sa tamnim
      tekstom je čitljiv na svakom kadru.
   ======================================================================== */
-  #hero-search-block .hero-search {
+  :is(#hero-search-block, .search-band) .hero-search {
     gap: 12px;
     padding: 14px;
     border: 1px solid rgba(255,255,255,.12);
@@ -1151,28 +1152,28 @@
     backdrop-filter: blur(14px);
     box-shadow: 0 20px 44px rgba(0,0,0,.25);
   }
-  #hero-search-block .hero-search__tab {
+  :is(#hero-search-block, .search-band) .hero-search__tab {
     border: 1px solid rgba(255,255,255,.14);
     border-radius: 10px;
     background: rgba(0,0,0,.35);
     transition: border-color .2s ease, background-color .2s ease;
   }
-  #hero-search-block .hero-search__tab:hover,
-  #hero-search-block .hero-search__tab.is-open {
+  :is(#hero-search-block, .search-band) .hero-search__tab:hover,
+  :is(#hero-search-block, .search-band) .hero-search__tab.is-open {
     border-color: rgba(255,255,255,.32);
     background: rgba(0,0,0,.5);
   }
-  #hero-search-block .hero-search__trigger { border-radius: 10px; }
-  #hero-search-block .hero-search__label { color: rgba(255,255,255,.55); }
-  #hero-search-block .hero-search__value { color: #FFFFFF; font-weight: 400; }
-  #hero-search-block .hero-search__chevron { color: #FFFFFF; }
-  #hero-search-block .hero-search__submit {
+  :is(#hero-search-block, .search-band) .hero-search__trigger { border-radius: 10px; }
+  :is(#hero-search-block, .search-band) .hero-search__label { color: rgba(255,255,255,.55); }
+  :is(#hero-search-block, .search-band) .hero-search__value { color: #FFFFFF; font-weight: 400; }
+  :is(#hero-search-block, .search-band) .hero-search__chevron { color: #FFFFFF; }
+  :is(#hero-search-block, .search-band) .hero-search__submit {
     border-radius: 10px;
     background: #ffbb1a;
     color: #231F20;
     font-weight: 700;
   }
-  #hero-search-block .hero-search__submit:hover { filter: brightness(1.06); }
+  :is(#hero-search-block, .search-band) .hero-search__submit:hover { filter: brightness(1.06); }
 
   /* One full-width row per control. grid-auto-flow: row + auto rows, so each
      tile is as tall as it needs to be instead of sharing one track height. */
@@ -2606,12 +2607,11 @@
        "Lokacija", "Pozicija") se gase, ostaje samo vrednost. Tri padajuća
        polja su 40px sa vrednošću od 14px, "Pretraži" je 45px i 16px. Bar
        time meri 3×40 + 45 + 3×8 + 2×10 + 2 (okvir) = 211px.
-       ⚠ Vezano za #hero-search-block, pa ISTA komponenta na listanje.html
-       (.search-band) ostaje kakva jeste.
+       Važi i za listanje.html (.search-band) — bar je isti kao na naslovnoj.
        Labela se krije SAMO VIZUELNO (ne display: none) — čitač ekrana i dalje
        čuje "Lokacija, Sve lokacije", a ne samo golu vrednost.
     ---------------------------------------------------------------------- */
-    #hero-search-block .hero-search__label {
+    :is(#hero-search-block, .search-band) .hero-search__label {
       position: absolute;
       width: 1px;
       height: 1px;
@@ -2619,15 +2619,15 @@
       clip: rect(0 0 0 0);
       white-space: nowrap;
     }
-    #hero-search-block .hero-search__trigger,
-    #hero-search-block .hero-search__submit {
+    :is(#hero-search-block, .search-band) .hero-search__trigger,
+    :is(#hero-search-block, .search-band) .hero-search__submit {
       padding-top: 0;
       padding-bottom: 0;
     }
-    #hero-search-block .hero-search { gap: 8px; padding: 10px; border-radius: 14px; }
-    #hero-search-block .hero-search__trigger { height: 40px; }
-    #hero-search-block .hero-search__value { font-size: 14px; }
-    #hero-search-block .hero-search__submit { height: 45px; font-size: 16px; }
+    :is(#hero-search-block, .search-band) .hero-search { gap: 8px; padding: 10px; border-radius: 14px; }
+    :is(#hero-search-block, .search-band) .hero-search__trigger { height: 40px; }
+    :is(#hero-search-block, .search-band) .hero-search__value { font-size: 14px; }
+    :is(#hero-search-block, .search-band) .hero-search__submit { height: 45px; font-size: 16px; }
 
     /* ----------------------------------------------------------------------
        NASLOVI SEKCIJA: 34px na telefonu (traženo; bilo 28). Na 34px se duži
@@ -3533,7 +3533,7 @@
     justify-content: space-between;
     gap: 40px 64px;
   }
-  .ip-cta h2 {
+  .ip-cta h2:not(.section-title) {
     font-size: clamp(2rem, 4.4vw, 3.5rem);
     font-weight: 500;
     line-height: 1.02;
@@ -4116,6 +4116,32 @@
      stvar pred futerom i nema šta da prati. */
   .ip-contact .job-apply { position: static; }
 
+  /* --- CSR, desktop krug (traženo) ---------------------------------------
+     Krupan znak "Generalni sponzor Olimpijskog tima Srbije" ispod naslova
+     "Uz Olimpijski tim Srbije." */
+  .ip-sponsor { display: block; height: 64px; width: auto; margin-top: 28px; }
+  /* Klijentove linijske ikonice oblasti — boja dolazi kroz currentColor. */
+  .ip-area__icon { display: block; margin-inline: auto; color: #FDB813; }
+  /* Završni CTA na centrali: naslov je .section-title (ista veličina/težina kao
+     ostali naslovi), dugme ispod. Zato je `.ip-cta h2` suženo na `:not(.section-title)`. */
+  .ip-cta--center .section-title { line-height: 1.1; }
+  .ip-cta__btn { margin-top: 36px; }
+
+  /* --- Poslovi u lokalima, desktop krug (traženo) --------------------------
+     Ikonice umesto brojeva u "Zašto lokal" (isti postupak kao .ip-way__icon). */
+  .ip-why__icon { display: block; color: #FDB813; }
+
+  /* Česta pitanja centrirana: glava iznad, lista u sredini. Redovi zadržavaju
+     pitanje levo i "+" desno — centriran tekst sa ikonicom na kraju reda bi
+     svaki red pomerao drugačije. */
+  .ip-faq--center { grid-template-columns: 1fr; gap: 0; }
+  .ip-faq--center .ip-faq__list { width: 100%; max-width: 880px; margin-inline: auto; }
+
+  /* Proces u 4 koraka (kopija #proces sa naslovne): pozornica iste širine kao
+     tamo (1200 − 2×64 = 1072px), pa kompozicija ispada iste veličine. */
+  .ip-proces { max-width: 1072px; margin-inline: auto; }
+  .ip-proces__cta { margin-top: 72px; text-align: center; }
+
   /* ==========================================================================
      TABLET / TELEFON — drugi krug
   ========================================================================== */
@@ -4156,6 +4182,17 @@
     .ip-ways__title { padding-top: 40px; }
     .ip-way, .ip-way + .ip-way { padding: 24px 0 0; border-left: 0; grid-template-columns: 68px 1fr; }
     .ip-way__icon { width: 52px; height: 52px; }
+    .ip-why__icon { width: 44px; height: 44px; }
+    /* LISTANJE na telefonu: bar i panel na 20px od ivica ekrana (kao hero bar
+       na naslovnoj), panel tanjeg unutrašnjeg paddinga — sa 30+30px kartice
+       su bile uske 270px. `body` / `>` dižu specifičnost iznad Tailwindovih
+       `px-[30px]` i `rounded-[32px]` u markupu. */
+    .search-band > div { padding-left: 20px; padding-right: 20px; }
+    body .jobs-panel { margin: 30px 20px; padding: 20px 14px; border-radius: 20px; }
+    .ip-sponsor { height: 48px; margin-top: 22px; }
+    .ip-area__icon { width: 52px; height: 52px; }
+    .ip-cta__btn { margin-top: 28px; }
+    .ip-proces__cta { margin-top: 48px; }
     .ip-way .ip-why__num { font-size: 34px; }
     .ip-areas { grid-template-columns: 1fr; }
     .ip-area, .ip-area + .ip-area { padding: 28px 0; border-left: 0; border-top: 1px solid rgba(255,255,255,.12); }

@@ -626,8 +626,10 @@ Ranije je imala `rounded-b-[32px]` - UKLONJENO, ne vraćati.
 - z-30 na traci (a z-10 na panelu ispod)
 
 ### Search bar - u `.search-band`
-IDENTIČAN naslovnoj, sada bez ijedne razlike - ista `.hero-search` komponenta (žuti #FDB913 
-okvir, tri bela taba, crno dugme "Pretraži") i NIŠTA VIŠE. Checkbox "Bez CV-ja" koji je 
+IDENTIČAN naslovnoj, sada bez ijedne razlike - ista `.hero-search` komponenta i ISTI TAMNI
+PROVIDNI SKIN (traženo; žuti okvir sa belim pločicama je otišao i odavde). Skin pravila su
+pisana kao `:is(#hero-search-block, .search-band) .hero-search...`, pa važe za oba bara,
+uključujući mobilno skrivanje labela. Ostalo važi i dalje: Checkbox "Bez CV-ja" koji je 
 ovde bio četvrta pločica je ISELJEN u toolbar sa rezultatima i pretvoren u prekidač 
 (videti niže); `.hero-search__check` / `.hero-search__box` CSS je OBRISAN iz styles.css. 
 Raniji beli `.jf-bar` na ovoj stranici je odavno UKLONJEN, kao i rečenica ispod njega.
@@ -682,6 +684,10 @@ naslovna primenjuje na kraju heroja. Search bar u tome NE učestvuje.
   ništa (isti raskorak postoji i za lokale: "Operater u kladionici" vs "Operater u lokalu")
 
 ### Panel sa karticama
+⚠ NA TELEFONU (< 768px) su bar i panel 20px od ivica ekrana, panel ima 20/14px padding i
+radijus 20 (bilo 30px margine + 30px padding - kartice su bile uske 270px, sada 322px na
+390). Pravila su `.search-band > div` i `body .jobs-panel` u mobilnom bloku - `body`/`>`
+dižu specifičnost iznad Tailwindovih klasa u markupu.
 `.jobs-panel` - background **#F4F4F4**, **margin 30px sa svih strana** (30px tamne trake 
 se vidi iznad njega i 30px sa obe strane ekrana) + 30px unutrašnjeg padinga + 
 `rounded-[32px]` (isti radijus kao svi paneli na naslovnoj). BEZ `.panel-overlap` - taj 
@@ -851,8 +857,20 @@ održavaju ručno kao i ostale.
   se razmak ne sabere u 240px
 - LOKALI: hero → "Više od posla operatera" (3 razloga + video kartica, pravi
   BalkanBet.mp4 sa posterom, klik ga pušta) → mit/realnost traka (slajder, 3 para) →
-  galerija + kartica "Pronađi lokal" → pogodnosti 3x2 → izjave (3) → karijerni put (4
-  koraka) → česta pitanja (harmonika, 9) → žuta traka sa 3 koraka
+  galerija + kartica "Pronađi lokal" → pogodnosti 3x2 → izjave (3) → "Tvoj novi posao
+  počinje ovde" (proces u 4 koraka + CTA) → česta pitanja (6, centrirano) → futer.
+  DESKTOP KRUG (traženo): hero bez "Upoznaj posao" i tagova, CTA bez strelice, slika
+  `object-position: right` (momak ceo u kadru), `.ip-hero--short`. "Zašto lokal" ima
+  klijentove IKONICE umesto 01-03 (`assets/lokali/zasto-lokal-ikonice-svg.zip`, maska u
+  currentColor, `.ip-why__icon`). Glave Radno okruženje / Pogodnosti / Iz prve ruke /
+  Česta pitanja su centrirane, naslov u jednom redu. "Karijerni put" i žuta traka su
+  UKLONJENI. Na njihovom mestu je `#proces-lokali` - ISTA rukom pisana kompozicija kao
+  `#proces` na naslovnoj (CSS `#proces-stage` / `.proc-*` je zajednički; pogon je kopija
+  measureProcess/updateProcess u inner-pages.js, na window.scrollY). ⚠ NE davati joj
+  id="proces" - variation-3.css ga krije. Koraci: Pronađi poziciju / Prijavi se bez CV-a /
+  Razgovor sa timom / Prvi dan u lokalu (labele dužinom bliske originalu, --x/--y
+  prepisani). Česta pitanja: izbačeni proces selekcije, prelazak u centralu, benefiti;
+  redovi ostaju pitanje levo / "+" desno, lista je centrirana (max 880px)
 - CENTRALA: hero → timovi (3 foto kartice + linkovi ka ostalim timovima) →
   mit/realnost → benefiti (3 istaknuta + 3 mala) → izjave (2) → žuta traka
 - **FOTOGRAFIJE SU KLIJENTOVE** (`assets/slike-unutrasnje-strane/*.zip`, PNG). Po njihovom
@@ -863,8 +881,17 @@ održavaju ručno kao i ostale.
 - Video na lokalima je i dalje BalkanBet.mp4 (snimak lokala), samo je poster nov
 - Izjave: imena, uloge i rečenice su SA SKICE (lokali: Marko Petrović, Ana Jovanović,
   Milica Stojanović; centrala: Marija Petrović, Stefan Nikolić) - ilustrativne priče
-- Centrala timovi: tri foto kartice (IT razvoj / Marketing / Operacije, 5:4) + red tekst
-  linkova (Finansije, Ljudski resursi, Pravna služba, Ostali timovi), kao na skici
+- Centrala timovi: tri foto kartice (IT razvoj / Marketing / Operacije, 5:4). Red tekst
+  linkova (Finansije, Ljudski resursi, Pravna služba, Ostali timovi) je UKLONJEN na zahtev
+  (`.ip-teamlinks` CSS ostao)
+- CENTRALA, završni CTA (`.ip-cta.ip-cta--center`): SAMO naslov "Sledeći potez je tvoj."
+  (`.section-title` - ista veličina i težina kao svi naslovi; zato je `.ip-cta h2` suženo
+  na `:not(.section-title)`) i tamno dugme bez strelice, centrirano. Rečenica ispod je
+  uklonjena
+- CENTRALA, DESKTOP KRUG (traženo): hero bez "Upoznaj timove" i tagova, CTA bez strelice,
+  `.ip-hero--short`, slika na 76% (pomerena levo - plava koleginica cela u kadru). Glave
+  Naši timovi / Benefiti / Iz prve ruke su centrirane (`.ip-head--center`), naslov u
+  jednom redu
 - Hero NA TELEFONU: fotografija je gornjih 58% kadra, tekst ispod nje - preko celog kadra
   naslov je pokrivao likove
 - ⚠ PLACEHOLDER TEKST: odgovori u čestim pitanjima, slajdovi mit/realnost 2 i 3, benefiti
@@ -890,7 +917,14 @@ sve do `<main>` i od `</main>` uzeo iz poslovi-u-lokalima.html.
   centrirane (`.ip-head--center`) sa naslovom u JEDNOM redu
 - CSR: hero → "Uz Olimpijski tim Srbije" (tekst + slajder fotografija `.ip-slides`, isti
   `[data-slider]` pogon) → 4 oblasti (`.ip-areas`) → projekti u naizmeničnim redovima
-  (`.ip-feature`) → vesti (`.ip-stories` sa datumima) → kontakt forma
+  (`.ip-feature`) → vesti (`.ip-stories` sa datumima) → kontakt forma.
+  DESKTOP KRUG (traženo): hero slika `object-position: right` (momak sa kutijom ceo u
+  kadru), CTA bez strelice; ispod naslova "Uz Olimpijski tim Srbije." krupan znak
+  `olimp-generalni-sponzor.svg` (`.ip-sponsor`, 64px / telefon 48px); glave Naše
+  vrednosti / Projekti / Iz naših akcija centrirane, naslov u jednom redu; oblasti imaju
+  klijentove linijske ikonice (`assets/csr/odgovornost-ikonice-svg.zip`, inline,
+  stroke currentColor, `.ip-area__icon`; maska treće ikonice preimenovana u
+  `csr-ikona-3-mask`)
 - O KOMPANIJI: hero → "Ko smo mi" (`.ip-split` + `.ip-duo`) i "Naš način rada" (`.ip-ways`)
   → vremenska linija (`[data-timeline]`: godine su dugmad, panel i fotografija se
   pretapaju) → partneri → rukovodstvo (`.ip-leaders`) → kontakt forma sa linkom ka listanju
@@ -1384,8 +1418,8 @@ POSTOJEĆI hero video sa search barom, umesto njihove slike.
 Po klijentovoj referenci: bar je tamno staklo (rgba(14,13,14,.55) + blur 14px, okvir
 white/12, radijus 16), polja su tamna providna (rgba(0,0,0,.35), okvir white/14), tekst u
 poljima NIJE bold (400) i beo, "Pretraži" je ŽUTO dugme #ffbb1a sa tamnim bold tekstom.
-Raniji žuti okvir sa belim pločicama je otišao. ⚠ Sve je vezano za `#hero-search-block` -
-isti komponent na listanje.html ZADRŽAVA žuti okvir. Širine su i dalje JEDNAKE (raniji
+Raniji žuti okvir sa belim pločicama je otišao. Važi i za bar na listanje.html
+(`:is(#hero-search-block, .search-band)`). Širine su i dalje JEDNAKE (raniji
 zahtev); na referenci je dugme uže. Labele polja na desktopu ostaju (white/55). Meni ostaje beo.
 
 ## Ujednačenost naslova i razmaka (varijacija #3, IZMERENO)

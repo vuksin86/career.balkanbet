@@ -116,6 +116,50 @@
     });
   });
 
+  /* PROCES U 4 KORAKA (Poslovi u lokalima) — ista mehanika kao
+     measureProcess/updateProcess u index.html, samo čita window.scrollY
+     (unutrašnje strane nemaju Lenis). Svaki .proc-ink, redom iz markupa, dobija
+     --w 0→1; CSS od toga pravi masku preko slova i dashoffset na strelicama.
+     Pisanje kreće kad vrh kompozicije pređe donju ivicu za PROC_LEAD, a ceo run
+     traje pola ekrana skrola. */
+  (function () {
+    var stage = document.getElementById('proces-stage');
+    if (!stage) return;
+    var inks = Array.prototype.slice.call(stage.querySelectorAll('.proc-ink'));
+    var PROC_LEAD = 70;
+    stage.querySelectorAll('.proc-arrow path').forEach(function (path) {
+      path.style.setProperty('--len', path.getTotalLength().toFixed(1));
+    });
+    var start = 0, run = 1, active = inks, span = 1, gap = 1, queued = false;
+    function clamp(v, a, b) { return Math.min(b, Math.max(a, v)); }
+    function measure() {
+      var vh = window.innerHeight;
+      start = stage.getBoundingClientRect().top + window.scrollY + PROC_LEAD - vh;
+      run = clamp(vh * 0.5, 280, 520);
+      // Osigurač sa naslovne: run mora da stane u preostali skrol.
+      var maxScroll = Math.max(0, document.documentElement.scrollHeight - vh);
+      start = Math.min(start, maxScroll - run);
+      // Na telefonu su strelice display:none — izlaze i iz redosleda.
+      active = inks.filter(function (el) { return el.getClientRects().length > 0; });
+      inks.forEach(function (el) { if (active.indexOf(el) < 0) el.style.setProperty('--w', '1'); });
+      span = Math.min(1, 1.15 / Math.max(1, active.length));
+      gap = (1 - span) / Math.max(1, active.length - 1);
+    }
+    function update() {
+      queued = false;
+      var progress = reduceMotion ? 1 : clamp((window.scrollY - start) / run, 0, 1);
+      active.forEach(function (el, i) {
+        el.style.setProperty('--w', clamp((progress - i * gap) / span, 0, 1).toFixed(3));
+      });
+    }
+    function onScroll() { if (!queued) { queued = true; requestAnimationFrame(update); } }
+    measure(); update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', function () { measure(); update(); });
+    window.addEventListener('load', function () { measure(); update(); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measure(); update(); });
+  })();
+
   /* ==========================================================================
      PREKIDAČ VARIJACIJE — demo kontrola za prikaz klijentu, nije deo dizajna.
      Isti blok kao na dnu index.html, listanje.html i oglas-primer.html; ovde

@@ -163,13 +163,14 @@
      Fotografije su klijentove (assets/slike-unutrasnje-strane/*.zip — AI
      rekonstrukcije motiva sa skica, NE stvarni zaposleni i enterijeri;
      izvezene u WebP u assets/lokali/ i assets/centrala/).
-     object-position drži oba lika u kadru kad se slika seče.
+     object-position right: pomereno tako da momak desno uđe CEO u kadar
+     (traženo). "Upoznaj posao", tagovi i strelica u CTA-u su uklonjeni.
      `.ip-hero--lokali` pali aktivan link "Poslovi u lokalima" u navigaciji
      (CSS, bez izmene headera).
 ============================================================================ -->
-<section class="ip-hero ip-hero--lokali">
+<section class="ip-hero ip-hero--lokali ip-hero--short">
   <div class="ip-hero__media">
-    <img src="assets/lokali/hero.webp" alt="" style="object-position: 68% center;">
+    <img src="assets/lokali/hero.webp" alt="" style="object-position: right center;">
   </div>
 
   <div class="ip-hero__inner ip-wrap">
@@ -178,21 +179,8 @@
     <p class="ip-hero__lead">Posao blizu tebe. Tim uz tebe. Prostor da napreduješ.</p>
 
     <div class="ip-hero__actions">
-      <a href="listanje.html?vrsta=lokali" class="ip-btn">
-        Pogledaj otvorene pozicije
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
-      </a>
-      <a href="#zasto" class="ip-link">
-        Upoznaj posao
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
-      </a>
+      <a href="listanje.html?vrsta=lokali" class="ip-btn">Pogledaj otvorene pozicije</a>
     </div>
-
-    <ul class="ip-tags">
-      <li>Rad blizu kuće</li>
-      <li>Podrška tima</li>
-      <li>Mogućnost napredovanja</li>
-    </ul>
   </div>
 </section>
 
@@ -208,23 +196,57 @@
       <h2 class="section-title ip-title font-medium uppercase text-white">Više od posla<br><span class="ip-title__accent">operatera.</span></h2>
       <p class="ip-lead mt-5">Zašto je bolje nego što očekuješ?</p>
 
+      <!-- Ikonice su klijentove (assets/lokali/zasto-lokal-ikonice-svg.zip): krug
+           izbačen, glif je MASKA u currentColor (žuto) — isti postupak kao
+           "Naš način rada" na O kompaniji. -->
       <ol class="ip-why__list">
         <li class="ip-why__item">
-          <span class="ip-why__num">01</span>
+          <svg class="ip-why__icon" width="56" height="56" viewBox="80 80 352 352" aria-hidden="true">
+            <mask id="zasto-lokal-1" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+              <g fill="none">
+              <circle cx="280" cy="169" r="61" fill="#fff"/>
+              <path d="M280 145v48m-24-24h48" stroke="#000" stroke-width="15" stroke-linecap="round"/>
+              <rect x="92" y="284" width="51" height="111" rx="12" fill="#fff"/>
+              <path d="m158 284 35-26c12-9 27-10 40-4l55 26c13 6 19 19 12 31l68-38c13-7 29-3 36 10s2 28-10 36l-111 68c-9 6-20 8-31 8h-94V284Z" fill="#fff"/>
+              <path d="m214 287 51 23c11 5 23 5 34 0" stroke="#000" stroke-width="12" stroke-linecap="round"/>
+              </g>
+            </mask>
+            <rect width="512" height="512" fill="currentColor" mask="url(#zasto-lokal-1)"/>
+          </svg>
           <div>
             <h3 class="ip-why__name">Bakšiš</h3>
             <p class="ip-why__desc">Dodatna zarada uz redovnu platu, svakog meseca.</p>
           </div>
         </li>
         <li class="ip-why__item">
-          <span class="ip-why__num">02</span>
+          <svg class="ip-why__icon" width="56" height="56" viewBox="80 80 352 352" aria-hidden="true">
+            <mask id="zasto-lokal-2" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+              <g fill="none">
+              <circle cx="256" cy="161" r="35" fill="#fff"/>
+              <path d="M192 378V261c0-38 26-62 64-62s64 24 64 62v117H192Z" fill="#fff"/>
+              <path d="m168 284 39-43m98 0 39 43" stroke="#fff" stroke-width="24" stroke-linecap="round"/>
+              <path d="M99 385v-58c0-36 23-59 57-59s57 23 57 59v58H99Zm200 0v-58c0-36 23-59 57-59s57 23 57 59v58H299Z" fill="#fff" stroke="#000" stroke-width="14" stroke-linejoin="round"/>
+              <circle cx="156" cy="229" r="35" fill="#fff" stroke="#000" stroke-width="14"/>
+              <circle cx="356" cy="229" r="35" fill="#fff" stroke="#000" stroke-width="14"/>
+              </g>
+            </mask>
+            <rect width="512" height="512" fill="currentColor" mask="url(#zasto-lokal-2)"/>
+          </svg>
           <div>
             <h3 class="ip-why__name">Sjajan tim</h3>
             <p class="ip-why__desc">Kolege na koje možeš da se osloniš — od prve smene.</p>
           </div>
         </li>
         <li class="ip-why__item">
-          <span class="ip-why__num">03</span>
+          <svg class="ip-why__icon" width="56" height="56" viewBox="80 80 352 352" aria-hidden="true">
+            <mask id="zasto-lokal-3" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+              <g fill="none">
+              <path d="M111 337h90v-68h91v-68h92v193H111v-57Z" fill="#fff" stroke="#fff" stroke-width="16" stroke-linejoin="round"/>
+              <path d="M119 265c88-32 169-97 242-152m-47-2 49 2-8 48" stroke="#fff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+            </mask>
+            <rect width="512" height="512" fill="currentColor" mask="url(#zasto-lokal-3)"/>
+          </svg>
           <div>
             <h3 class="ip-why__name">Mogućnost napredovanja</h3>
             <p class="ip-why__desc">Učiš, razvijaš se i praviš sledeći korak — do vođenja lokala.</p>
@@ -298,10 +320,10 @@
 ============================================================================ -->
 <section class="ip-section">
   <div class="ip-wrap">
-    <div class="ip-head reveal">
+    <div class="ip-head ip-head--center reveal">
       <div>
         <span class="ip-eyebrow">Radno okruženje</span>
-        <h2 class="section-title ip-title font-medium uppercase text-white">Zaviri u svoje<br><span class="ip-title__accent">buduće radno mesto.</span></h2>
+        <h2 class="section-title ip-title font-medium uppercase text-white">Zaviri u svoje <span class="ip-title__accent">buduće radno mesto.</span></h2>
       </div>
       <p class="ip-lead">Moderni lokali, uređeni do detalja — mesto gde se dobro radi i gde gosti rado dolaze.</p>
     </div>
@@ -332,10 +354,10 @@
 ============================================================================ -->
 <section class="ip-section ip-band">
   <div class="ip-wrap">
-    <div class="ip-head reveal">
+    <div class="ip-head ip-head--center reveal">
       <div>
         <span class="ip-eyebrow">Pogodnosti</span>
-        <h2 class="section-title ip-title font-medium uppercase text-white">Pogodnosti<br><span class="ip-title__accent">koje znače.</span></h2>
+        <h2 class="section-title ip-title font-medium uppercase text-white">Pogodnosti <span class="ip-title__accent">koje znače.</span></h2>
       </div>
       <p class="ip-lead">Ono što se ne vidi na prvi pogled, a oseti se svakog meseca.</p>
     </div>
@@ -379,10 +401,10 @@
 ============================================================================ -->
 <section class="ip-section">
   <div class="ip-wrap">
-    <div class="ip-head reveal">
+    <div class="ip-head ip-head--center reveal">
       <div>
         <span class="ip-eyebrow">Iz prve ruke</span>
-        <h2 class="section-title ip-title font-medium uppercase text-white">Šta kažu<br><span class="ip-title__accent">naše kolege?</span></h2>
+        <h2 class="section-title ip-title font-medium uppercase text-white">Šta kažu <span class="ip-title__accent">naše kolege?</span></h2>
       </div>
     </div>
 
@@ -419,43 +441,68 @@
 </section>
 
 <!-- ============================================================================
-     PRVA SMENA JE TEK POČETAK — karijerni put u četiri koraka
+     TVOJ NOVI POSAO POČINJE OVDE — rukom pisan proces u 4 koraka.
+     ISTA kompozicija kao "Proces zapošljavanja" na naslovnoj (#proces,
+     index.html; tamo je ugašena atributom hidden): LumieraHandwriting brojevi,
+     PatrickHand labele, tri strelice; sve se ISPISUJE na skrol (--w 0→1 po
+     komadu, redosled pisanja = redosled u markupu). CSS je zajednički
+     (#proces-stage / .proc-* u styles.css + boje u theme-dark.css), a pogon je
+     u inner-pages.js (window.scrollY — ova strana nema Lenis).
+     Traženo: stoji NA MESTU uklonjenog "Karijernog puta", ispred čestih pitanja.
+     ⚠ Sekcija namerno NIJE id="proces" — variation-3.css krije #proces.
+     Koraci: --x/--y su prepisani sa naslovne, labele su dužinom bliske
+     originalnim, pa kompozicija ostaje u svom okviru.
 ============================================================================ -->
-<section class="ip-section ip-band">
+<section id="proces-lokali" class="ip-section ip-band">
   <div class="ip-wrap">
-    <div class="ip-head reveal">
+    <div class="ip-head ip-head--center reveal">
       <div>
-        <span class="ip-eyebrow">Karijerni put</span>
-        <h2 class="section-title ip-title font-medium uppercase text-white">Prva smena je<br><span class="ip-title__accent">tek početak.</span></h2>
+        <span class="ip-eyebrow">4 koraka do posla u lokalu</span>
+        <h2 class="section-title ip-title font-medium uppercase text-white">Tvoj novi posao <span class="ip-title__accent">počinje ovde.</span></h2>
       </div>
-      <a href="poslovi-u-centrali.html" class="ip-link">
-        Istraži karijeru u centrali
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
-      </a>
+      <p class="ip-lead">Postani deo tima koji osvaja. Prijava traje minut — bez CV-a.</p>
     </div>
 
-    <ol class="ip-path reveal">
-      <li class="ip-step">
-        <span class="ip-step__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg></span>
-        <h3>Operater</h3>
-        <p>Početak tvoje karijere u našem timu.</p>
-      </li>
-      <li class="ip-step">
-        <span class="ip-step__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/><path d="M9 2.5l3 1.5 3-1.5"/></svg></span>
-        <h3>Tim lider</h3>
-        <p>Vođenje smene i dodatne odgovornosti.</p>
-      </li>
-      <li class="ip-step">
-        <span class="ip-step__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2 20v-1a7 7 0 0 1 11.5-5.4"/><path d="M15 13l2 2 4-4"/></svg></span>
-        <h3>Zamenik menadžera</h3>
-        <p>Još veći izazovi i prostor za razvoj.</p>
-      </li>
-      <li class="ip-step">
-        <span class="ip-step__icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg></span>
-        <h3>Menadžer lokala</h3>
-        <p>Vođenje lokala i ostvarenje ciljeva.</p>
-      </li>
-    </ol>
+    <div class="ip-proces">
+      <div id="proces-stage">
+        <!-- 01 -->
+        <div class="proc-step" style="--x:1.2%; --y:31.3%">
+          <span class="proc-step__num proc-ink">01</span>
+          <span class="proc-step__label"><span class="proc-ink">Pronađi</span><span class="proc-ink">poziciju</span></span>
+        </div>
+        <svg class="proc-arrow proc-ink" viewBox="0 0 96 72" style="--x:27.4%; --y:43.1%" aria-hidden="true">
+          <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
+        </svg>
+
+        <!-- 02 -->
+        <div class="proc-step" style="--x:30.6%; --y:4.7%">
+          <span class="proc-step__num proc-ink">02</span>
+          <span class="proc-step__label"><span class="proc-ink">Prijavi se</span><span class="proc-ink">bez CV-a</span></span>
+        </div>
+        <svg class="proc-arrow proc-arrow--down proc-ink" viewBox="0 0 96 72" style="--x:54.4%; --y:23.4%" aria-hidden="true">
+          <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
+        </svg>
+
+        <!-- 03 -->
+        <div class="proc-step" style="--x:53.3%; --y:54.7%">
+          <span class="proc-step__num proc-ink">03</span>
+          <span class="proc-step__label"><span class="proc-ink">Razgovor</span><span class="proc-ink">sa timom</span></span>
+        </div>
+        <svg class="proc-arrow proc-ink" viewBox="0 0 96 72" style="--x:81.1%; --y:48.4%" aria-hidden="true">
+          <path d="M4 24 C 18 56 50 68 82 30 M67.7 34.7 L 82 30 L 80 44.9"/>
+        </svg>
+
+        <!-- 04 -->
+        <div class="proc-step" style="--x:77.7%; --y:6.3%">
+          <span class="proc-step__num proc-ink">04</span>
+          <span class="proc-step__label"><span class="proc-ink">Prvi dan</span><span class="proc-ink">u lokalu</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ip-proces__cta reveal">
+      <a href="listanje.html?vrsta=lokali" class="ip-btn">Pogledaj otvorene pozicije</a>
+    </div>
   </div>
 </section>
 
@@ -465,22 +512,22 @@
      naslovnoj — potvrditi sa klijentom (naročito plata, smene, obuka).
 ============================================================================ -->
 <section class="ip-section">
-  <div class="ip-wrap ip-faq">
-    <div class="reveal">
-      <span class="ip-eyebrow">Česta pitanja</span>
-      <h2 class="section-title ip-title font-medium uppercase text-white">Imaš<br><span class="ip-title__accent">pitanja?</span></h2>
-      <p class="ip-lead mt-5">Tu smo da razjasnimo. Ako ne nađeš odgovor, piši nam na
+  <div class="ip-wrap ip-faq ip-faq--center">
+    <div class="ip-head ip-head--center reveal">
+      <div>
+        <span class="ip-eyebrow">Česta pitanja</span>
+        <h2 class="section-title ip-title font-medium uppercase text-white">Imaš <span class="ip-title__accent">pitanja?</span></h2>
+      </div>
+      <p class="ip-lead">Tu smo da razjasnimo. Ako ne nađeš odgovor, piši nam na
         <a href="mailto:karijera@balkanbet.rs" class="text-brand-yellow hover:underline">karijera@balkanbet.rs</a>.</p>
     </div>
+    <!-- 6 pitanja (traženo; bilo 9). Izbačena: proces selekcije (sada ga nosi
+         sekcija iznad), prelazak u centralu i benefiti (nosi ih "Pogodnosti"). -->
 
     <div class="ip-faq__list reveal">
       <div class="ip-faq__item">
         <button type="button" class="ip-faq__q" aria-expanded="false">Da li je potrebno prethodno iskustvo?<span class="ip-faq__plus" aria-hidden="true"></span></button>
         <div class="ip-faq__a"><div><p>Nije. Iskustvo na istoj poziciji i predznanje iz sporta, slota ili virtuelnih igara nisu potrebni — sve što treba da znaš naučićeš kroz obuku.</p></div></div>
-      </div>
-      <div class="ip-faq__item">
-        <button type="button" class="ip-faq__q" aria-expanded="false">Kako izgleda proces selekcije?<span class="ip-faq__plus" aria-hidden="true"></span></button>
-        <div class="ip-faq__a"><div><p>Prijaviš se za par minuta, bez CV-ja. Kolege iz ljudskih resursa te zovu u narednih nekoliko dana, a posle kratkog razgovora upoznaješ lokal i tim.</p></div></div>
       </div>
       <div class="ip-faq__item">
         <button type="button" class="ip-faq__q" aria-expanded="false">Da li postoji obuka za nove zaposlene?<span class="ip-faq__plus" aria-hidden="true"></span></button>
@@ -499,42 +546,10 @@
         <div class="ip-faq__a"><div><p>Put ide od operatera preko tim lidera i zamenika menadžera do menadžera lokala — većina naših menadžera počela je baš na prvoj smeni.</p></div></div>
       </div>
       <div class="ip-faq__item">
-        <button type="button" class="ip-faq__q" aria-expanded="false">Mogu li da se prebacim iz lokala u centralu?<span class="ip-faq__plus" aria-hidden="true"></span></button>
-        <div class="ip-faq__a"><div><p>Mogu. Kada se otvori pozicija u centrali, kolege iz lokala imaju priliku da se prijave — iskustvo iz lokala je tamo velika prednost.</p></div></div>
-      </div>
-      <div class="ip-faq__item">
-        <button type="button" class="ip-faq__q" aria-expanded="false">Koji su benefiti?<span class="ip-faq__plus" aria-hidden="true"></span></button>
-        <div class="ip-faq__a"><div><p>Bonusi za zalaganje i preporuku, nagrade za ideje, popusti za usluge, hotele i restorane širom Srbije i niz pogodnosti za tebe i tvoju porodicu.</p></div></div>
-      </div>
-      <div class="ip-faq__item">
         <button type="button" class="ip-faq__q" aria-expanded="false">Kako se prijavljujem za posao?<span class="ip-faq__plus" aria-hidden="true"></span></button>
         <div class="ip-faq__a"><div><p>Izaberi poziciju na <a href="listanje.html?vrsta=lokali" class="text-brand-yellow hover:underline">listi otvorenih pozicija</a> i popuni kratku prijavu — bez CV-ja, za oko jedan minut.</p></div></div>
       </div>
     </div>
-  </div>
-</section>
-
-<!-- ============================================================================
-     ZAVRŠNI CTA — žuta traka; vodi na listanje (forme ovde NEMA, traženo)
-============================================================================ -->
-<section class="ip-cta">
-  <div class="ip-wrap">
-    <div class="ip-cta__row reveal">
-      <div>
-        <h2>Tvoj novi posao<br>počinje ovde.</h2>
-        <p class="ip-cta__lead">Postani deo tima koji osvaja. Prijava traje minut — bez CV-ja.</p>
-      </div>
-      <a href="listanje.html?vrsta=lokali" class="ip-btn ip-btn--dark">
-        Pogledaj otvorene pozicije
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
-      </a>
-    </div>
-
-    <ol class="ip-cta__steps reveal">
-      <li class="ip-cta__step"><b>1</b><div><h3>Izaberi poziciju</h3><p>Pronađi oglas u svom gradu.</p></div></li>
-      <li class="ip-cta__step"><b>2</b><div><h3>Ostavi kontakt</h3><p>Popuni kratku prijavu, bez CV-ja.</p></div></li>
-      <li class="ip-cta__step"><b>3</b><div><h3>Upoznaj nas</h3><p>Javljamo se u narednih nekoliko dana.</p></div></li>
-    </ol>
   </div>
 </section>
 
